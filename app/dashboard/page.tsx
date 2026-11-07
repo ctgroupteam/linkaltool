@@ -421,20 +421,30 @@ function DashboardContent() {
 
           <div className="flex items-center gap-2.5">
             {user ? (
-              <div className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-full border border-zinc-200">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-                  {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
+              <div className="flex items-center gap-2.5 bg-zinc-50 hover:bg-zinc-100/80 px-3 py-1.5 rounded-2xl border border-zinc-200 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+                  {(user as any).avatarUrl ? (
+                    <img src={(user as any).avatarUrl} alt={user.fullName || 'User'} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{user.fullName ? user.fullName[0].toUpperCase() : 'U'}</span>
+                  )}
                 </div>
-                <span className="text-xs font-bold text-zinc-800 hidden sm:inline">
-                  {user.fullName || user.email}
-                </span>
+                <div className="text-left hidden sm:block">
+                  <div className="text-xs font-bold text-zinc-950 flex items-center gap-1.5 leading-tight">
+                    <span>{user.fullName || 'Executive User'}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  </div>
+                  <span className="text-[10px] text-zinc-500 font-mono block leading-tight">
+                    {user.email}
+                  </span>
+                </div>
                 <button
                   onClick={() => {
                     localStorage.removeItem('linkal_user');
                     setUser(null);
                   }}
-                  className="text-zinc-400 hover:text-red-600 p-0.5 ml-1"
-                  title="Sign out"
+                  className="p-1 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-1"
+                  title="Sign out of Google"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -442,7 +452,7 @@ function DashboardContent() {
             ) : (
               <button
                 onClick={() => setShowGoogleModal(true)}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-bold shadow-xs transition-all"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-bold shadow-xs transition-all active:scale-[0.98]"
               >
                 <GoogleIcon className="w-4 h-4" />
                 <span>1-Click Google Login</span>

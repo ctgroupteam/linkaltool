@@ -21,6 +21,40 @@ export interface ProductItem {
   inStock?: boolean;
 }
 
+export interface CvExperience {
+  id: string;
+  company: string;
+  role: string;
+  period: string;
+  location?: string;
+  description: string;
+  companyUrl?: string;
+}
+
+export interface CvEducation {
+  id: string;
+  institution: string;
+  degree: string;
+  year: string;
+  honors?: string;
+}
+
+export interface CvProject {
+  id: string;
+  title: string;
+  description: string;
+  link?: string;
+  techStack?: string;
+}
+
+export interface CvCertification {
+  id: string;
+  name: string;
+  issuer: string;
+  year?: string;
+  url?: string;
+}
+
 export interface PortfolioProject {
   id: string;
   title: string;
@@ -112,12 +146,28 @@ export interface SiteData {
   // Single product specific
   singleProduct?: SingleProductDetails;
   
-  // Portfolio specific
+  // Portfolio & Executive CV specific
   portfolioAbout?: string;
   portfolioSkills?: PortfolioSkill[];
   portfolioProjects?: PortfolioProject[];
   portfolioRoleTitle?: string;
   portfolioAvatarUrl?: string;
+
+  // Dedicated ATS Executive CV Fields
+  cvTitle?: string;
+  cvHeadline?: string;
+  cvLocation?: string;
+  cvEmail?: string;
+  cvPhone?: string;
+  cvLinkedin?: string;
+  cvGithub?: string;
+  cvWebsite?: string;
+  cvSummary?: string;
+  cvExperiences?: CvExperience[];
+  cvEducations?: CvEducation[];
+  cvProjects?: CvProject[];
+  cvSkills?: string[];
+  cvCertifications?: CvCertification[];
 
   // Trust Badges
   trustBadgesEnabled?: boolean;

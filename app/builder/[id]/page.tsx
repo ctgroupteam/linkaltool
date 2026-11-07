@@ -96,6 +96,42 @@ function QrIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
+function BriefcaseIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  );
+}
+
+function GraduationCapIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+    </svg>
+  );
+}
+
+function AwardIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="7" />
+      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+    </svg>
+  );
+}
+
+function FolderGitIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+      <circle cx="12" cy="13" r="2" />
+    </svg>
+  );
+}
+
 const THEME_PRESETS = [
   { name: 'Emerald', hex: '#059669' },
   { name: 'Royal Blue', hex: '#2563eb' },
@@ -126,7 +162,14 @@ export type TabType =
   | 'reviews'
   | 'faq'
   | 'about'
-  | 'footer';
+  | 'footer'
+  | 'cv_profile'
+  | 'cv_summary'
+  | 'cv_experience'
+  | 'cv_education'
+  | 'cv_skills'
+  | 'cv_projects'
+  | 'cv_certifications';
 
 export default function BuilderPage() {
   const params = useParams();
@@ -147,6 +190,15 @@ export default function BuilderPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [propagationSeconds, setPropagationSeconds] = useState(30);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('linkal_user');
+      if (saved) setCurrentUser(JSON.parse(saved));
+    } catch {}
+  }, []);
+
   const [subdomainStatus, setSubdomainStatus] = useState<{
     checking: boolean;
     available?: boolean;
@@ -203,7 +255,67 @@ export default function BuilderPage() {
         const res = await fetch(`/api/sites/${siteId}`);
         if (res.ok) {
           const data = await res.json();
-          setSite(data.site);
+          const loadedSite: SiteData = data.site;
+          if (loadedSite.type === 'portfolio') {
+            setActiveTab('cv_profile');
+            // Ensure CV defaults if missing
+            if (!loadedSite.cvExperiences || loadedSite.cvExperiences.length === 0) {
+              loadedSite.cvExperiences = [
+                {
+                  id: 'exp-1',
+                  company: 'Global Enterprises Ltd.',
+                  role: 'Executive Director & Head of Strategy',
+                  period: '2021 — Present',
+                  location: 'Mumbai, India',
+                  description: 'Spearheaded corporate digital transformation and cross-functional operations. Accelerated revenue by 42% and oversaw strategic talent development.',
+                  companyUrl: 'https://example.com'
+                }
+              ];
+            }
+            if (!loadedSite.cvEducations || loadedSite.cvEducations.length === 0) {
+              loadedSite.cvEducations = [
+                {
+                  id: 'edu-1',
+                  institution: 'Premier Institute of Management',
+                  degree: 'Master of Business Administration (MBA)',
+                  year: '2016 — 2018',
+                  honors: 'Dean\'s Honor List'
+                }
+              ];
+            }
+            if (!loadedSite.cvSkills || loadedSite.cvSkills.length === 0) {
+              loadedSite.cvSkills = [
+                'Strategic Leadership',
+                'Business Transformation',
+                'Stakeholder Management',
+                'P&L Management',
+                'Executive Decision Making'
+              ];
+            }
+            if (!loadedSite.cvProjects || loadedSite.cvProjects.length === 0) {
+              loadedSite.cvProjects = [
+                {
+                  id: 'proj-1',
+                  title: 'Flagship Digital Transformation',
+                  description: 'Architected and rolled out automated workflows across 14 divisions, reducing processing turnaround time by 60%.',
+                  link: `https://${loadedSite.slug}.linkal.in`,
+                  techStack: 'Strategy, Enterprise Systems'
+                }
+              ];
+            }
+            if (!loadedSite.cvCertifications || loadedSite.cvCertifications.length === 0) {
+              loadedSite.cvCertifications = [
+                {
+                  id: 'cert-1',
+                  name: 'Executive Leadership Certification',
+                  issuer: 'Harvard Business Publishing',
+                  year: '2022',
+                  url: 'https://harvardbusiness.org'
+                }
+              ];
+            }
+          }
+          setSite(loadedSite);
           return;
         }
 
@@ -214,6 +326,9 @@ export default function BuilderPage() {
             const list: SiteData[] = JSON.parse(cached);
             const found = list.find((s) => s.id === siteId);
             if (found) {
+              if (found.type === 'portfolio') {
+                setActiveTab('cv_profile');
+              }
               setSite(found);
               // Sync back to server
               fetch(`/api/sites/${siteId}`, {
@@ -393,6 +508,139 @@ export default function BuilderPage() {
     } catch {}
   };
 
+  // ─── DEDICATED ATS CV EDITING HANDLERS ─────────────────────────────────
+  const handleAddExperience = () => {
+    if (!site) return;
+    const newExp: any = {
+      id: `exp-${Date.now()}`,
+      company: '',
+      role: '',
+      period: '2022 — Present',
+      location: 'Mumbai, India',
+      description: '',
+      companyUrl: '',
+    };
+    const updated = [...(site.cvExperiences || []), newExp];
+    updateSiteField('cvExperiences', updated);
+  };
+
+  const handleUpdateExperience = (idx: number, field: string, val: string) => {
+    if (!site) return;
+    const list = [...(site.cvExperiences || [])];
+    if (list[idx]) {
+      list[idx] = { ...list[idx], [field]: val };
+      updateSiteField('cvExperiences', list);
+    }
+  };
+
+  const handleDeleteExperience = (idx: number) => {
+    if (!site) return;
+    const list = (site.cvExperiences || []).filter((_, i) => i !== idx);
+    updateSiteField('cvExperiences', list);
+  };
+
+  const handleAddEducation = () => {
+    if (!site) return;
+    const newEdu: any = {
+      id: `edu-${Date.now()}`,
+      institution: '',
+      degree: '',
+      year: `${new Date().getFullYear() - 4} — ${new Date().getFullYear()}`,
+      honors: '',
+    };
+    const updated = [...(site.cvEducations || []), newEdu];
+    updateSiteField('cvEducations', updated);
+  };
+
+  const handleUpdateEducation = (idx: number, field: string, val: string) => {
+    if (!site) return;
+    const list = [...(site.cvEducations || [])];
+    if (list[idx]) {
+      list[idx] = { ...list[idx], [field]: val };
+      updateSiteField('cvEducations', list);
+    }
+  };
+
+  const handleDeleteEducation = (idx: number) => {
+    if (!site) return;
+    const list = (site.cvEducations || []).filter((_, i) => i !== idx);
+    updateSiteField('cvEducations', list);
+  };
+
+  const [newSkillInput, setNewSkillInput] = useState('');
+  const handleAddSkill = (skillName?: string) => {
+    if (!site) return;
+    const nameToAdd = (skillName || newSkillInput).trim();
+    if (!nameToAdd) return;
+    const current = site.cvSkills || [];
+    if (!current.includes(nameToAdd)) {
+      updateSiteField('cvSkills', [...current, nameToAdd]);
+    }
+    if (!skillName) setNewSkillInput('');
+  };
+
+  const handleDeleteSkill = (idx: number) => {
+    if (!site) return;
+    const list = (site.cvSkills || []).filter((_, i) => i !== idx);
+    updateSiteField('cvSkills', list);
+  };
+
+  const handleAddCvProject = () => {
+    if (!site) return;
+    const newProj: any = {
+      id: `proj-${Date.now()}`,
+      title: '',
+      description: '',
+      link: '',
+      techStack: '',
+    };
+    const updated = [...(site.cvProjects || []), newProj];
+    updateSiteField('cvProjects', updated);
+  };
+
+  const handleUpdateCvProject = (idx: number, field: string, val: string) => {
+    if (!site) return;
+    const list = [...(site.cvProjects || [])];
+    if (list[idx]) {
+      list[idx] = { ...list[idx], [field]: val };
+      updateSiteField('cvProjects', list);
+    }
+  };
+
+  const handleDeleteCvProject = (idx: number) => {
+    if (!site) return;
+    const list = (site.cvProjects || []).filter((_, i) => i !== idx);
+    updateSiteField('cvProjects', list);
+  };
+
+  const handleAddCertification = () => {
+    if (!site) return;
+    const newCert: any = {
+      id: `cert-${Date.now()}`,
+      name: '',
+      issuer: '',
+      year: `${new Date().getFullYear()}`,
+      url: '',
+    };
+    const updated = [...(site.cvCertifications || []), newCert];
+    updateSiteField('cvCertifications', updated);
+  };
+
+  const handleUpdateCertification = (idx: number, field: string, val: string) => {
+    if (!site) return;
+    const list = [...(site.cvCertifications || [])];
+    if (list[idx]) {
+      list[idx] = { ...list[idx], [field]: val };
+      updateSiteField('cvCertifications', list);
+    }
+  };
+
+  const handleDeleteCertification = (idx: number) => {
+    if (!site) return;
+    const list = (site.cvCertifications || []).filter((_, i) => i !== idx);
+    updateSiteField('cvCertifications', list);
+  };
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
@@ -524,6 +772,26 @@ export default function BuilderPage() {
             <Rocket className="w-3.5 h-3.5 text-emerald-400" />
             <span>Publish</span>
           </button>
+
+          {currentUser && (
+            <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-zinc-200">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                {currentUser.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt={currentUser.fullName || ''} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{currentUser.fullName ? currentUser.fullName[0].toUpperCase() : 'U'}</span>
+                )}
+              </div>
+              <div className="text-left leading-none max-w-[120px] truncate">
+                <span className="text-[11px] font-bold text-zinc-900 block truncate">
+                  {currentUser.fullName || 'User'}
+                </span>
+                <span className="text-[9px] text-zinc-500 font-mono block truncate">
+                  {currentUser.email}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -563,155 +831,281 @@ export default function BuilderPage() {
                   <span>My Sites Overview</span>
                 </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('general');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'general'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <Sliders className="w-4 h-4 text-zinc-900" />
-                  <span>General &amp; WhatsApp</span>
-                </button>
+                {site.type === 'portfolio' ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_profile');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_profile'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <User className="w-4 h-4 text-blue-600" />
+                      <span>Profile &amp; Subdomain</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('branding');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'branding'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <Palette className="w-4 h-4 text-purple-600" />
-                  <span>Logo &amp; Theme Colors</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_summary');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_summary'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 text-indigo-600" />
+                      <span>Executive Bio</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('announcement');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'announcement'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <Zap className="w-4 h-4 text-amber-500" />
-                  <span>Top Banner Ticker</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_experience');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_experience'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <BriefcaseIcon className="w-4 h-4 text-emerald-600" />
+                      <span>Work Experience</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('slider');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'slider'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <ImageIcon className="w-4 h-4 text-blue-600" />
-                  <span>Hero Banner Images</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_education');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_education'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <GraduationCapIcon className="w-4 h-4 text-purple-600" />
+                      <span>Education &amp; Credentials</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('type_specific');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'type_specific'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <ShoppingBag className="w-4 h-4 text-emerald-600" />
-                  <span>Products &amp; Catalog</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_skills');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_skills'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <span>Skills &amp; Competencies</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('trust_badges');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'trust_badges'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Trust Badges</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_projects');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_projects'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <FolderGitIcon className="w-4 h-4 text-blue-500" />
+                      <span>Featured Projects</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('reviews');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'reviews'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <Star className="w-4 h-4 text-amber-500" />
-                  <span>Customer Reviews</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_certifications');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_certifications'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <AwardIcon className="w-4 h-4 text-yellow-600" />
+                      <span>Certifications</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('faq');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'faq'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <HelpCircle className="w-4 h-4 text-blue-500" />
-                  <span>FAQ Accordion</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('branding');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'branding'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Palette className="w-4 h-4 text-zinc-600" />
+                      <span>Theme Accent Color</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('general');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'general'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Sliders className="w-4 h-4 text-zinc-900" />
+                      <span>General &amp; WhatsApp</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('about');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'about'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <FileText className="w-4 h-4 text-indigo-500" />
-                  <span>About Brand Story</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('branding');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'branding'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Palette className="w-4 h-4 text-purple-600" />
+                      <span>Logo &amp; Theme Colors</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setActiveTab('footer');
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
-                    activeTab === 'footer'
-                      ? 'bg-zinc-100 text-zinc-950'
-                      : 'hover:bg-zinc-100 text-zinc-700'
-                  }`}
-                >
-                  <Layers className="w-4 h-4 text-zinc-600" />
-                  <span>Footer &amp; Social</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('announcement');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'announcement'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <span>Top Banner Ticker</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('slider');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'slider'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <ImageIcon className="w-4 h-4 text-blue-600" />
+                      <span>Hero Banner Images</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('type_specific');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'type_specific'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                      <span>Products &amp; Catalog</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('trust_badges');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'trust_badges'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>Trust Badges</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('reviews');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'reviews'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Star className="w-4 h-4 text-amber-500" />
+                      <span>Customer Reviews</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('faq');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'faq'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <HelpCircle className="w-4 h-4 text-blue-500" />
+                      <span>FAQ Accordion</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('about');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'about'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 text-indigo-500" />
+                      <span>About Brand Story</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('footer');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'footer'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Layers className="w-4 h-4 text-zinc-600" />
+                      <span>Footer &amp; Social</span>
+                    </button>
+                  </>
+                )}
               </nav>
             </div>
 
@@ -738,110 +1132,910 @@ export default function BuilderPage() {
         >
           {/* Editor Sub-Tabs */}
           <div className="p-2.5 border-b border-zinc-200 bg-zinc-50 flex items-center gap-1.5 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('general')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'general'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              General
-            </button>
-            <button
-              onClick={() => setActiveTab('branding')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'branding'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Logo &amp; Theme
-            </button>
-            <button
-              onClick={() => setActiveTab('announcement')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'announcement'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Announcement
-            </button>
-            <button
-              onClick={() => setActiveTab('slider')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'slider'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Banners
-            </button>
-            <button
-              onClick={() => setActiveTab('type_specific')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'type_specific'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Products
-            </button>
-            <button
-              onClick={() => setActiveTab('trust_badges')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'trust_badges'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Trust Badges
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'reviews'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Reviews
-            </button>
-            <button
-              onClick={() => setActiveTab('faq')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'faq'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              FAQ
-            </button>
-            <button
-              onClick={() => setActiveTab('about')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'about'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              About Story
-            </button>
-            <button
-              onClick={() => setActiveTab('footer')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeTab === 'footer'
-                  ? 'bg-zinc-950 text-white shadow-xs'
-                  : 'text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              Footer
-            </button>
+            {site.type === 'portfolio' ? (
+              <>
+                <button
+                  onClick={() => setActiveTab('cv_profile')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_profile'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Profile &amp; Contact
+                </button>
+                <button
+                  onClick={() => setActiveTab('cv_summary')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_summary'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Executive Bio
+                </button>
+                <button
+                  onClick={() => setActiveTab('cv_experience')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_experience'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Experience
+                </button>
+                <button
+                  onClick={() => setActiveTab('cv_education')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_education'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Education
+                </button>
+                <button
+                  onClick={() => setActiveTab('cv_skills')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_skills'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Skills
+                </button>
+                <button
+                  onClick={() => setActiveTab('cv_projects')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_projects'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Projects
+                </button>
+                <button
+                  onClick={() => setActiveTab('cv_certifications')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_certifications'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Certifications
+                </button>
+                <button
+                  onClick={() => setActiveTab('branding')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'branding'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Theme Accent
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setActiveTab('general')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'general'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  General
+                </button>
+                <button
+                  onClick={() => setActiveTab('branding')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'branding'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Logo &amp; Theme
+                </button>
+                <button
+                  onClick={() => setActiveTab('announcement')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'announcement'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Announcement
+                </button>
+                <button
+                  onClick={() => setActiveTab('slider')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'slider'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Banners
+                </button>
+                <button
+                  onClick={() => setActiveTab('type_specific')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'type_specific'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Products
+                </button>
+                <button
+                  onClick={() => setActiveTab('trust_badges')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'trust_badges'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Trust Badges
+                </button>
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'reviews'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Reviews
+                </button>
+                <button
+                  onClick={() => setActiveTab('faq')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'faq'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  FAQ
+                </button>
+                <button
+                  onClick={() => setActiveTab('about')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'about'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  About Story
+                </button>
+                <button
+                  onClick={() => setActiveTab('footer')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'footer'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Footer
+                </button>
+              </>
+            )}
           </div>
 
           {/* Form Content */}
           <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+            {/* ─── DEDICATED ATS CV EDITORS ─── */}
+            {activeTab === 'cv_profile' && (
+              <div className="space-y-4">
+                <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-bold">Executive ATS Resume Profile</p>
+                    <p className="text-[11px] text-blue-700 mt-0.5">Fill in your contact details below. All links are automatically clickable in the ATS layout and PDF export.</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={site.cvTitle || site.name}
+                    onChange={(e) => {
+                      updateSiteField('cvTitle', e.target.value);
+                      updateSiteField('name', e.target.value);
+                    }}
+                    placeholder="e.g. Yahya Mundewadi"
+                    className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-semibold text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 mb-1">
+                    Executive Headline / Professional Role *
+                  </label>
+                  <input
+                    type="text"
+                    value={site.cvHeadline || site.portfolioRoleTitle || ''}
+                    onChange={(e) => {
+                      updateSiteField('cvHeadline', e.target.value);
+                      updateSiteField('portfolioRoleTitle', e.target.value);
+                    }}
+                    placeholder="e.g. Chief Technology Officer | Full-Stack Architect"
+                    className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-semibold text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-900 mb-1">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      value={site.cvLocation || ''}
+                      onChange={(e) => updateSiteField('cvLocation', e.target.value)}
+                      placeholder="e.g. Mumbai, India"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-medium text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-900 mb-1">
+                      Email Address (Clickable mailto)
+                    </label>
+                    <input
+                      type="email"
+                      value={site.cvEmail || ''}
+                      onChange={(e) => updateSiteField('cvEmail', e.target.value)}
+                      placeholder="e.g. yahya@example.com"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-medium text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-900 mb-1">
+                      Phone Number (Clickable tel)
+                    </label>
+                    <input
+                      type="tel"
+                      value={site.cvPhone || site.whatsappNumber || ''}
+                      onChange={(e) => {
+                        updateSiteField('cvPhone', e.target.value);
+                        updateSiteField('whatsappNumber', e.target.value.replace(/[^0-9]/g, ''));
+                      }}
+                      placeholder="e.g. 919307426215"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-medium text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-900 mb-1">
+                      WhatsApp Direct Chat Number
+                    </label>
+                    <input
+                      type="text"
+                      value={site.whatsappNumber}
+                      onChange={(e) => updateSiteField('whatsappNumber', e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="919307426215"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-medium text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Social &amp; Professional Links (ATS Verified)</h4>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-700 mb-1">
+                      LinkedIn Profile URL
+                    </label>
+                    <input
+                      type="url"
+                      value={site.cvLinkedin || ''}
+                      onChange={(e) => updateSiteField('cvLinkedin', e.target.value)}
+                      placeholder="https://linkedin.com/in/yahyamundewadi"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-700 mb-1">
+                      GitHub Profile URL
+                    </label>
+                    <input
+                      type="url"
+                      value={site.cvGithub || ''}
+                      onChange={(e) => updateSiteField('cvGithub', e.target.value)}
+                      placeholder="https://github.com/yahyamundewadi"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-700 mb-1">
+                      Personal Portfolio / Website
+                    </label>
+                    <input
+                      type="url"
+                      value={site.cvWebsite || ''}
+                      onChange={(e) => updateSiteField('cvWebsite', e.target.value)}
+                      placeholder="https://yahya.in"
+                      className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-950 focus:ring-2 focus:ring-zinc-950"
+                    />
+                  </div>
+                </div>
+
+                {/* Subdomain Slug Config */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-zinc-900">
+                      Subdomain Slug (*.linkal.in)
+                    </label>
+                    <span className="text-[10px] text-zinc-400 font-mono">RFC 1035</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={site.slug}
+                      onChange={(e) =>
+                        updateSiteField(
+                          'slug',
+                          e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                        )
+                      }
+                      className={`w-full pl-3.5 pr-10 py-2 bg-white border rounded-xl text-xs font-mono font-bold text-zinc-950 focus:outline-none focus:ring-2 ${
+                        subdomainStatus.available === false
+                          ? 'border-red-500 focus:ring-red-500'
+                          : subdomainStatus.available === true
+                          ? 'border-emerald-500 focus:ring-emerald-500'
+                          : 'border-zinc-300 focus:ring-zinc-950'
+                      }`}
+                    />
+                    <div className="absolute right-3 top-2.5">
+                      {subdomainStatus.checking ? (
+                        <div className="w-3.5 h-3.5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin" />
+                      ) : subdomainStatus.available === true ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      ) : subdomainStatus.available === false ? (
+                        <AlertCircle className="w-4 h-4 text-red-500" />
+                      ) : null}
+                    </div>
+                  </div>
+                  {subdomainStatus.available === true && (
+                    <p className="text-[11px] font-bold text-emerald-600 mt-1">
+                      ✓ https://{site.slug}.linkal.in is available!
+                    </p>
+                  )}
+                  {subdomainStatus.available === false && (
+                    <p className="text-[11px] font-bold text-red-600 mt-1">
+                      {subdomainStatus.reason || 'This subdomain is already claimed. Try another.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Summary */}
+            {activeTab === 'cv_summary' && (
+              <div className="space-y-4">
+                <div className="p-3.5 bg-zinc-100 border border-zinc-200 rounded-2xl text-xs text-zinc-700">
+                  <span className="font-bold block text-zinc-950 mb-0.5">ATS Tip: Executive Summary</span>
+                  Highlight your career scope, years of leadership experience, key industry impact, and top competencies. This section is prioritized by ATS parsers and executive recruiters.
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 mb-1.5">
+                    Executive Summary / Professional Bio
+                  </label>
+                  <textarea
+                    rows={8}
+                    value={site.cvSummary || site.portfolioAbout || ''}
+                    onChange={(e) => {
+                      updateSiteField('cvSummary', e.target.value);
+                      updateSiteField('portfolioAbout', e.target.value);
+                    }}
+                    placeholder="Accomplished executive with 10+ years of experience leading strategic technology operations, driving multi-million dollar revenue transformations, and cultivating high-performance teams across global markets..."
+                    className="w-full px-3.5 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-800 leading-relaxed focus:ring-2 focus:ring-zinc-950 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Work Experience */}
+            {activeTab === 'cv_experience' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Work Experience</h4>
+                    <p className="text-[11px] text-zinc-500">Reverse chronological order recommended.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddExperience}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 text-white rounded-xl text-xs font-bold hover:bg-black transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Experience</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(!site.cvExperiences || site.cvExperiences.length === 0) ? (
+                    <div className="text-center py-8 bg-zinc-50 rounded-2xl border border-dashed border-zinc-300 p-6">
+                      <BriefcaseIcon className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-zinc-700">No work experiences added yet</p>
+                      <p className="text-[11px] text-zinc-500 mt-1">Click "Add Experience" to add your roles, companies, and achievements.</p>
+                    </div>
+                  ) : (
+                    site.cvExperiences.map((exp, idx) => (
+                      <div key={exp.id || idx} className="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3 relative group">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800">
+                            Experience #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteExperience(idx)}
+                            className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
+                            title="Remove Experience"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Job Title / Role *</label>
+                            <input
+                              type="text"
+                              value={exp.role}
+                              onChange={(e) => handleUpdateExperience(idx, 'role', e.target.value)}
+                              placeholder="e.g. Senior Vice President"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Company Name *</label>
+                            <input
+                              type="text"
+                              value={exp.company}
+                              onChange={(e) => handleUpdateExperience(idx, 'company', e.target.value)}
+                              placeholder="e.g. Microsoft India"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-semibold text-zinc-950"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Time Period *</label>
+                            <input
+                              type="text"
+                              value={exp.period}
+                              onChange={(e) => handleUpdateExperience(idx, 'period', e.target.value)}
+                              placeholder="e.g. 2021 — Present"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-medium text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Location</label>
+                            <input
+                              type="text"
+                              value={exp.location || ''}
+                              onChange={(e) => handleUpdateExperience(idx, 'location', e.target.value)}
+                              placeholder="e.g. Mumbai, India (Hybrid)"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-medium text-zinc-950"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Company Website URL (Clickable)</label>
+                          <input
+                            type="url"
+                            value={exp.companyUrl || ''}
+                            onChange={(e) => handleUpdateExperience(idx, 'companyUrl', e.target.value)}
+                            placeholder="https://company.com"
+                            className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs text-zinc-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Key Responsibilities &amp; Impact (Bullet Points)</label>
+                          <textarea
+                            rows={3}
+                            value={exp.description}
+                            onChange={(e) => handleUpdateExperience(idx, 'description', e.target.value)}
+                            placeholder="• Directed cross-functional engineering and design team of 35+ engineers.&#10;• Increased system throughput by 300% and cut cloud compute costs by ₹40 Lakhs/year."
+                            className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-800 leading-relaxed focus:ring-2 focus:ring-zinc-950"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Education */}
+            {activeTab === 'cv_education' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Education &amp; Credentials</h4>
+                    <p className="text-[11px] text-zinc-500">List your degrees, universities, and honors.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddEducation}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 text-white rounded-xl text-xs font-bold hover:bg-black transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Education</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(!site.cvEducations || site.cvEducations.length === 0) ? (
+                    <div className="text-center py-8 bg-zinc-50 rounded-2xl border border-dashed border-zinc-300 p-6">
+                      <GraduationCapIcon className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-zinc-700">No education entries added yet</p>
+                      <p className="text-[11px] text-zinc-500 mt-1">Click "Add Education" to list degrees, colleges, or universities.</p>
+                    </div>
+                  ) : (
+                    site.cvEducations.map((edu, idx) => (
+                      <div key={edu.id || idx} className="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3 relative">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800">
+                            Degree #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEducation(idx)}
+                            className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
+                            title="Remove Education"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Degree &amp; Major *</label>
+                            <input
+                              type="text"
+                              value={edu.degree}
+                              onChange={(e) => handleUpdateEducation(idx, 'degree', e.target.value)}
+                              placeholder="e.g. Master of Business Administration (MBA)"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Institution / University *</label>
+                            <input
+                              type="text"
+                              value={edu.institution}
+                              onChange={(e) => handleUpdateEducation(idx, 'institution', e.target.value)}
+                              placeholder="e.g. Indian Institute of Management (IIM)"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-semibold text-zinc-950"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Graduation Year / Period</label>
+                            <input
+                              type="text"
+                              value={edu.year}
+                              onChange={(e) => handleUpdateEducation(idx, 'year', e.target.value)}
+                              placeholder="e.g. 2016 — 2018"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-medium text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Honors / Grade (Optional)</label>
+                            <input
+                              type="text"
+                              value={edu.honors || ''}
+                              onChange={(e) => handleUpdateEducation(idx, 'honors', e.target.value)}
+                              placeholder="e.g. First Class with Distinction"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-medium text-zinc-950"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Skills */}
+            {activeTab === 'cv_skills' && (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider mb-1">Skills &amp; Specializations</h4>
+                  <p className="text-[11px] text-zinc-500">Add keywords, tools, frameworks, and leadership skills. ATS parsers match these directly against job descriptions.</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSkillInput}
+                    onChange={(e) => setNewSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddSkill();
+                      }
+                    }}
+                    placeholder="Type a skill and press Enter (e.g. Strategic Planning)..."
+                    className="flex-1 px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-medium text-zinc-950 focus:ring-2 focus:ring-zinc-950 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddSkill()}
+                    className="px-4 py-2 bg-zinc-950 text-white rounded-xl text-xs font-bold hover:bg-black transition-all"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div>
+                  <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Quick Add Popular Executive Skills:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      'Executive Leadership',
+                      'P&L Management',
+                      'Strategic Planning',
+                      'Cloud Architecture',
+                      'Next.js & React',
+                      'Product Roadmap',
+                      'Team Mentorship',
+                      'Enterprise Scalability',
+                      'DevOps & CI/CD',
+                      'Stakeholder Relations',
+                    ].map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleAddSkill(tag)}
+                        className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-[11px] font-semibold rounded-lg transition-colors"
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <label className="block text-[11px] font-bold text-zinc-700 mb-2">
+                    Active Skills on Resume ({site.cvSkills?.length || 0})
+                  </label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-zinc-50 border border-zinc-200 rounded-2xl min-h-[60px]">
+                    {(!site.cvSkills || site.cvSkills.length === 0) ? (
+                      <p className="text-[11px] text-zinc-400 italic">No skills added yet. Use the input above to add skills.</p>
+                    ) : (
+                      site.cvSkills.map((sk, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-zinc-300 text-zinc-900 rounded-lg text-xs font-bold shadow-xs"
+                        >
+                          <span>{sk}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSkill(idx)}
+                            className="text-zinc-400 hover:text-red-600 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Projects */}
+            {activeTab === 'cv_projects' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Featured Projects &amp; Deliverables</h4>
+                    <p className="text-[11px] text-zinc-500">Every project link is rendered as an interactive clickable link.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCvProject}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 text-white rounded-xl text-xs font-bold hover:bg-black transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Project</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(!site.cvProjects || site.cvProjects.length === 0) ? (
+                    <div className="text-center py-8 bg-zinc-50 rounded-2xl border border-dashed border-zinc-300 p-6">
+                      <FolderGitIcon className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-zinc-700">No projects added yet</p>
+                      <p className="text-[11px] text-zinc-500 mt-1">Click "Add Project" to showcase key initiatives, apps, or business cases.</p>
+                    </div>
+                  ) : (
+                    site.cvProjects.map((proj, idx) => (
+                      <div key={proj.id || idx} className="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3 relative">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800">
+                            Project #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCvProject(idx)}
+                            className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
+                            title="Remove Project"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Project Title *</label>
+                          <input
+                            type="text"
+                            value={proj.title}
+                            onChange={(e) => handleUpdateCvProject(idx, 'title', e.target.value)}
+                            placeholder="e.g. Enterprise Payment Gateway"
+                            className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold text-zinc-950"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Clickable Project Link / GitHub URL</label>
+                            <input
+                              type="url"
+                              value={proj.link || ''}
+                              onChange={(e) => handleUpdateCvProject(idx, 'link', e.target.value)}
+                              placeholder="https://github.com/..."
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-mono text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Tech Stack / Tools</label>
+                            <input
+                              type="text"
+                              value={proj.techStack || ''}
+                              onChange={(e) => handleUpdateCvProject(idx, 'techStack', e.target.value)}
+                              placeholder="e.g. Next.js, Node.js, AWS"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs text-zinc-800"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Project Summary / Metrics</label>
+                          <textarea
+                            rows={2}
+                            value={proj.description}
+                            onChange={(e) => handleUpdateCvProject(idx, 'description', e.target.value)}
+                            placeholder="Engineered high-throughput architecture servicing 50k transactions/sec with 99.99% uptime..."
+                            className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-800 leading-relaxed focus:ring-2 focus:ring-zinc-950"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Certifications */}
+            {activeTab === 'cv_certifications' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Certifications &amp; Licenses</h4>
+                    <p className="text-[11px] text-zinc-500">Professional credentials and verified badges.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCertification}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 text-white rounded-xl text-xs font-bold hover:bg-black transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Certification</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(!site.cvCertifications || site.cvCertifications.length === 0) ? (
+                    <div className="text-center py-8 bg-zinc-50 rounded-2xl border border-dashed border-zinc-300 p-6">
+                      <AwardIcon className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-zinc-700">No certifications added yet</p>
+                      <p className="text-[11px] text-zinc-500 mt-1">Click "Add Certification" to list AWS, Google, or professional licenses.</p>
+                    </div>
+                  ) : (
+                    site.cvCertifications.map((cert, idx) => (
+                      <div key={cert.id || idx} className="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3 relative">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800">
+                            Certification #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCertification(idx)}
+                            className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
+                            title="Remove Certification"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Certification Name *</label>
+                            <input
+                              type="text"
+                              value={cert.name}
+                              onChange={(e) => handleUpdateCertification(idx, 'name', e.target.value)}
+                              placeholder="e.g. AWS Certified Solutions Architect"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Issuer / Organization *</label>
+                            <input
+                              type="text"
+                              value={cert.issuer}
+                              onChange={(e) => handleUpdateCertification(idx, 'issuer', e.target.value)}
+                              placeholder="e.g. Amazon Web Services"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-semibold text-zinc-950"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Year / Date</label>
+                            <input
+                              type="text"
+                              value={cert.year || ''}
+                              onChange={(e) => handleUpdateCertification(idx, 'year', e.target.value)}
+                              placeholder="e.g. 2023"
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-medium text-zinc-950"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Credential URL (Clickable)</label>
+                            <input
+                              type="url"
+                              value={cert.url || ''}
+                              onChange={(e) => handleUpdateCertification(idx, 'url', e.target.value)}
+                              placeholder="https://aws.amazon.com/verify/..."
+                              className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-mono text-zinc-950"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: General (For E-Commerce / Store) */}
             {activeTab === 'general' && (
               <div className="space-y-4">
                 <div>

@@ -74,11 +74,13 @@ export async function POST(request: Request) {
       type: siteType,
       status: 'draft',
       whatsappNumber: cleanPhone,
-      defaultWhatsappMessage: `Hi ${name}, I saw your website and would like to place an order!`,
-      logoUrl: logoUrl || undefined,
-      themeColor: siteType === 'portfolio' ? '#4f46e5' : siteType === 'single_product' ? '#ea580c' : '#059669',
+      defaultWhatsappMessage: siteType === 'portfolio'
+        ? `Hello ${name}, I reviewed your Executive CV and would like to connect!`
+        : `Hi ${name}, I saw your website and would like to place an order!`,
+      logoUrl: siteType === 'portfolio' ? undefined : (logoUrl || undefined),
+      themeColor: siteType === 'portfolio' ? '#0f172a' : siteType === 'single_product' ? '#ea580c' : '#059669',
       fontFamily: 'Inter',
-      bannerSlider: [
+      bannerSlider: siteType === 'portfolio' ? [] : [
         {
           id: `slide-1`,
           imageUrl: initialBannerImage,
@@ -100,17 +102,58 @@ export async function POST(request: Request) {
           inStock: true,
         }
       ] : undefined,
-      portfolioSkills: siteType === 'portfolio' ? [
-        { id: 'sk-1', name: 'Product Strategy', level: 'Expert' },
-        { id: 'sk-2', name: 'Creative Direction', level: 'Advanced' }
+      // Dedicated ATS CV fields for portfolios
+      cvTitle: name,
+      cvLocation: 'Mumbai, India',
+      cvEmail: '',
+      cvPhone: cleanPhone,
+      cvLinkedin: '',
+      cvGithub: '',
+      cvWebsite: `https://${finalSlug}.linkal.in`,
+      cvSummary: 'Accomplished executive with a track record of leading strategic initiatives, scaling high-impact operations, and driving sustainable business growth.',
+      cvExperiences: siteType === 'portfolio' ? [
+        {
+          id: 'exp-1',
+          company: 'Global Enterprises Ltd.',
+          role: 'Executive Director & Head of Strategy',
+          period: '2021 — Present',
+          location: 'Mumbai, India',
+          description: 'Spearheaded corporate digital transformation and cross-functional operations. Accelerated revenue by 42% and oversaw strategic talent development.',
+          companyUrl: 'https://example.com'
+        }
       ] : undefined,
-      portfolioProjects: siteType === 'portfolio' ? [
+      cvEducations: siteType === 'portfolio' ? [
+        {
+          id: 'edu-1',
+          institution: 'Premier Institute of Management',
+          degree: 'Master of Business Administration (MBA)',
+          year: '2016 — 2018',
+          honors: 'Dean\'s Honor List'
+        }
+      ] : undefined,
+      cvSkills: siteType === 'portfolio' ? [
+        'Strategic Leadership',
+        'Business Transformation',
+        'Stakeholder Management',
+        'P&L Management',
+        'Executive Decision Making'
+      ] : undefined,
+      cvProjects: siteType === 'portfolio' ? [
         {
           id: 'proj-1',
-          title: initialProdName || 'Flagship Showcase',
-          description: initialProdDesc || 'A breakthrough client campaign delivering extraordinary engagement.',
-          imageUrl: initialProdImage || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80',
-          tags: ['Branding', 'Strategy']
+          title: 'Flagship Digital Transformation',
+          description: 'Architected and rolled out automated workflows across 14 divisions, reducing processing turnaround time by 60%.',
+          link: `https://${finalSlug}.linkal.in`,
+          techStack: 'Strategy, Enterprise Systems'
+        }
+      ] : undefined,
+      cvCertifications: siteType === 'portfolio' ? [
+        {
+          id: 'cert-1',
+          name: 'Executive Leadership Certification',
+          issuer: 'Harvard Business Publishing',
+          year: '2022',
+          url: 'https://harvardbusiness.org'
         }
       ] : undefined,
       singleProduct: siteType === 'single_product' ? {

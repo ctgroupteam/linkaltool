@@ -26,9 +26,24 @@ export function GoogleAuthModal({
     isFirst100: true,
   });
 
-  const [fullName, setFullName] = useState('Rahul Sharma');
-  const [email, setEmail] = useState('rahul.sharma@gmail.com');
-  const [phoneNumber, setPhoneNumber] = useState('919876543210');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  // Auto-fill from localStorage if previously signed in
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('linkal_user');
+        if (saved) {
+          const u = JSON.parse(saved);
+          if (u.fullName) setFullName(u.fullName);
+          if (u.email) setEmail(u.email);
+          if (u.phoneNumber) setPhoneNumber(u.phoneNumber);
+        }
+      } catch {}
+    }
+  }, [isOpen]);
 
   // Query CV promotion stats on open
   useEffect(() => {
@@ -68,13 +83,13 @@ export function GoogleAuthModal({
       setError(null);
 
       if (!fullName.trim()) {
-        setError('Please enter your full name');
+        setError('Please enter your full name as registered on Google');
         setLoading(false);
         return;
       }
 
       if (!email.trim() || !email.includes('@')) {
-        setError('Please enter a valid Google account email');
+        setError('Please enter a valid Google account email (e.g. name@gmail.com)');
         setLoading(false);
         return;
       }
@@ -85,9 +100,9 @@ export function GoogleAuthModal({
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           fullName: fullName.trim(),
-          phoneNumber: phoneNumber.trim() || '919876543210',
+          phoneNumber: phoneNumber.trim() || undefined,
           googleId: `google-${Date.now()}`,
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName.trim())}&backgroundColor=2563eb,1e40af,4338ca`,
           promoCode: promoCode || undefined,
         }),
       });
@@ -98,7 +113,7 @@ export function GoogleAuthModal({
       }
 
       if (isCvSite && data.cvEligibility && !data.cvEligibility.canCreateFreeCv) {
-        alert('Notice: You have already created 1 Free Executive CV on this account. Additional CVs require a subscription or upgrade.');
+        alert('Notice: You have already created 1 Free Executive CV on this account. Additional CVs require an executive subscription.');
       }
 
       localStorage.setItem('linkal_user', JSON.stringify(data.user));
@@ -180,7 +195,7 @@ export function GoogleAuthModal({
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Rahul Sharma"
+              placeholder="e.g. Yahya Mundewadi"
               className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950"
             />
           </div>
@@ -193,7 +208,7 @@ export function GoogleAuthModal({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="rahul.sharma@gmail.com"
+              placeholder="e.g. yourname@gmail.com"
               className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950"
             />
           </div>
@@ -206,7 +221,7 @@ export function GoogleAuthModal({
               type="text"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="919876543210"
+              placeholder="e.g. 919307426215"
               className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-mono font-semibold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950"
             />
           </div>

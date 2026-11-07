@@ -160,7 +160,549 @@ function renderAboutStoryHtml(site: SiteData): string {
   `;
 }
 
+export function generateAtsCvHtml(site: SiteData): string {
+  const phone = cleanPhone(site.cvPhone || site.whatsappNumber);
+  const fullName = escapeHtml(site.name || 'Executive Professional');
+  const headline = escapeHtml(site.cvTitle || site.portfolioRoleTitle || 'Chief Executive Officer & Founder');
+  const location = escapeHtml(site.cvLocation || 'Mumbai, India');
+  const email = escapeHtml(site.cvEmail || site.userEmail || '');
+  const displayPhone = escapeHtml(site.cvPhone || site.whatsappNumber || '');
+  const linkedin = site.cvLinkedin || '';
+  const github = site.cvGithub || '';
+  const website = site.cvWebsite || '';
+  const summary = escapeHtml(
+    site.cvSummary ||
+    site.portfolioAbout ||
+    'High-impact executive leader with a proven record of building and scaling transformative products, building top-tier engineering organizations, and driving exponential growth.'
+  );
+
+  const experiences = (site.cvExperiences && site.cvExperiences.length > 0)
+    ? site.cvExperiences
+    : [
+      {
+        id: 'exp-1',
+        company: 'Linkal AI Technologies',
+        role: 'Chief Executive Officer & Founder',
+        period: '2023 – Present',
+        location: 'Mumbai, India',
+        description: '• Architected and launched full-scale automated web platform serving hundreds of businesses.\n• Spearheaded engineering, product strategy, and go-to-market execution.\n• Implemented automated Cloudflare DNS routing and payment automation.',
+        companyUrl: 'https://linkal.in'
+      },
+      {
+        id: 'exp-2',
+        company: 'Enterprise Solutions Group',
+        role: 'Senior Director of Product Engineering',
+        period: '2019 – 2023',
+        location: 'Bengaluru, India',
+        description: '• Led cross-functional teams of 40+ engineers across cloud infrastructure and mobile products.\n• Scaled high-throughput microservices processing over 10M+ daily events with 99.99% uptime.\n• Mentored technical leads and established best practices for rapid product iteration.',
+        companyUrl: ''
+      }
+    ];
+
+  const educations = (site.cvEducations && site.cvEducations.length > 0)
+    ? site.cvEducations
+    : [
+      {
+        id: 'edu-1',
+        institution: 'Indian Institute of Technology (IIT)',
+        degree: 'Bachelor of Technology in Computer Science & Engineering',
+        year: '2019',
+        honors: 'First Class with Distinction'
+      }
+    ];
+
+  const skills = (site.cvSkills && site.cvSkills.length > 0)
+    ? site.cvSkills
+    : (site.portfolioSkills && site.portfolioSkills.length > 0
+        ? site.portfolioSkills.map(s => s.name)
+        : [
+          'Executive Leadership',
+          'Product Strategy & Roadmap',
+          'Full-Stack Architecture',
+          'Cloud Infrastructure (AWS/Vercel/Cloudflare)',
+          'High-Scale Systems',
+          'Team Building & Mentorship',
+          'Next.js & TypeScript',
+          'Business Operations'
+        ]
+      );
+
+  const projects = (site.cvProjects && site.cvProjects.length > 0)
+    ? site.cvProjects
+    : (site.portfolioProjects && site.portfolioProjects.length > 0
+        ? site.portfolioProjects.map(p => ({
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            link: p.link,
+            techStack: (p.tags || []).join(', ')
+          }))
+        : [
+          {
+            id: 'proj-1',
+            title: 'Linkal Multi-Tier Website Builder & Automation Engine',
+            description: 'Automated SaaS engine capable of deploying localized Indian business websites on customized subdomains within seconds.',
+            link: 'https://linkal.in',
+            techStack: 'Next.js, TypeScript, Cloudflare DNS, Vercel Edge'
+          },
+          {
+            id: 'proj-2',
+            title: 'High-Concurrency Digital QR Menu System',
+            description: 'Direct-to-WhatsApp order dispatch pipeline reducing restaurant order turnaround times by 65%.',
+            link: 'https://turkishzaika.linkal.in',
+            techStack: 'Tailwind CSS, Edge Functions, PWA'
+          }
+        ]
+      );
+
+  const certifications = (site.cvCertifications && site.cvCertifications.length > 0)
+    ? site.cvCertifications
+    : [
+      {
+        id: 'cert-1',
+        name: 'AWS Certified Solutions Architect – Professional',
+        issuer: 'Amazon Web Services',
+        year: '2023',
+        url: ''
+      }
+    ];
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${fullName} — Executive CV & Professional Profile</title>
+  <meta name="description" content="${fullName} — ${headline}. ${location}." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #1E40AF;
+      --text: #0F172A;
+      --text-muted: #475569;
+      --border: #CBD5E1;
+      --bg: #F8FAFC;
+      --paper: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 3rem;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Top Floating Action Bar (Hidden in Print) */
+    .ats-actions-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .ats-badge-verified {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #93C5FD;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .ats-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .ats-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+      text-decoration: none !important;
+    }
+    .ats-btn-primary {
+      background: #10B981;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(16,185,129,0.3);
+    }
+    .ats-btn-primary:hover { background: #059669; }
+    .ats-btn-outline {
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .ats-btn-outline:hover { background: rgba(255,255,255,0.22); }
+    .ats-btn-wa {
+      background: #25D366;
+      color: #ffffff;
+    }
+    .ats-btn-wa:hover { background: #1EBE5B; }
+
+    /* The Resume Paper (Standard A4 / ATS Layout) */
+    .cv-paper {
+      max-width: 820px;
+      margin: 2rem auto;
+      background: var(--paper);
+      padding: 3rem 3.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Candidate Header */
+    .cv-header {
+      border-bottom: 2px solid var(--text);
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+    .cv-name {
+      font-size: 2.35rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .cv-headline {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 0.35rem;
+      letter-spacing: -0.01em;
+    }
+    .cv-contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.85rem;
+      margin-top: 0.85rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .cv-contact-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .cv-dot { color: #94A3B8; }
+
+    /* Section Styling */
+    .cv-section {
+      margin-bottom: 1.75rem;
+    }
+    .cv-section-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 0.35rem;
+      margin-bottom: 0.95rem;
+    }
+
+    /* Summary */
+    .cv-summary-text {
+      font-size: 0.92rem;
+      color: #334155;
+      line-height: 1.65;
+    }
+
+    /* Experience Items */
+    .cv-item {
+      margin-bottom: 1.25rem;
+    }
+    .cv-item:last-child { margin-bottom: 0; }
+    .cv-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+    }
+    .cv-item-role {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cv-item-company {
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .cv-item-period {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .cv-item-location {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    .cv-item-desc {
+      font-size: 0.88rem;
+      color: #334155;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    /* Projects */
+    .cv-project-card {
+      padding: 0.85rem 1rem;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+    }
+    .cv-project-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .cv-project-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cv-project-link {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .cv-project-tech {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #64748B;
+      margin-bottom: 0.35rem;
+    }
+    .cv-project-desc {
+      font-size: 0.86rem;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    /* Skills Badges */
+    .cv-skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .cv-skill-badge {
+      background: #F1F5F9;
+      color: var(--text);
+      border: 1px solid #CBD5E1;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    /* Print Specific Formatting */
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        font-size: 10.5pt !important;
+      }
+      .ats-actions-bar {
+        display: none !important;
+      }
+      .cv-paper {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      .cv-project-card {
+        border: 1px solid #CBD5E1 !important;
+        background: #ffffff !important;
+      }
+      a {
+        color: #000000 !important;
+        text-decoration: none !important;
+      }
+      @page {
+        margin: 0.5in;
+        size: A4 portrait;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .cv-paper { padding: 1.5rem 1.25rem; margin: 1rem 0.5rem; }
+      .cv-name { font-size: 1.85rem; }
+      .cv-item-header { flex-direction: column; gap: 0.15rem; }
+      .ats-actions-bar { flex-direction: column; align-items: stretch; }
+      .ats-btn-group { justify-content: stretch; }
+      .ats-btn { flex: 1; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top ATS Action Strip (Screen Only) -->
+  <aside class="ats-actions-bar" aria-label="Resume Actions">
+    <div class="ats-badge-verified">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#3B82F6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      <span>Verified Executive CV &bull; ${escapeHtml(site.slug)}.linkal.in</span>
+    </div>
+    <div class="ats-btn-group">
+      <button onclick="window.print()" class="ats-btn ats-btn-primary" title="Print to PDF or paper">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        <span>Print ATS PDF</span>
+      </button>
+      <button onclick="navigator.clipboard.writeText(window.location.href); alert('CV link copied to clipboard!');" class="ats-btn ats-btn-outline">
+        <span>Copy Link</span>
+      </button>
+      ${phone ? `
+        <a href="https://wa.me/${phone}?text=Hello%20${encodeURIComponent(fullName)}%2C%20I%20reviewed%20your%20CV%20and%20would%20like%20to%20connect!" target="_blank" rel="noopener noreferrer" class="ats-btn ats-btn-wa">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.699c.971.53 1.771.815 2.796.815 3.182 0 5.768-2.587 5.768-5.767.001-3.18-2.585-5.766-5.768-5.766zm9.969 5.768c0 5.48-4.453 9.932-9.969 9.932-1.748 0-3.38-.456-4.807-1.252l-5.224 1.38 1.399-5.109c-.896-1.487-1.408-3.228-1.408-5.087 0-5.48 4.453-9.932 9.969-9.932 5.516 0 10.04 4.452 10.04 9.932z"/></svg>
+          <span>Chat on WhatsApp</span>
+        </a>
+      ` : ''}
+    </div>
+  </aside>
+
+  <!-- Resume Paper Container -->
+  <main class="cv-paper">
+    <!-- Header -->
+    <header class="cv-header">
+      <h1 class="cv-name">${fullName}</h1>
+      <div class="cv-headline">${headline}</div>
+      <div class="cv-contact-row">
+        ${location ? `<span class="cv-contact-item">📍 ${location}</span>` : ''}
+        ${email ? `<span class="cv-dot">&bull;</span><a href="mailto:${email}" class="cv-contact-item">✉️ ${email}</a>` : ''}
+        ${displayPhone ? `<span class="cv-dot">&bull;</span><a href="tel:${displayPhone}" class="cv-contact-item">📞 ${displayPhone}</a>` : ''}
+        ${linkedin ? `<span class="cv-dot">&bull;</span><a href="${linkedin.startsWith('http') ? linkedin : 'https://' + linkedin}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">LinkedIn ↗</a>` : ''}
+        ${github ? `<span class="cv-dot">&bull;</span><a href="${github.startsWith('http') ? github : 'https://' + github}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">GitHub ↗</a>` : ''}
+        ${website ? `<span class="cv-dot">&bull;</span><a href="${website.startsWith('http') ? website : 'https://' + website}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">Website ↗</a>` : ''}
+      </div>
+    </header>
+
+    <!-- Executive Summary -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">Executive Summary</h2>
+      <p class="cv-summary-text">${summary}</p>
+    </section>
+
+    <!-- Work Experience -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">Professional Experience</h2>
+      ${experiences.map(exp => `
+        <article class="cv-item">
+          <div class="cv-item-header">
+            <div>
+              <span class="cv-item-role">${escapeHtml(exp.role)}</span> &mdash; 
+              ${exp.companyUrl ? `
+                <a href="${exp.companyUrl.startsWith('http') ? exp.companyUrl : 'https://' + exp.companyUrl}" target="_blank" rel="noopener noreferrer" class="cv-item-company">${escapeHtml(exp.company)} ↗</a>
+              ` : `
+                <span class="cv-item-company">${escapeHtml(exp.company)}</span>
+              `}
+            </div>
+            <span class="cv-item-period">${escapeHtml(exp.period)}</span>
+          </div>
+          ${exp.location ? `<div class="cv-item-location">${escapeHtml(exp.location)}</div>` : ''}
+          <div class="cv-item-desc">${escapeHtml(exp.description)}</div>
+        </article>
+      `).join('\n')}
+    </section>
+
+    <!-- Core Skills -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">Core Competencies &amp; Technical Skills</h2>
+      <div class="cv-skills-grid">
+        ${skills.map(sk => `<span class="cv-skill-badge">${escapeHtml(sk)}</span>`).join('\n')}
+      </div>
+    </section>
+
+    <!-- Projects & Publications -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">Featured Projects &amp; Publications</h2>
+      ${projects.map(proj => `
+        <div class="cv-project-card">
+          <div class="cv-project-title-row">
+            <span class="cv-project-name">${escapeHtml(proj.title)}</span>
+            ${proj.link ? `
+              <a href="${proj.link.startsWith('http') ? proj.link : 'https://' + proj.link}" target="_blank" rel="noopener noreferrer" class="cv-project-link">
+                View Project ↗
+              </a>
+            ` : ''}
+          </div>
+          ${proj.techStack ? `<div class="cv-project-tech">Tech: ${escapeHtml(proj.techStack)}</div>` : ''}
+          <p class="cv-project-desc">${escapeHtml(proj.description)}</p>
+        </div>
+      `).join('\n')}
+    </section>
+
+    <!-- Education -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">Education &amp; Credentials</h2>
+      ${educations.map(edu => `
+        <div class="cv-item">
+          <div class="cv-item-header">
+            <div>
+              <span class="cv-item-role">${escapeHtml(edu.degree)}</span> &mdash; 
+              <span class="cv-item-company">${escapeHtml(edu.institution)}</span>
+            </div>
+            <span class="cv-item-period">${escapeHtml(edu.year)}</span>
+          </div>
+          ${edu.honors ? `<div class="cv-item-location">${escapeHtml(edu.honors)}</div>` : ''}
+        </div>
+      `).join('\n')}
+    </section>
+
+    <!-- Certifications (if present) -->
+    ${certifications.length > 0 ? `
+      <section class="cv-section">
+        <h2 class="cv-section-title">Certifications &amp; Licenses</h2>
+        ${certifications.map(c => `
+          <div class="cv-item">
+            <div class="cv-item-header">
+              <div>
+                <span class="cv-item-role">${escapeHtml(c.name)}</span> &mdash; 
+                <span class="cv-item-company">${escapeHtml(c.issuer)}</span>
+              </div>
+              ${c.year ? `<span class="cv-item-period">${escapeHtml(c.year)}</span>` : ''}
+            </div>
+            ${c.url ? `<div><a href="${c.url.startsWith('http') ? c.url : 'https://' + c.url}" target="_blank" rel="noopener noreferrer" class="cv-project-link">View Credential ↗</a></div>` : ''}
+          </div>
+        `).join('\n')}
+      </section>
+    ` : ''}
+  </main>
+
+</body>
+</html>`;
+}
+
 export function generateStaticHtml(site: SiteData): string {
+  // If CV / Portfolio mode: generate pure ATS Executive CV
+  if (site.type === 'portfolio') {
+    return generateAtsCvHtml(site);
+  }
   const phone = cleanPhone(site.whatsappNumber);
   const themeColor = site.themeColor || '#2563eb';
   const fontFamily = site.fontFamily || 'Inter';
@@ -271,92 +813,6 @@ export function generateStaticHtml(site: SiteData): string {
       </section>
 
       ${renderAboutStoryHtml(site)}
-      ${renderReviewsHtml(site)}
-      ${renderFaqHtml(site)}
-    `;
-  } else if (site.type === 'portfolio') {
-    const skills = site.portfolioSkills || [];
-    const projects = site.portfolioProjects || [];
-
-    const skillsHtml = skills.map(sk => `
-      <div class="skill-tag">
-        <span class="skill-name">${escapeHtml(sk.name)}</span>
-        ${sk.level ? `<span class="skill-badge">${escapeHtml(sk.level)}</span>` : ''}
-      </div>
-    `).join('\n');
-
-    const projectsHtml = projects.map(proj => {
-      const projMsg = `Hi ${site.name}, I loved your project "${proj.title}" and would like to discuss a collaboration!`;
-      const projWaUrl = buildWaUrl(projMsg);
-
-      return `
-        <div class="project-card">
-          <div class="project-img-wrap">
-            <img src="${escapeHtml(proj.imageUrl)}" alt="${escapeHtml(proj.title)}" loading="lazy" />
-          </div>
-          <div class="project-body">
-            <h3 class="project-title">${escapeHtml(proj.title)}</h3>
-            <p class="project-desc">${escapeHtml(proj.description)}</p>
-            ${proj.tags && proj.tags.length > 0 ? `
-              <div class="project-tags">
-                ${proj.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
-              </div>
-            ` : ''}
-            <div class="project-footer">
-              <a href="${projWaUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
-                Discuss on WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('\n');
-
-    templateContent = `
-      <section class="section about-section" id="about">
-        <div class="container about-grid">
-          ${site.portfolioAvatarUrl ? `
-            <div class="avatar-col">
-              <img src="${escapeHtml(site.portfolioAvatarUrl)}" alt="${siteTitle}" class="profile-avatar" />
-            </div>
-          ` : ''}
-          <div class="about-content">
-            <span class="badge-role">${escapeHtml(site.portfolioRoleTitle || 'Professional Creator')}</span>
-            <h2 class="about-heading">About Me</h2>
-            <p class="about-text">${escapeHtml(site.portfolioAbout || 'Welcome to my official portfolio. Feel free to explore my work and reach out for new projects!')}</p>
-            <div class="about-actions">
-              <a href="${buildWaUrl(`Hi ${site.name}, let's discuss a new project!`)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.699c.971.53 1.771.815 2.796.815 3.182 0 5.768-2.587 5.768-5.767.001-3.18-2.585-5.766-5.768-5.766zm9.969 5.768c0 5.48-4.453 9.932-9.969 9.932-1.748 0-3.38-.456-4.807-1.252l-5.224 1.38 1.399-5.109c-.896-1.487-1.408-3.228-1.408-5.087 0-5.48 4.453-9.932 9.969-9.932 5.516 0 10.04 4.452 10.04 9.932z"/></svg>
-                Hire Me on WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      ${skills.length > 0 ? `
-        <section class="section skills-section" id="skills">
-          <div class="container">
-            <h2 class="section-title">Skills & Specializations</h2>
-            <div class="skills-wrap">
-              ${skillsHtml}
-            </div>
-          </div>
-        </section>
-      ` : ''}
-
-      <section class="section projects-section" id="projects">
-        <div class="container">
-          <div class="section-header">
-            <h2 class="section-title">Selected Projects</h2>
-            <p class="section-subtitle">A showcase of recent work, client deliverables, and case studies.</p>
-          </div>
-          <div class="projects-grid">
-            ${projectsHtml || '<p class="empty-state">No projects added yet.</p>'}
-          </div>
-        </div>
-      </section>
-
       ${renderReviewsHtml(site)}
       ${renderFaqHtml(site)}
     `;
