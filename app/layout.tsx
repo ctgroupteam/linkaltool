@@ -30,6 +30,10 @@ export const metadata: Metadata = {
     icon: '/linkal.jpeg',
     apple: '/linkal.jpeg',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'application-name': 'Linkal Studio',
+  },
 };
 
 export default function RootLayout({
@@ -39,11 +43,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={jakarta.variable}>
-      <head>
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="Linkal Studio" />
-        <link rel="apple-touch-icon" href="/linkal.jpeg" />
-      </head>
       <body className="min-h-screen bg-white text-zinc-950 antialiased selection:bg-zinc-900 selection:text-white">
         {children}
         <PwaInstallPrompt />

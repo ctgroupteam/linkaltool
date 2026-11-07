@@ -7,12 +7,12 @@ const STORAGE_KEY = 'linkal_pwa_prompt_history';
 const MAX_PROMPTS_PER_DAY = 3;
 
 export function PwaInstallPrompt() {
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [showPrompt, setShowPrompt] = useState<boolean>(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     // 0. Register Service Worker for PWA installability
-    if ('serviceWorker' in navigator) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .then((reg) => {
@@ -24,47 +24,46 @@ export function PwaInstallPrompt() {
     }
 
     // 1. Check if already installed in standalone mode
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
+    if (typeof window !== 'undefined') {
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
 
-    if (isStandalone) {
-      return;
+      if (isStandalone) {
+        return;
+      }
     }
 
     // 2. Check 3 times a day limit
-    const checkFrequencyCap = () => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const history: number[] = raw ? JSON.parse(raw) : [];
-        const now = Date.now();
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        const validToday = history.filter((t) => now - t < oneDayMs);
+    let timer: any = null;
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      const history: number[] = raw ? JSON.parse(raw) : [];
+      const now = Date.now();
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      const validToday = history.filter((t) => now - t < oneDayMs);
 
-        if (validToday.length < MAX_PROMPTS_PER_DAY) {
-          // Trigger prompt after a brief 2-second delay for smooth UX
-          const timer = setTimeout(() => {
-            setShowPrompt(true);
-          }, 2000);
-          return () => clearTimeout(timer);
-        }
-      } catch (err) {
-        console.warn('PWA cap check error:', err);
+      if (validToday.length < MAX_PROMPTS_PER_DAY) {
+        timer = setTimeout(() => {
+          setShowPrompt(true);
+        }, 2000);
       }
-    };
-
-    checkFrequencyCap();
+    } catch (err) {
+      console.warn('PWA cap check error:', err);
+    }
 
     // 3. Capture native install prompt
-    const handleBeforeInstall = (e: Event) => {
+    const handleBeforeInstall = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowPrompt(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall as any);
+
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall as any);
     };
   }, []);
 
@@ -90,8 +89,7 @@ export function PwaInstallPrompt() {
       }
       setDeferredPrompt(null);
     } else {
-      // Fallback guide for iOS or desktop where beforeinstallprompt isn't fired
-      alert('To install: Tap your browser share/menu icon and select "Add to Home Screen".');
+      alert('To install Linkal Studio: Tap your browser share or settings menu and tap "Add to Home Screen" or "Install App".');
       setShowPrompt(false);
     }
   };
@@ -149,4 +147,3 @@ export function PwaInstallPrompt() {
     </div>
   );
 }
-
