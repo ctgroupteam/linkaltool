@@ -1,0 +1,18 @@
+{
+  "id": "tech-developer",
+  "name": "Tech Developer Portfolio & CV",
+  "category": "cv-resume",
+  "version": "1.0.0",
+  "description": "Code-inspired executive developer CV featuring terminal header, system project cards, GitHub repositories, and tech stack proficiencies.",
+  "author": "Linkal AI",
+  "freeTierCompliant": true,
+  "requiresPhoto": false,
+  "features": [
+    "Clean White Background with JetBrains Mono accents",
+    "Terminal Command-Line Header with Prompt",
+    "Precision Vector SVG Icons (Zero Emojis)",
+    "Direct GitHub, LinkedIn, and WhatsApp Contact Links",
+    "1-Click PDF Resume Printing",
+    "Zero Storage Footprint on Free Tier"
+  ]
+}

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amir Khan — Full-Stack Developer &amp; Open Source Creator | Linkal AI</title>
+    <meta name="description" content="Official developer portfolio and technical resume of Amir Khan. Built with Linkal AI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-page: #FFFFFF;
+            --bg-code: #F8FAFC;
+            --text-dark: #0F172A;
+            --text-muted: #334155;
+            --text-light: #64748B;
+            --border-line: #E2E8F0;
+            --accent-primary: #1A56FF;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-size: 15px;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dev-container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 5rem 1.5rem;
+        }
+
+        /* ─── TERMINAL HEADER ─── */
+        .terminal-header {
+            background: var(--bg-code);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .terminal-prompt {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--accent-primary);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .dev-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(2rem, 5vw, 2.6rem);
+            font-weight: 800;
+            color: var(--text-dark);
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            margin-bottom: 0.35rem;
+        }
+
+        .dev-title {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .dev-bio {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ─── ACTIONS ─── */
+        .dev-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            align-items: center;
+        }
+
+        .dev-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .dev-btn-dark {
+            background: #0F172A;
+            color: #FFFFFF;
+            border: 1px solid #0F172A;
+        }
+
+        .dev-btn-dark:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .dev-btn-outline {
+            background: #FFFFFF;
+            color: var(--text-dark);
+            border: 1px solid var(--border-line);
+        }
+
+        .dev-btn-outline:hover {
+            border-color: #0F172A;
+            background: var(--bg-code);
+        }
+
+        /* ─── SECTION ─── */
+        .dev-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .dev-section-title {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-line);
+        }
+
+        .dev-section-title span.slash {
+            color: var(--accent-primary);
+        }
+
+        /* ─── PROJECT / EXPERIENCE CARDS ─── */
+        .dev-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-line);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .dev-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .dev-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 0.35rem;
+        }
+
+        .dev-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .dev-card-period {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .dev-card-subtitle {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .dev-card-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .dev-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .dev-tag {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border-line);
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+
+        /* ─── FOOTER ─── */
+        .dev-footer {
+            margin-top: 3.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .dev-footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dev-container">
+        <!-- HEADER -->
+        <header class="terminal-header">
+            <div class="terminal-prompt">&gt; whoami --profile executive-developer</div>
+            <h1 class="dev-name" id="dev-name">Amir Khan</h1>
+            <div class="dev-title" id="dev-role">Senior Full-Stack Engineer &amp; DevOps Specialist</div>
+            <p class="dev-bio" id="dev-bio">
+                Building scalable web infrastructure, TypeScript microservices, and database pipelines. Passionate about developer tooling, API design, and clean architecture.
+            </p>
+
+            <div class="dev-actions">
+                <a href="https://github.com/amirkhan" id="dev-github" target="_blank" rel="noopener noreferrer" class="dev-btn dev-btn-dark">
+                    <i data-lucide="github" width="16" height="16"></i>
+                    <span>github.com/amirkhan</span>
+                </a>
+
+                <a href="https://linkedin.com/in/amirkhan" id="dev-linkedin" target="_blank" rel="noopener noreferrer" class="dev-btn dev-btn-outline">
+                    <i data-lucide="linkedin" width="16" height="16"></i>
+                    <span>LinkedIn</span>
+                </a>
+
+                <a href="https://wa.me/919876543210?text=Hello%20Amir" id="dev-whatsapp" target="_blank" rel="noopener noreferrer" class="dev-btn dev-btn-outline">
+                    <i data-lucide="message-circle" width="16" height="16"></i>
+                    <span>WhatsApp</span>
+                </a>
+
+                <a href="mailto:amir.khan@example.com" id="dev-email" class="dev-btn dev-btn-outline">
+                    <i data-lucide="mail" width="16" height="16"></i>
+                    <span>Email</span>
+                </a>
+
+                <button onclick="window.print()" class="dev-btn dev-btn-outline">
+                    <i data-lucide="printer" width="16" height="16"></i>
+                    <span>Print PDF</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- PROJECTS & ARCHITECTURE -->
+        <section class="dev-section">
+            <h2 class="dev-section-title">
+                <span class="slash">//</span>
+                <span>Featured Systems &amp; Projects</span>
+            </h2>
+
+            <div class="dev-card">
+                <div class="dev-card-header">
+                    <div class="dev-card-title">Distributed Multi-Tenant SaaS Engine</div>
+                    <div class="dev-card-period">2024 — Present</div>
+                </div>
+                <div class="dev-card-subtitle">Next.js 16 · Supabase · Cloudflare Wildcard Routing</div>
+                <p class="dev-card-desc">
+                    Engineered edge routing pipeline handling wildcard subdomains (*.linkal.in) with zero-downtime updates and automated database-driven edge caching.
+                </p>
+                <div class="dev-tags">
+                    <span class="dev-tag">TypeScript</span>
+                    <span class="dev-tag">Next.js</span>
+                    <span class="dev-tag">PostgreSQL</span>
+                    <span class="dev-tag">Cloudflare</span>
+                </div>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-card-header">
+                    <div class="dev-card-title">Cashfree Production Payments Webhook Dispatcher</div>
+                    <div class="dev-card-period">2023 — 2024</div>
+                </div>
+                <div class="dev-card-subtitle">Node.js · HMAC-SHA256 · Idempotent Queue</div>
+                <p class="dev-card-desc">
+                    Built webhook ingestion service processing UPI and card settlements with strict signature validation, zero replay attacks, and automated ledger updates.
+                </p>
+                <div class="dev-tags">
+                    <span class="dev-tag">Node.js</span>
+                    <span class="dev-tag">Cashfree API</span>
+                    <span class="dev-tag">HMAC-SHA256</span>
+                    <span class="dev-tag">Redis</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- WORK EXPERIENCE -->
+        <section class="dev-section">
+            <h2 class="dev-section-title">
+                <span class="slash">//</span>
+                <span>Work Experience</span>
+            </h2>
+
+            <div class="dev-card">
+                <div class="dev-card-header">
+                    <div class="dev-card-title">Lead Software Architect</div>
+                    <div class="dev-card-period">2022 — Present</div>
+                </div>
+                <div class="dev-card-subtitle">Apex Cloud Systems · Mumbai</div>
+                <p class="dev-card-desc">
+                    Directed 8-member engineering team scaling cloud backend infrastructure. Implemented PostgreSQL query indexing reducing p99 latency to &lt;45ms.
+                </p>
+            </div>
+        </section>
+
+        <!-- SKILLS MATRIX -->
+        <section class="dev-section">
+            <h2 class="dev-section-title">
+                <span class="slash">//</span>
+                <span>Core Competencies</span>
+            </h2>
+            <div class="dev-tags" style="gap: 0.6rem;">
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">TypeScript</span>
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Next.js / React</span>
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">PostgreSQL &amp; Supabase</span>
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Node.js</span>
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Docker &amp; CI/CD</span>
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Cashfree Payments</span>
+                <span class="dev-tag" style="padding:0.4rem 0.8rem; font-size:0.85rem;">REST &amp; WebSockets</span>
+            </div>
+        </section>
+
+        <footer class="dev-footer">
+            <span>Verified Developer CV — <a href="https://linkal.in" target="_blank">linkal.in</a></span>
+            <span>Status: Ready for Production</span>
+        </footer>
+    </div>
+
+    <script id="linkal-data" type="application/json">
+    {
+      "name": "Amir Khan",
+      "role": "Senior Full-Stack Engineer & DevOps Specialist",
+      "bio": "Building scalable web infrastructure, TypeScript microservices, and database pipelines.",
+      "github": "https://github.com/amirkhan",
+      "linkedin": "https://linkedin.com/in/amirkhan",
+      "whatsapp": "919876543210",
+      "email": "amir.khan@example.com"
+    }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

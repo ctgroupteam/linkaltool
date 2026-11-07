@@ -1,0 +1,19 @@
+{
+  "id": "modern-executive",
+  "name": "Modern Executive CV",
+  "category": "cv-resume",
+  "version": "1.0.0",
+  "description": "Minimalist white executive CV with charcoal typography, precision SVG icons, zero emojis, and direct contact actions.",
+  "author": "Linkal AI",
+  "freeTierCompliant": true,
+  "requiresPhoto": false,
+  "features": [
+    "100% White Background (#FFFFFF)",
+    "Deep Charcoal High-Contrast Typography (#111827)",
+    "Precision Lucide Vector SVG Icons",
+    "Zero Emojis Enforced",
+    "LinkedIn, GitHub, WhatsApp, and Email Integration",
+    "1-Click Print & PDF Resume Download",
+    "Zero Storage Footprint on Free Tier"
+  ]
+}
