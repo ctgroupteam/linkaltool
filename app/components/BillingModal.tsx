@@ -127,21 +127,19 @@ export function BillingModal({
         <div className="flex rounded-xl bg-zinc-100 p-1 text-xs font-bold">
           <button
             onClick={() => setActiveTab('plans')}
-            className={`flex-1 py-1.5 rounded-lg transition-all ${
-              activeTab === 'plans'
+            className={`flex-1 py-1.5 rounded-lg transition-all ${activeTab === 'plans'
                 ? 'bg-white text-zinc-950 shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-800'
-            }`}
+              }`}
           >
             Subscription Plans
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`flex-1 py-1.5 rounded-lg transition-all ${
-              activeTab === 'orders'
+            className={`flex-1 py-1.5 rounded-lg transition-all ${activeTab === 'orders'
                 ? 'bg-white text-zinc-950 shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-800'
-            }`}
+              }`}
           >
             Order History &amp; Validity
           </button>
@@ -154,11 +152,10 @@ export function BillingModal({
                 <div
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan.id)}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all relative flex flex-col justify-between ${
-                    selectedPlan === plan.id
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all relative flex flex-col justify-between ${selectedPlan === plan.id
                       ? 'border-blue-600 bg-blue-50/40 shadow-sm'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
-                  }`}
+                    }`}
                 >
                   {plan.savings && (
                     <span className="absolute top-3 right-3 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-600 text-white">
@@ -240,4 +237,3 @@ export function BillingModal({
     </div>
   );
 }
-

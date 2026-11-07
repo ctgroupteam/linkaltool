@@ -36,11 +36,11 @@ function renderTrustBadgesHtml(site: SiteData): string {
   const badges = (site.trustBadges && site.trustBadges.length > 0)
     ? site.trustBadges
     : [
-        { id: 'tb-1', icon: 'shield' as const, title: '100% Authentic', subtitle: 'Curated Premium Selection' },
-        { id: 'tb-2', icon: 'truck' as const, title: 'Fast Doorstep Shipping', subtitle: 'Safe & Express Transit' },
-        { id: 'tb-3', icon: 'clock' as const, title: 'WhatsApp Direct Support', subtitle: 'Instant Seller Communication' },
-        { id: 'tb-4', icon: 'refresh' as const, title: 'Easy Exchanges', subtitle: 'Hassle-Free Guarantee' },
-      ];
+      { id: 'tb-1', icon: 'shield' as const, title: '100% Authentic', subtitle: 'Curated Premium Selection' },
+      { id: 'tb-2', icon: 'truck' as const, title: 'Fast Doorstep Shipping', subtitle: 'Safe & Express Transit' },
+      { id: 'tb-3', icon: 'clock' as const, title: 'WhatsApp Direct Support', subtitle: 'Instant Seller Communication' },
+      { id: 'tb-4', icon: 'refresh' as const, title: 'Easy Exchanges', subtitle: 'Hassle-Free Guarantee' },
+    ];
 
   return `
     <section class="features-bar">
@@ -61,13 +61,13 @@ function renderReviewsHtml(site: SiteData): string {
   const reviews = (site.reviews && site.reviews.length > 0)
     ? site.reviews
     : (site.type === 'portfolio' ? [
-        { id: 'r-1', reviewerName: 'Arjun Mehta', rating: 5, comment: 'Incredible design sense and attention to detail. Delivered our project ahead of schedule with flawless precision.', location: 'Founder, NextWave' },
-        { id: 'r-2', reviewerName: 'Pooja Sharma', rating: 5, comment: 'Transformed our brand identity completely. Seamless communication on WhatsApp made everything effortless.', location: 'Product Lead, Studio X' },
-      ] : [
-        { id: 'r-1', reviewerName: 'Rohan Deshmukh', rating: 5, comment: 'Super fast ordering through WhatsApp! The item quality exceeded expectations and arrived in 2 days.', location: 'Verified Buyer, Mumbai' },
-        { id: 'r-2', reviewerName: 'Sneha Roy', rating: 5, comment: 'Genuine products, responsive seller, and great packaging. 10/10 recommend shopping here!', location: 'Verified Buyer, Bangalore' },
-        { id: 'r-3', reviewerName: 'Vikram Singh', rating: 5, comment: 'Direct contact with the merchant made sizing questions so simple. Will definitely purchase again.', location: 'Verified Buyer, Delhi' },
-      ]);
+      { id: 'r-1', reviewerName: 'Arjun Mehta', rating: 5, comment: 'Incredible design sense and attention to detail. Delivered our project ahead of schedule with flawless precision.', location: 'Founder, NextWave' },
+      { id: 'r-2', reviewerName: 'Pooja Sharma', rating: 5, comment: 'Transformed our brand identity completely. Seamless communication on WhatsApp made everything effortless.', location: 'Product Lead, Studio X' },
+    ] : [
+      { id: 'r-1', reviewerName: 'Rohan Deshmukh', rating: 5, comment: 'Super fast ordering through WhatsApp! The item quality exceeded expectations and arrived in 2 days.', location: 'Verified Buyer, Mumbai' },
+      { id: 'r-2', reviewerName: 'Sneha Roy', rating: 5, comment: 'Genuine products, responsive seller, and great packaging. 10/10 recommend shopping here!', location: 'Verified Buyer, Bangalore' },
+      { id: 'r-3', reviewerName: 'Vikram Singh', rating: 5, comment: 'Direct contact with the merchant made sizing questions so simple. Will definitely purchase again.', location: 'Verified Buyer, Delhi' },
+    ]);
 
   const title = escapeHtml(site.reviewsTitle || 'Customer Reviews & Feedback');
   const subtitle = escapeHtml(site.reviewsSubtitle || 'Trusted by customers across India with verified 5-star experiences.');
@@ -101,11 +101,11 @@ function renderFaqHtml(site: SiteData): string {
   const faqs = (site.faqs && site.faqs.length > 0)
     ? site.faqs
     : [
-        { id: 'f-1', question: 'How do I place an order?', answer: 'Simply click "Order on WhatsApp" on any product. A pre-filled order message with the product name and price will automatically open in your WhatsApp, where you can finalize shipping details directly with us.' },
-        { id: 'f-2', question: 'What payment options do you support?', answer: 'We support UPI (Google Pay, PhonePe, Paytm), Bank Transfers, and Cash on Delivery (COD) in eligible pincodes across India.' },
-        { id: 'f-3', question: 'How long does delivery take?', answer: 'Orders are dispatched within 24 hours. Metro deliveries arrive in 2-3 business days, and all-India express delivery typically takes 3-5 business days with full tracking.' },
-        { id: 'f-4', question: 'What is your exchange and return policy?', answer: 'We provide a 7-day hassle-free replacement or exchange if an item is damaged or sizing needs adjustment. Just message us on WhatsApp with a photo.' },
-      ];
+      { id: 'f-1', question: 'How do I place an order?', answer: 'Simply click "Order on WhatsApp" on any product. A pre-filled order message with the product name and price will automatically open in your WhatsApp, where you can finalize shipping details directly with us.' },
+      { id: 'f-2', question: 'What payment options do you support?', answer: 'We support UPI (Google Pay, PhonePe, Paytm), Bank Transfers, and Cash on Delivery (COD) in eligible pincodes across India.' },
+      { id: 'f-3', question: 'How long does delivery take?', answer: 'Orders are dispatched within 24 hours. Metro deliveries arrive in 2-3 business days, and all-India express delivery typically takes 3-5 business days with full tracking.' },
+      { id: 'f-4', question: 'What is your exchange and return policy?', answer: 'We provide a 7-day hassle-free replacement or exchange if an item is damaged or sizing needs adjustment. Just message us on WhatsApp with a photo.' },
+    ];
 
   const title = escapeHtml(site.faqTitle || 'Frequently Asked Questions');
 
@@ -170,14 +170,14 @@ export function generateStaticHtml(site: SiteData): string {
   const slides = (site.bannerSlider && site.bannerSlider.length > 0)
     ? site.bannerSlider
     : [
-        {
-          id: 'def-slide',
-          imageUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80',
-          title: site.name,
-          subtitle: 'Welcome to our official website. Connect with us instantly on WhatsApp.',
-          ctaText: 'Chat on WhatsApp'
-        }
-      ];
+      {
+        id: 'def-slide',
+        imageUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80',
+        title: site.name,
+        subtitle: 'Welcome to our official website. Connect with us instantly on WhatsApp.',
+        ctaText: 'Chat on WhatsApp'
+      }
+    ];
 
   // Helper to build WhatsApp URL
   const buildWaUrl = (message: string) => {
