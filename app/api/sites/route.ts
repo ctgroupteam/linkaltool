@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     const {
       name,
       type,
+      slug,
       whatsappNumber,
       bannerImageUrl,
       bannerTitle,
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
     const siteType: SiteType = validTypes.includes(type) ? type : 'ecommerce';
 
     const existingSites = await getAllSites();
-    let baseSlug = generateSlug(name);
+    let baseSlug = (slug ? slug.toLowerCase().trim().replace(/[^a-z0-9-]+/g, '-') : generateSlug(name));
     let finalSlug = baseSlug;
     let counter = 1;
 

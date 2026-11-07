@@ -8,7 +8,7 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#FFFFFF",
+  "background_color": "#0D1B3E",
   "theme_color": "#0D1B3E",
   "categories": ["business", "productivity", "utilities"],
   "icons": [
@@ -22,12 +22,6 @@
       "src": "/linkal.jpeg",
       "sizes": "512x512",
       "type": "image/jpeg",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],

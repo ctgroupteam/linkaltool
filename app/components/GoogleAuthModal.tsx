@@ -26,6 +26,10 @@ export function GoogleAuthModal({
     isFirst100: true,
   });
 
+  const [fullName, setFullName] = useState('Rahul Sharma');
+  const [email, setEmail] = useState('rahul.sharma@gmail.com');
+  const [phoneNumber, setPhoneNumber] = useState('919876543210');
+
   // Query CV promotion stats on open
   useEffect(() => {
     if (isOpen && isCvSite) {
@@ -57,35 +61,31 @@ export function GoogleAuthModal({
 
   if (!isOpen) return null;
 
-  // 1-Click Google Sign-In Simulation & Supabase Sync
+  // 1-Click Google Sign-In & Supabase Sync
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Simulating fast Google One-Tap auth or prompt
-      // For full OAuth, Google Identity Services client script can also be mounted
-      const promptName = prompt('Enter your Full Name (Google Profile):', 'Rahul Sharma');
-      if (!promptName) {
+      if (!fullName.trim()) {
+        setError('Please enter your full name');
         setLoading(false);
         return;
       }
 
-      const promptEmail = prompt('Enter your Google Account Email:', 'rahul.sharma@gmail.com');
-      if (!promptEmail) {
+      if (!email.trim() || !email.includes('@')) {
+        setError('Please enter a valid Google account email');
         setLoading(false);
         return;
       }
-
-      const promptPhone = prompt('Enter your WhatsApp Phone Number (with Country Code):', '919876543210');
 
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: promptEmail,
-          fullName: promptName,
-          phoneNumber: promptPhone || '919876543210',
+          email: email.trim().toLowerCase(),
+          fullName: fullName.trim(),
+          phoneNumber: phoneNumber.trim() || '919876543210',
           googleId: `google-${Date.now()}`,
           avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
           promoCode: promoCode || undefined,
@@ -169,6 +169,48 @@ export function GoogleAuthModal({
             {error}
           </div>
         )}
+
+        {/* User Details */}
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-700 mb-1">
+              Full Name (Google Account)
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="e.g. Rahul Sharma"
+              className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-700 mb-1">
+              Google Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="rahul.sharma@gmail.com"
+              className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-700 mb-1">
+              WhatsApp Phone Number (with Country Code)
+            </label>
+            <input
+              type="text"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="919876543210"
+              className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-mono font-semibold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950"
+            />
+          </div>
+        </div>
 
         {/* Promo Code Input (if needed, never pre-filled) */}
         {isCvSite && (!cvStats.isFirst100 || showPromoField) && (

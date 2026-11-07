@@ -9,3 +9,4 @@ declare module 'lucide-react' {
     children?: React.ReactNode;
   }
 }
+
