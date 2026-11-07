@@ -163,6 +163,7 @@ export type TabType =
   | 'faq'
   | 'about'
   | 'footer'
+  | 'cv_format'
   | 'cv_profile'
   | 'cv_summary'
   | 'cv_experience'
@@ -258,17 +259,17 @@ export default function BuilderPage() {
           const loadedSite: SiteData = data.site;
           if (loadedSite.type === 'portfolio') {
             setActiveTab('cv_profile');
-            // Ensure CV defaults if missing
+            // Ensure clean generic CV defaults if missing (NO Harvard / executive hardcoding)
             if (!loadedSite.cvExperiences || loadedSite.cvExperiences.length === 0) {
               loadedSite.cvExperiences = [
                 {
                   id: 'exp-1',
-                  company: 'Global Enterprises Ltd.',
-                  role: 'Executive Director & Head of Strategy',
-                  period: '2021 — Present',
-                  location: 'Mumbai, India',
-                  description: 'Spearheaded corporate digital transformation and cross-functional operations. Accelerated revenue by 42% and oversaw strategic talent development.',
-                  companyUrl: 'https://example.com'
+                  company: 'Company ABC',
+                  role: 'Role / Position',
+                  period: '2022 — Present',
+                  location: 'City, Country',
+                  description: 'Key responsibilities, achievements, and measurable business impact.',
+                  companyUrl: ''
                 }
               ];
             }
@@ -276,30 +277,30 @@ export default function BuilderPage() {
               loadedSite.cvEducations = [
                 {
                   id: 'edu-1',
-                  institution: 'Premier Institute of Management',
-                  degree: 'Master of Business Administration (MBA)',
-                  year: '2016 — 2018',
-                  honors: 'Dean\'s Honor List'
+                  institution: 'University / Institute Name',
+                  degree: 'Degree / Course Name',
+                  year: '2018 — 2022',
+                  honors: ''
                 }
               ];
             }
             if (!loadedSite.cvSkills || loadedSite.cvSkills.length === 0) {
               loadedSite.cvSkills = [
-                'Strategic Leadership',
-                'Business Transformation',
-                'Stakeholder Management',
-                'P&L Management',
-                'Executive Decision Making'
+                'Skill 1',
+                'Skill 2',
+                'Skill 3',
+                'Project Planning',
+                'Communication'
               ];
             }
             if (!loadedSite.cvProjects || loadedSite.cvProjects.length === 0) {
               loadedSite.cvProjects = [
                 {
                   id: 'proj-1',
-                  title: 'Flagship Digital Transformation',
-                  description: 'Architected and rolled out automated workflows across 14 divisions, reducing processing turnaround time by 60%.',
+                  title: 'Project Title Alpha',
+                  description: 'Designed and implemented end-to-end functionality to meet client objectives.',
                   link: `https://${loadedSite.slug}.linkal.in`,
-                  techStack: 'Strategy, Enterprise Systems'
+                  techStack: 'Tools & Technologies'
                 }
               ];
             }
@@ -307,13 +308,20 @@ export default function BuilderPage() {
               loadedSite.cvCertifications = [
                 {
                   id: 'cert-1',
-                  name: 'Executive Leadership Certification',
-                  issuer: 'Harvard Business Publishing',
-                  year: '2022',
-                  url: 'https://harvardbusiness.org'
+                  name: 'Certification Title',
+                  issuer: 'Issuing Organization',
+                  year: '2024',
+                  url: ''
                 }
               ];
             }
+            if (loadedSite.cvShowSummary === undefined) loadedSite.cvShowSummary = true;
+            if (loadedSite.cvShowExperience === undefined) loadedSite.cvShowExperience = true;
+            if (loadedSite.cvShowEducation === undefined) loadedSite.cvShowEducation = true;
+            if (loadedSite.cvShowSkills === undefined) loadedSite.cvShowSkills = true;
+            if (loadedSite.cvShowProjects === undefined) loadedSite.cvShowProjects = true;
+            if (loadedSite.cvShowCertifications === undefined) loadedSite.cvShowCertifications = true;
+            if (!loadedSite.cvFormat) loadedSite.cvFormat = 'classic';
           }
           setSite(loadedSite);
           return;
@@ -855,6 +863,21 @@ export default function BuilderPage() {
                     <button
                       onClick={() => {
                         setIsMenuOpen(false);
+                        setActiveTab('cv_format');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_format'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <LayoutGrid className="w-4 h-4 text-purple-600" />
+                      <span>Formats &amp; Visibility</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
                         setActiveTab('cv_profile');
                       }}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
@@ -864,7 +887,7 @@ export default function BuilderPage() {
                       }`}
                     >
                       <User className="w-4 h-4 text-blue-600" />
-                      <span>Profile &amp; Subdomain</span>
+                      <span>Profile &amp; Contact</span>
                     </button>
 
                     <button
@@ -879,7 +902,7 @@ export default function BuilderPage() {
                       }`}
                     >
                       <FileText className="w-4 h-4 text-indigo-600" />
-                      <span>Executive Bio</span>
+                      <span>Summary</span>
                     </button>
 
                     <button
@@ -1154,6 +1177,16 @@ export default function BuilderPage() {
             {site.type === 'portfolio' ? (
               <>
                 <button
+                  onClick={() => setActiveTab('cv_format')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_format'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Formats &amp; Visibility
+                </button>
+                <button
                   onClick={() => setActiveTab('cv_profile')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                     activeTab === 'cv_profile'
@@ -1171,7 +1204,7 @@ export default function BuilderPage() {
                       : 'text-zinc-600 hover:bg-zinc-200'
                   }`}
                 >
-                  Executive Bio
+                  Summary
                 </button>
                 <button
                   onClick={() => setActiveTab('cv_experience')}
@@ -1343,6 +1376,97 @@ export default function BuilderPage() {
           {/* Form Content */}
           <div className="p-5 space-y-5 flex-1 overflow-y-auto">
             {/* ─── DEDICATED ATS CV EDITORS ─── */}
+            {activeTab === 'cv_format' && (
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-sm font-extrabold text-zinc-950">CV Layout Formats</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">Select your preferred ATS-optimized presentation layout.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Format 1: Classic ATS */}
+                  <button
+                    type="button"
+                    onClick={() => updateSiteField('cvFormat', 'classic')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      (site.cvFormat || 'classic') === 'classic'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20'
+                        : 'border-zinc-200 bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
+                      <span>Classic ATS</span>
+                      {(site.cvFormat || 'classic') === 'classic' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-1">Single-column reverse chronological. Highest ATS scanner score.</p>
+                  </button>
+
+                  {/* Format 2: Modern Split */}
+                  <button
+                    type="button"
+                    onClick={() => updateSiteField('cvFormat', 'modern')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      site.cvFormat === 'modern'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20'
+                        : 'border-zinc-200 bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
+                      <span>Modern Split</span>
+                      {site.cvFormat === 'modern' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-1">Two-column layout with sidebar for contact &amp; skills. Modern executive look.</p>
+                  </button>
+
+                  {/* Format 3: Compact 1-Page */}
+                  <button
+                    type="button"
+                    onClick={() => updateSiteField('cvFormat', 'compact')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      site.cvFormat === 'compact'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20'
+                        : 'border-zinc-200 bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
+                      <span>Compact 1-Page</span>
+                      {site.cvFormat === 'compact' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-1">Dense, concise layout for fast scanning and 1-page printing.</p>
+                  </button>
+                </div>
+
+                <div className="pt-2 border-t border-zinc-200">
+                  <h3 className="text-sm font-extrabold text-zinc-950 mb-1">Section Display Toggles</h3>
+                  <p className="text-xs text-zinc-500 mb-3.5">Choose which sections are displayed on your live CV and PDF export.</p>
+
+                  <div className="space-y-2.5">
+                    {[
+                      { key: 'cvShowSummary', label: 'Summary', desc: 'Brief professional overview' },
+                      { key: 'cvShowExperience', label: 'Work Experience', desc: 'Roles, companies, and achievements' },
+                      { key: 'cvShowEducation', label: 'Education', desc: 'Degrees, institutions, and dates' },
+                      { key: 'cvShowSkills', label: 'Skills', desc: 'Core competencies and tools' },
+                      { key: 'cvShowProjects', label: 'Projects', desc: 'Featured projects with clickable links' },
+                      { key: 'cvShowCertifications', label: 'Certifications', desc: 'Licenses and professional credentials' },
+                    ].map((sec) => (
+                      <label key={sec.key} className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-200 cursor-pointer hover:bg-zinc-100 transition-colors">
+                        <div>
+                          <div className="text-xs font-bold text-zinc-950">{sec.label}</div>
+                          <div className="text-[11px] text-zinc-500">{sec.desc}</div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={(site as any)[sec.key] !== false}
+                          onChange={(e) => updateSiteField(sec.key as any, e.target.checked)}
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'cv_profile' && (
               <div className="space-y-4">
                 <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 flex items-start gap-2.5">
@@ -1540,23 +1664,36 @@ export default function BuilderPage() {
             {/* TAB: CV Summary */}
             {activeTab === 'cv_summary' && (
               <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-zinc-50 border border-zinc-200 rounded-2xl">
+                  <div>
+                    <span className="text-xs font-bold text-zinc-950 block">Show Summary in CV</span>
+                    <span className="text-[11px] text-zinc-500">Toggle whether the summary section appears on your live CV.</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={site.cvShowSummary !== false}
+                    onChange={(e) => updateSiteField('cvShowSummary', e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                  />
+                </div>
+
                 <div className="p-3.5 bg-zinc-100 border border-zinc-200 rounded-2xl text-xs text-zinc-700">
-                  <span className="font-bold block text-zinc-950 mb-0.5">ATS Tip: Executive Summary</span>
-                  Highlight your career scope, years of leadership experience, key industry impact, and top competencies. This section is prioritized by ATS parsers and executive recruiters.
+                  <span className="font-bold block text-zinc-950 mb-0.5">ATS Tip: Summary</span>
+                  Highlight your core strengths, professional background, and accomplishments. Keep it clear and concise (2–4 sentences).
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 mb-1.5">
-                    Executive Summary / Professional Bio
+                    Summary
                   </label>
                   <textarea
-                    rows={8}
+                    rows={6}
                     value={site.cvSummary || site.portfolioAbout || ''}
                     onChange={(e) => {
                       updateSiteField('cvSummary', e.target.value);
                       updateSiteField('portfolioAbout', e.target.value);
                     }}
-                    placeholder="Accomplished executive with 10+ years of experience leading strategic technology operations, driving multi-million dollar revenue transformations, and cultivating high-performance teams across global markets..."
+                    placeholder="A brief professional summary highlighting key strengths, background, and career accomplishments..."
                     className="w-full px-3.5 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-800 leading-relaxed focus:ring-2 focus:ring-zinc-950 focus:outline-none"
                   />
                 </div>
@@ -1961,6 +2098,19 @@ export default function BuilderPage() {
             {/* TAB: CV Certifications */}
             {activeTab === 'cv_certifications' && (
               <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-zinc-50 border border-zinc-200 rounded-2xl">
+                  <div>
+                    <span className="text-xs font-bold text-zinc-950 block">Show Certifications in CV</span>
+                    <span className="text-[11px] text-zinc-500">Toggle whether this section appears on your live CV and PDF export.</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={site.cvShowCertifications !== false}
+                    onChange={(e) => updateSiteField('cvShowCertifications', e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                  />
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Certifications &amp; Licenses</h4>
@@ -2057,6 +2207,41 @@ export default function BuilderPage() {
             {/* TAB: General (For E-Commerce / Store) */}
             {activeTab === 'general' && (
               <div className="space-y-4">
+                {/* Website Blueprint Mode Switcher */}
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 mb-1.5">
+                    Website Blueprint / Template Mode
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { type: 'portfolio', label: 'Personal ATS CV', icon: '📄' },
+                      { type: 'ecommerce', label: 'E-commerce Store', icon: '🛍️' },
+                      { type: 'restaurant', label: 'Restaurant Menu', icon: '🍽️' },
+                      { type: 'single_product', label: 'Single Product', icon: '⚡' },
+                    ].map((m) => (
+                      <button
+                        key={m.type}
+                        type="button"
+                        onClick={() => {
+                          updateSiteField('type', m.type as any);
+                          if (m.type === 'portfolio') setActiveTab('cv_format');
+                        }}
+                        className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center gap-1.5 ${
+                          site.type === m.type
+                            ? 'border-blue-600 bg-blue-50 text-blue-900 font-extrabold shadow-xs'
+                            : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                        }`}
+                      >
+                        <span>{m.icon}</span>
+                        <span className="truncate">{m.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-zinc-500 mt-1">
+                    Select &quot;Personal ATS CV&quot; to transform into an executive resume layout, or choose an e-commerce template.
+                  </p>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 mb-1">
                     Website Name

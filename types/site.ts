@@ -169,6 +169,15 @@ export interface SiteData {
   cvSkills?: string[];
   cvCertifications?: CvCertification[];
 
+  // CV Section Display Toggles & Layout Formats
+  cvShowSummary?: boolean;
+  cvShowExperience?: boolean;
+  cvShowEducation?: boolean;
+  cvShowSkills?: boolean;
+  cvShowProjects?: boolean;
+  cvShowCertifications?: boolean;
+  cvFormat?: 'classic' | 'modern' | 'compact';
+
   // Trust Badges
   trustBadgesEnabled?: boolean;
   trustBadges?: TrustBadgeItem[];
@@ -213,6 +222,8 @@ export interface SiteData {
   isFreeLifetime?: boolean;
   trialEndsAt?: string;
   userEmail?: string;
+  userName?: string;
+  contactEmail?: string;
   userGoogleId?: string;
 
   createdAt: string;

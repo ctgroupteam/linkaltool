@@ -9,9 +9,21 @@ function generateSlug(name: string): string {
     .replace(/(^-|-$)+/g, '') || 'my-site';
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const sites = await getAllSites();
+    const { searchParams } = new URL(request.url);
+    const userEmail = searchParams.get('userEmail')?.toLowerCase().trim();
+    let sites = await getAllSites();
+
+    if (userEmail) {
+      sites = sites.filter(
+        (s) =>
+          (s.userEmail && s.userEmail.toLowerCase().trim() === userEmail) ||
+          (s.cvEmail && s.cvEmail.toLowerCase().trim() === userEmail) ||
+          (s.contactEmail && s.contactEmail.toLowerCase().trim() === userEmail)
+      );
+    }
+
     return NextResponse.json({ sites });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -34,6 +46,8 @@ export async function POST(request: Request) {
       productPrice,
       productImageUrl,
       productDescription,
+      userEmail,
+      userName,
     } = body;
 
     if (!name || !whatsappNumber) {
@@ -73,9 +87,11 @@ export async function POST(request: Request) {
       slug: finalSlug,
       type: siteType,
       status: 'draft',
+      userEmail: userEmail ? userEmail.toLowerCase().trim() : undefined,
+      userName: userName || name,
       whatsappNumber: cleanPhone,
       defaultWhatsappMessage: siteType === 'portfolio'
-        ? `Hello ${name}, I reviewed your Executive CV and would like to connect!`
+        ? `Hello ${name}, I reviewed your CV and would like to connect!`
         : `Hi ${name}, I saw your website and would like to place an order!`,
       logoUrl: siteType === 'portfolio' ? undefined : (logoUrl || undefined),
       themeColor: siteType === 'portfolio' ? '#0f172a' : siteType === 'single_product' ? '#ea580c' : '#059669',
@@ -102,60 +118,69 @@ export async function POST(request: Request) {
           inStock: true,
         }
       ] : undefined,
-      // Dedicated ATS CV fields for portfolios
-      cvTitle: name,
-      cvLocation: 'Mumbai, India',
-      cvEmail: '',
+      // Clean generic ATS CV fields for portfolios (NO Harvard / executive fallbacks)
+      cvTitle: name || 'XYZ',
+      cvHeadline: 'Professional Title',
+      cvLocation: 'City, Country',
+      cvEmail: userEmail || '',
       cvPhone: cleanPhone,
       cvLinkedin: '',
       cvGithub: '',
       cvWebsite: `https://${finalSlug}.linkal.in`,
-      cvSummary: 'Accomplished executive with a track record of leading strategic initiatives, scaling high-impact operations, and driving sustainable business growth.',
+      cvSummary: 'A brief professional summary highlighting key strengths, background, and career accomplishments.',
       cvExperiences: siteType === 'portfolio' ? [
         {
           id: 'exp-1',
-          company: 'Global Enterprises Ltd.',
-          role: 'Executive Director & Head of Strategy',
-          period: '2021 — Present',
-          location: 'Mumbai, India',
-          description: 'Spearheaded corporate digital transformation and cross-functional operations. Accelerated revenue by 42% and oversaw strategic talent development.',
-          companyUrl: 'https://example.com'
+          company: 'Company ABC',
+          role: 'Role / Position',
+          period: '2022 — Present',
+          location: 'City, Country',
+          description: 'Key responsibilities, accomplishments, and quantifiable impact.',
+          companyUrl: ''
         }
       ] : undefined,
       cvEducations: siteType === 'portfolio' ? [
         {
           id: 'edu-1',
-          institution: 'Premier Institute of Management',
-          degree: 'Master of Business Administration (MBA)',
-          year: '2016 — 2018',
-          honors: 'Dean\'s Honor List'
+          institution: 'University / Institute Name',
+          degree: 'Degree / Course Name',
+          year: '2018 — 2022',
+          honors: ''
         }
       ] : undefined,
       cvSkills: siteType === 'portfolio' ? [
-        'Strategic Leadership',
-        'Business Transformation',
-        'Stakeholder Management',
-        'P&L Management',
-        'Executive Decision Making'
+        'Skill 1',
+        'Skill 2',
+        'Skill 3',
+        'Project Planning',
+        'Communication'
       ] : undefined,
       cvProjects: siteType === 'portfolio' ? [
         {
           id: 'proj-1',
-          title: 'Flagship Digital Transformation',
-          description: 'Architected and rolled out automated workflows across 14 divisions, reducing processing turnaround time by 60%.',
+          title: 'Project Title Alpha',
+          description: 'Designed and implemented end-to-end functionality to meet client objectives.',
           link: `https://${finalSlug}.linkal.in`,
-          techStack: 'Strategy, Enterprise Systems'
+          techStack: 'Tools & Technologies'
         }
       ] : undefined,
       cvCertifications: siteType === 'portfolio' ? [
         {
           id: 'cert-1',
-          name: 'Executive Leadership Certification',
-          issuer: 'Harvard Business Publishing',
-          year: '2022',
-          url: 'https://harvardbusiness.org'
+          name: 'Certification Title',
+          issuer: 'Issuing Organization',
+          year: '2024',
+          url: ''
         }
       ] : undefined,
+      // CV Display Toggles & Format Defaults
+      cvShowSummary: true,
+      cvShowExperience: true,
+      cvShowEducation: true,
+      cvShowSkills: true,
+      cvShowProjects: true,
+      cvShowCertifications: true,
+      cvFormat: 'classic',
       singleProduct: siteType === 'single_product' ? {
         productName: initialProdName || name,
         tagline: initialBannerSubtitle || 'Engineered for Performance & Everyday Excellence',

@@ -162,9 +162,9 @@ function renderAboutStoryHtml(site: SiteData): string {
 
 export function generateAtsCvHtml(site: SiteData): string {
   const phone = cleanPhone(site.cvPhone || site.whatsappNumber);
-  const fullName = escapeHtml(site.name || 'Executive Professional');
-  const headline = escapeHtml(site.cvTitle || site.portfolioRoleTitle || 'Chief Executive Officer & Founder');
-  const location = escapeHtml(site.cvLocation || 'Mumbai, India');
+  const fullName = escapeHtml(site.name || site.cvTitle || 'XYZ');
+  const headline = escapeHtml(site.cvHeadline || site.cvTitle || site.portfolioRoleTitle || 'Professional Role');
+  const location = escapeHtml(site.cvLocation || 'City, Country');
   const email = escapeHtml(site.cvEmail || site.userEmail || '');
   const displayPhone = escapeHtml(site.cvPhone || site.whatsappNumber || '');
   const linkedin = site.cvLinkedin || '';
@@ -173,28 +173,27 @@ export function generateAtsCvHtml(site: SiteData): string {
   const summary = escapeHtml(
     site.cvSummary ||
     site.portfolioAbout ||
-    'High-impact executive leader with a proven record of building and scaling transformative products, building top-tier engineering organizations, and driving exponential growth.'
+    'Experienced professional dedicated to delivering high-quality results, leading collaborative projects, and continuously expanding skill sets.'
   );
+
+  const showSummary = site.cvShowSummary !== false;
+  const showExperience = site.cvShowExperience !== false;
+  const showEducation = site.cvShowEducation !== false;
+  const showSkills = site.cvShowSkills !== false;
+  const showProjects = site.cvShowProjects !== false;
+  const showCertifications = site.cvShowCertifications !== false;
+  const format = site.cvFormat || 'classic';
 
   const experiences = (site.cvExperiences && site.cvExperiences.length > 0)
     ? site.cvExperiences
     : [
       {
         id: 'exp-1',
-        company: 'Linkal AI Technologies',
-        role: 'Chief Executive Officer & Founder',
-        period: '2023 – Present',
-        location: 'Mumbai, India',
-        description: '• Architected and launched full-scale automated web platform serving hundreds of businesses.\n• Spearheaded engineering, product strategy, and go-to-market execution.\n• Implemented automated Cloudflare DNS routing and payment automation.',
-        companyUrl: 'https://linkal.in'
-      },
-      {
-        id: 'exp-2',
-        company: 'Enterprise Solutions Group',
-        role: 'Senior Director of Product Engineering',
-        period: '2019 – 2023',
-        location: 'Bengaluru, India',
-        description: '• Led cross-functional teams of 40+ engineers across cloud infrastructure and mobile products.\n• Scaled high-throughput microservices processing over 10M+ daily events with 99.99% uptime.\n• Mentored technical leads and established best practices for rapid product iteration.',
+        company: 'Company ABC',
+        role: 'Role Title',
+        period: '2022 — Present',
+        location: 'City, Country',
+        description: '• Managed key project workflows and delivered milestone targets on schedule.\n• Collaborated with cross-functional team members to optimize process efficiency.\n• Spearheaded daily operations and quality assurance standards.',
         companyUrl: ''
       }
     ];
@@ -204,10 +203,10 @@ export function generateAtsCvHtml(site: SiteData): string {
     : [
       {
         id: 'edu-1',
-        institution: 'Indian Institute of Technology (IIT)',
-        degree: 'Bachelor of Technology in Computer Science & Engineering',
-        year: '2019',
-        honors: 'First Class with Distinction'
+        institution: 'University / Institute Name',
+        degree: 'Bachelor / Master Degree',
+        year: '2018 — 2022',
+        honors: ''
       }
     ];
 
@@ -216,14 +215,12 @@ export function generateAtsCvHtml(site: SiteData): string {
     : (site.portfolioSkills && site.portfolioSkills.length > 0
         ? site.portfolioSkills.map(s => s.name)
         : [
-          'Executive Leadership',
-          'Product Strategy & Roadmap',
-          'Full-Stack Architecture',
-          'Cloud Infrastructure (AWS/Vercel/Cloudflare)',
-          'High-Scale Systems',
-          'Team Building & Mentorship',
-          'Next.js & TypeScript',
-          'Business Operations'
+          'Skill 1',
+          'Skill 2',
+          'Skill 3',
+          'Project Planning',
+          'Communication',
+          'Problem Solving'
         ]
       );
 
@@ -240,17 +237,10 @@ export function generateAtsCvHtml(site: SiteData): string {
         : [
           {
             id: 'proj-1',
-            title: 'Linkal Multi-Tier Website Builder & Automation Engine',
-            description: 'Automated SaaS engine capable of deploying localized Indian business websites on customized subdomains within seconds.',
-            link: 'https://linkal.in',
-            techStack: 'Next.js, TypeScript, Cloudflare DNS, Vercel Edge'
-          },
-          {
-            id: 'proj-2',
-            title: 'High-Concurrency Digital QR Menu System',
-            description: 'Direct-to-WhatsApp order dispatch pipeline reducing restaurant order turnaround times by 65%.',
-            link: 'https://turkishzaika.linkal.in',
-            techStack: 'Tailwind CSS, Edge Functions, PWA'
+            title: 'Project Title Alpha',
+            description: 'Designed and implemented end-to-end functionality to meet client objectives.',
+            link: `https://${site.slug || 'mysite'}.linkal.in`,
+            techStack: 'Tools & Technologies'
           }
         ]
       );
@@ -260,9 +250,9 @@ export function generateAtsCvHtml(site: SiteData): string {
     : [
       {
         id: 'cert-1',
-        name: 'AWS Certified Solutions Architect – Professional',
-        issuer: 'Amazon Web Services',
-        year: '2023',
+        name: 'Certification Title',
+        issuer: 'Issuing Organization',
+        year: '2024',
         url: ''
       }
     ];
@@ -366,6 +356,29 @@ export function generateAtsCvHtml(site: SiteData): string {
       border-radius: 12px;
       border: 1px solid var(--border);
       box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+    }
+    .cv-paper.format-compact {
+      padding: 2rem 2.25rem;
+      max-width: 800px;
+      font-size: 0.88rem;
+    }
+    .cv-paper.format-compact .cv-section {
+      margin-bottom: 1.15rem;
+    }
+    .cv-paper.format-compact .cv-name {
+      font-size: 1.95rem;
+    }
+    .cv-grid-modern {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .cv-grid-modern {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
     }
 
     /* Candidate Header */
@@ -587,7 +600,122 @@ export function generateAtsCvHtml(site: SiteData): string {
   </aside>
 
   <!-- Resume Paper Container -->
-  <main class="cv-paper">
+  ${format === 'modern' ? `
+  <main class="cv-paper format-modern">
+    <!-- Header -->
+    <header class="cv-header">
+      <h1 class="cv-name">${fullName}</h1>
+      <div class="cv-headline">${headline}</div>
+    </header>
+
+    <div class="cv-grid-modern">
+      <!-- Left Column: Contact & Skills & Education & Certifications -->
+      <aside class="cv-sidebar">
+        <section class="cv-section">
+          <h2 class="cv-section-title">Contact</h2>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.85rem; color:var(--text-muted);">
+            ${location ? `<div>📍 ${location}</div>` : ''}
+            ${email ? `<div><a href="mailto:${email}">✉️ ${email}</a></div>` : ''}
+            ${displayPhone ? `<div><a href="tel:${displayPhone}">📞 ${displayPhone}</a></div>` : ''}
+            ${linkedin ? `<div><a href="${linkedin.startsWith('http') ? linkedin : 'https://' + linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></div>` : ''}
+            ${github ? `<div><a href="${github.startsWith('http') ? github : 'https://' + github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>` : ''}
+            ${website ? `<div><a href="${website.startsWith('http') ? website : 'https://' + website}" target="_blank" rel="noopener noreferrer">Website ↗</a></div>` : ''}
+          </div>
+        </section>
+
+        ${showSkills && skills.length > 0 ? `
+        <section class="cv-section">
+          <h2 class="cv-section-title">Skills</h2>
+          <div class="cv-skills-grid">
+            ${skills.map(sk => `<span class="cv-skill-badge">${escapeHtml(sk)}</span>`).join('\n')}
+          </div>
+        </section>
+        ` : ''}
+
+        ${showEducation && educations.length > 0 ? `
+        <section class="cv-section">
+          <h2 class="cv-section-title">Education</h2>
+          ${educations.map(edu => `
+            <div class="cv-item" style="margin-bottom:0.75rem;">
+              <div style="font-weight:700; color:var(--text); font-size:0.9rem;">${escapeHtml(edu.degree)}</div>
+              <div style="font-size:0.82rem; color:var(--primary); font-weight:600;">${escapeHtml(edu.institution)}</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">${escapeHtml(edu.year)}</div>
+              ${edu.honors ? `<div style="font-size:0.78rem; color:var(--text-muted);">${escapeHtml(edu.honors)}</div>` : ''}
+            </div>
+          `).join('\n')}
+        </section>
+        ` : ''}
+
+        ${showCertifications && certifications.length > 0 ? `
+        <section class="cv-section">
+          <h2 class="cv-section-title">Certifications</h2>
+          ${certifications.map(c => `
+            <div class="cv-item" style="margin-bottom:0.65rem;">
+              <div style="font-weight:700; color:var(--text); font-size:0.88rem;">${escapeHtml(c.name)}</div>
+              <div style="font-size:0.8rem; color:var(--primary);">${escapeHtml(c.issuer)} ${c.year ? `(${escapeHtml(c.year)})` : ''}</div>
+              ${c.url ? `<div><a href="${c.url.startsWith('http') ? c.url : 'https://' + c.url}" target="_blank" rel="noopener noreferrer" class="cv-project-link">View ↗</a></div>` : ''}
+            </div>
+          `).join('\n')}
+        </section>
+        ` : ''}
+      </aside>
+
+      <!-- Right Main Column: Summary, Experience, Projects -->
+      <div class="cv-main-col">
+        ${showSummary && summary ? `
+        <section class="cv-section">
+          <h2 class="cv-section-title">Summary</h2>
+          <p class="cv-summary-text">${summary}</p>
+        </section>
+        ` : ''}
+
+        ${showExperience && experiences.length > 0 ? `
+        <section class="cv-section">
+          <h2 class="cv-section-title">Experience</h2>
+          ${experiences.map(exp => `
+            <article class="cv-item">
+              <div class="cv-item-header">
+                <div>
+                  <span class="cv-item-role">${escapeHtml(exp.role)}</span> &mdash; 
+                  ${exp.companyUrl ? `
+                    <a href="${exp.companyUrl.startsWith('http') ? exp.companyUrl : 'https://' + exp.companyUrl}" target="_blank" rel="noopener noreferrer" class="cv-item-company">${escapeHtml(exp.company)} ↗</a>
+                  ` : `
+                    <span class="cv-item-company">${escapeHtml(exp.company)}</span>
+                  `}
+                </div>
+                <span class="cv-item-period">${escapeHtml(exp.period)}</span>
+              </div>
+              ${exp.location ? `<div class="cv-item-location">${escapeHtml(exp.location)}</div>` : ''}
+              <div class="cv-item-desc">${escapeHtml(exp.description)}</div>
+            </article>
+          `).join('\n')}
+        </section>
+        ` : ''}
+
+        ${showProjects && projects.length > 0 ? `
+        <section class="cv-section">
+          <h2 class="cv-section-title">Projects</h2>
+          ${projects.map(proj => `
+            <div class="cv-project-card">
+              <div class="cv-project-title-row">
+                <span class="cv-project-name">${escapeHtml(proj.title)}</span>
+                ${proj.link ? `
+                  <a href="${proj.link.startsWith('http') ? proj.link : 'https://' + proj.link}" target="_blank" rel="noopener noreferrer" class="cv-project-link">
+                    View Project ↗
+                  </a>
+                ` : ''}
+              </div>
+              ${proj.techStack ? `<div class="cv-project-tech">Tech: ${escapeHtml(proj.techStack)}</div>` : ''}
+              <p class="cv-project-desc">${escapeHtml(proj.description)}</p>
+            </div>
+          `).join('\n')}
+        </section>
+        ` : ''}
+      </div>
+    </div>
+  </main>
+  ` : `
+  <main class="cv-paper ${format === 'compact' ? 'format-compact' : 'format-classic'}">
     <!-- Header -->
     <header class="cv-header">
       <h1 class="cv-name">${fullName}</h1>
@@ -602,15 +730,18 @@ export function generateAtsCvHtml(site: SiteData): string {
       </div>
     </header>
 
-    <!-- Executive Summary -->
+    ${showSummary && summary ? `
+    <!-- Summary -->
     <section class="cv-section">
-      <h2 class="cv-section-title">Executive Summary</h2>
+      <h2 class="cv-section-title">Summary</h2>
       <p class="cv-summary-text">${summary}</p>
     </section>
+    ` : ''}
 
+    ${showExperience && experiences.length > 0 ? `
     <!-- Work Experience -->
     <section class="cv-section">
-      <h2 class="cv-section-title">Professional Experience</h2>
+      <h2 class="cv-section-title">Experience</h2>
       ${experiences.map(exp => `
         <article class="cv-item">
           <div class="cv-item-header">
@@ -629,18 +760,22 @@ export function generateAtsCvHtml(site: SiteData): string {
         </article>
       `).join('\n')}
     </section>
+    ` : ''}
 
-    <!-- Core Skills -->
+    ${showSkills && skills.length > 0 ? `
+    <!-- Skills -->
     <section class="cv-section">
-      <h2 class="cv-section-title">Core Competencies &amp; Technical Skills</h2>
+      <h2 class="cv-section-title">Skills</h2>
       <div class="cv-skills-grid">
         ${skills.map(sk => `<span class="cv-skill-badge">${escapeHtml(sk)}</span>`).join('\n')}
       </div>
     </section>
+    ` : ''}
 
-    <!-- Projects & Publications -->
+    ${showProjects && projects.length > 0 ? `
+    <!-- Projects -->
     <section class="cv-section">
-      <h2 class="cv-section-title">Featured Projects &amp; Publications</h2>
+      <h2 class="cv-section-title">Projects</h2>
       ${projects.map(proj => `
         <div class="cv-project-card">
           <div class="cv-project-title-row">
@@ -656,10 +791,12 @@ export function generateAtsCvHtml(site: SiteData): string {
         </div>
       `).join('\n')}
     </section>
+    ` : ''}
 
+    ${showEducation && educations.length > 0 ? `
     <!-- Education -->
     <section class="cv-section">
-      <h2 class="cv-section-title">Education &amp; Credentials</h2>
+      <h2 class="cv-section-title">Education</h2>
       ${educations.map(edu => `
         <div class="cv-item">
           <div class="cv-item-header">
@@ -673,26 +810,28 @@ export function generateAtsCvHtml(site: SiteData): string {
         </div>
       `).join('\n')}
     </section>
+    ` : ''}
 
-    <!-- Certifications (if present) -->
-    ${certifications.length > 0 ? `
-      <section class="cv-section">
-        <h2 class="cv-section-title">Certifications &amp; Licenses</h2>
-        ${certifications.map(c => `
-          <div class="cv-item">
-            <div class="cv-item-header">
-              <div>
-                <span class="cv-item-role">${escapeHtml(c.name)}</span> &mdash; 
-                <span class="cv-item-company">${escapeHtml(c.issuer)}</span>
-              </div>
-              ${c.year ? `<span class="cv-item-period">${escapeHtml(c.year)}</span>` : ''}
+    ${showCertifications && certifications.length > 0 ? `
+    <!-- Certifications -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">Certifications</h2>
+      ${certifications.map(c => `
+        <div class="cv-item">
+          <div class="cv-item-header">
+            <div>
+              <span class="cv-item-role">${escapeHtml(c.name)}</span> &mdash; 
+              <span class="cv-item-company">${escapeHtml(c.issuer)}</span>
             </div>
-            ${c.url ? `<div><a href="${c.url.startsWith('http') ? c.url : 'https://' + c.url}" target="_blank" rel="noopener noreferrer" class="cv-project-link">View Credential ↗</a></div>` : ''}
+            ${c.year ? `<span class="cv-item-period">${escapeHtml(c.year)}</span>` : ''}
           </div>
-        `).join('\n')}
-      </section>
+          ${c.url ? `<div><a href="${c.url.startsWith('http') ? c.url : 'https://' + c.url}" target="_blank" rel="noopener noreferrer" class="cv-project-link">View Credential ↗</a></div>` : ''}
+        </div>
+      `).join('\n')}
+    </section>
     ` : ''}
   </main>
+  `}
 
 </body>
 </html>`;

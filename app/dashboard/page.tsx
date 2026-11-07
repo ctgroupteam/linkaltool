@@ -226,41 +226,46 @@ function DashboardContent() {
     return () => clearTimeout(timer);
   }, [desiredSlug]);
 
-  // Load customer sites
-  const fetchSites = async () => {
-    try {
-      const cached = localStorage.getItem('linkal_sites_history');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setSites(parsed);
-        }
-      }
-    } catch {}
+  // Active dashboard view tab: 'sites' | 'templates' | 'profile'
+  const [dashboardTab, setDashboardTab] = useState<'sites' | 'templates' | 'profile'>('sites');
+
+  // Load customer sites strictly isolated by logged-in user email (Zero Hardcoded Data)
+  const fetchSites = async (userEmail?: string) => {
+    if (!userEmail) {
+      setSites([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
-      const res = await fetch('/api/sites');
-      if (res.status === 401) {
-        // Guest or customer mode allowed
-      } else {
+      const res = await fetch(`/api/sites?userEmail=${encodeURIComponent(userEmail.toLowerCase().trim())}`);
+      if (res.ok) {
         const data = await res.json();
         const serverSites: SiteData[] = data.sites || [];
         setSites(serverSites);
         try {
-          localStorage.setItem('linkal_sites_history', JSON.stringify(serverSites));
+          localStorage.setItem(`linkal_sites_${userEmail}`, JSON.stringify(serverSites));
         } catch {}
+      } else {
+        setSites([]);
       }
     } catch (err) {
       console.warn('Could not fetch server sites:', err);
+      setSites([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSites();
-  }, []);
+    if (user?.email) {
+      fetchSites(user.email);
+    } else {
+      setSites([]);
+      setLoading(false);
+    }
+  }, [user?.email]);
 
   // Handle site creation
   const handleStartBuilding = async (e: React.FormEvent) => {
@@ -475,8 +480,49 @@ function DashboardContent() {
       </header>
 
       {/* ─── MAIN CUSTOMER CONTENT ─── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-        {/* ─── SECTION 1: CUSTOMER CREATION STUDIO ─── */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* Navigation Tabs (Desktop & Mobile) */}
+        <div className="flex items-center gap-1.5 p-1 bg-zinc-200/80 rounded-2xl max-w-md mx-auto">
+          <button
+            type="button"
+            onClick={() => setDashboardTab('sites')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              dashboardTab === 'sites'
+                ? 'bg-white text-zinc-950 shadow-xs'
+                : 'text-zinc-600 hover:text-zinc-950'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5 text-blue-600" />
+            <span>My Websites {user ? `(${sites.length})` : ''}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDashboardTab('templates')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              dashboardTab === 'templates'
+                ? 'bg-white text-zinc-950 shadow-xs'
+                : 'text-zinc-600 hover:text-zinc-950'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Templates</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDashboardTab('profile')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              dashboardTab === 'profile'
+                ? 'bg-white text-zinc-950 shadow-xs'
+                : 'text-zinc-600 hover:text-zinc-950'
+            }`}
+          >
+            <User className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Profile</span>
+          </button>
+        </div>
+
+        {/* ─── SECTION 1: CUSTOMER CREATION STUDIO (TEMPLATES) ─── */}
+        {dashboardTab === 'templates' && (
         <section id="builder-box" className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-2">
@@ -785,8 +831,10 @@ function DashboardContent() {
             </div>
           </form>
         </section>
+        )}
 
         {/* ─── SECTION 2: MY WEBSITES ─── */}
+        {dashboardTab === 'sites' && (
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
@@ -821,22 +869,50 @@ function DashboardContent() {
             </div>
           </div>
 
-          {loading ? (
+          {!user ? (
+            <div className="py-14 text-center bg-white border border-zinc-200 rounded-3xl p-6 space-y-4 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <User className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-zinc-950">Sign In with Google to View Your Websites</h3>
+                <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                  Your websites are securely linked to your Google account. Sign in to access your dashboard, edit live subdomains, and view order analytics.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGoogleModal(true)}
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-extrabold shadow-md transition-all active:scale-[0.98]"
+              >
+                <GoogleIcon className="w-4 h-4" />
+                <span>1-Click Google Sign In (Choose Account)</span>
+              </button>
+            </div>
+          ) : loading ? (
             <div className="py-16 text-center bg-white border border-zinc-200 rounded-3xl space-y-2">
               <RefreshCw className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
               <p className="text-xs text-zinc-500 font-bold">Loading your websites...</p>
             </div>
           ) : filteredSites.length === 0 ? (
-            <div className="py-14 text-center bg-white border border-zinc-200 rounded-3xl p-6 space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
-                <Globe className="w-6 h-6" />
+            <div className="py-14 text-center bg-white border border-zinc-200 rounded-3xl p-6 space-y-4 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Globe className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-zinc-950">No websites created yet</h3>
-                <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
-                  Use the builder above to choose a category and create your first site in 2 minutes.
+                <h3 className="text-base font-extrabold text-zinc-950">No websites created yet</h3>
+                <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                  You haven&apos;t created any websites or CVs yet. Select a template blueprint to launch your live site on <strong>.linkal.in</strong> in 2 minutes.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setDashboardTab('templates')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition-all active:scale-[0.98]"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Explore Templates &amp; Build Now →</span>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -942,7 +1018,163 @@ function DashboardContent() {
             </div>
           )}
         </section>
+        )}
+
+        {/* ─── SECTION 3: USER PROFILE ─── */}
+        {dashboardTab === 'profile' && (
+          <section className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-w-xl mx-auto">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xl flex items-center justify-center shadow-md overflow-hidden shrink-0">
+                {(user as any)?.avatarUrl ? (
+                  <img src={(user as any).avatarUrl} alt={user?.fullName || 'User'} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{user?.fullName ? user.fullName[0].toUpperCase() : 'U'}</span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-extrabold text-zinc-950 truncate">{user?.fullName || 'Guest User'}</h2>
+                  {user && (
+                    <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                      ✓ Google Verified
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-zinc-500 font-mono truncate">{user?.email || 'Not signed in'}</p>
+              </div>
+            </div>
+
+            {user ? (
+              <div className="space-y-4 pt-2 border-t border-zinc-200">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 mb-1">
+                    Full Name (Compulsory &bull; Displayed in CV &amp; Stores) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={user.fullName || ''}
+                    onChange={(e) => {
+                      const updated = { ...user, fullName: e.target.value };
+                      setUser(updated);
+                      try {
+                        localStorage.setItem('linkal_user', JSON.stringify(updated));
+                      } catch {}
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 mb-1">
+                    Compulsory WhatsApp Phone Number (Direct Contact) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={user.phoneNumber || ''}
+                    onChange={(e) => {
+                      const updated = { ...user, phoneNumber: e.target.value };
+                      setUser(updated);
+                      try {
+                        localStorage.setItem('linkal_user', JSON.stringify(updated));
+                      } catch {}
+                    }}
+                    placeholder="e.g. 919307426215"
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
+                  />
+                  <span className="text-[10px] text-zinc-500 mt-1 block">
+                    Compulsory: Recruiters contact you on this number for your CV, or customers place WhatsApp store orders.
+                  </span>
+                </div>
+
+                <div className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-zinc-800 block">Active Websites Owned</span>
+                    <span className="text-[10px] text-zinc-500">Only your created websites appear here.</span>
+                  </div>
+                  <span className="font-extrabold text-blue-600 font-mono text-base">{sites.length}</span>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDashboardTab('templates')}
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+                  >
+                    Create New Site →
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        localStorage.removeItem('linkal_user');
+                      } catch {}
+                      setUser(null);
+                      setSites([]);
+                      setDashboardTab('sites');
+                    }}
+                    className="px-3.5 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 space-y-4">
+                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                  Sign in with your Google account to secure your sites, access your profile, and receive notifications.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(true)}
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border-2 border-zinc-300 hover:border-zinc-400 text-zinc-800 rounded-2xl font-bold text-sm shadow-sm transition-all"
+                >
+                  <GoogleIcon className="w-5 h-5" />
+                  <span>Sign In with Google (Choose Account)</span>
+                </button>
+              </div>
+            )}
+          </section>
+        )}
       </main>
+
+      {/* ─── MOBILE BOTTOM STICKY TASKBAR ─── */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-zinc-200 px-4 py-2 flex items-center justify-around shadow-lg">
+        <button
+          type="button"
+          onClick={() => setDashboardTab('sites')}
+          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+            dashboardTab === 'sites' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
+          }`}
+        >
+          <Globe className="w-5 h-5" />
+          <span className="text-[10px]">Websites</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDashboardTab('templates')}
+          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+            dashboardTab === 'templates' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
+          }`}
+        >
+          <Sparkles className="w-5 h-5" />
+          <span className="text-[10px]">Templates</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDashboardTab('profile')}
+          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+            dashboardTab === 'profile' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
+          }`}
+        >
+          <User className="w-5 h-5" />
+          <span className="text-[10px]">Profile</span>
+        </button>
+      </nav>
 
       {/* ─── QR CODE MODAL ─── */}
       {qrModalSite && (

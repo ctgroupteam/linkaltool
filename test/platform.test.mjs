@@ -98,7 +98,7 @@ function generateAtsCvHtml(site) {
         ${website ? `<a href="${website}" target="_blank" class="cv-contact-item">Portfolio ↗</a>` : ''}
       </div>
     </header>
-    ${summary ? `<section class="cv-section"><h2 class="cv-section-title">Executive Summary</h2><p class="cv-summary-text">${summary}</p></section>` : ''}
+    ${summary ? `<section class="cv-section"><h2 class="cv-section-title">Summary</h2><p class="cv-summary-text">${summary}</p></section>` : ''}
     ${experiences.length > 0 ? `
       <section class="cv-section">
         <h2 class="cv-section-title">Work Experience</h2>
@@ -268,14 +268,14 @@ test('Suite 1: ATS CV Engine', async (t) => {
     assert.ok(html.includes('Portfolio ↗'));
   });
 
-  await t.test('Test 11: Renders Executive Summary section when present', () => {
-    assert.ok(html.includes('Executive Summary</h2>'));
+  await t.test('Test 11: Renders Summary section when present', () => {
+    assert.ok(html.includes('Summary</h2>'));
     assert.ok(html.includes('Accomplished engineering leader'));
   });
 
-  await t.test('Test 12: Omits Executive Summary when empty', () => {
+  await t.test('Test 12: Omits Summary when empty', () => {
     const noSummary = generateAtsCvHtml({ ...sampleSite, cvSummary: '' });
-    assert.ok(!noSummary.includes('Executive Summary</h2>'));
+    assert.ok(!noSummary.includes('Summary</h2>'));
   });
 
   await t.test('Test 13: Renders Work Experience heading', () => {
