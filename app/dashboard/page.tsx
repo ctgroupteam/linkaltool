@@ -148,8 +148,8 @@ function DashboardContent() {
   const [user, setUser] = useState<{ id: string; email: string; fullName: string; phoneNumber?: string } | null>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
 
-  // Active category selection
-  const [category, setCategory] = useState<'portfolio' | 'restaurant' | 'ecommerce' | 'single_product'>('ecommerce');
+  // Active category selection - default to executive portfolio (CV)
+  const [category, setCategory] = useState<'portfolio' | 'restaurant' | 'ecommerce' | 'single_product'>('portfolio');
 
   // Creation form state
   const [siteName, setSiteName] = useState('');
@@ -268,12 +268,12 @@ function DashboardContent() {
     setCreateError(null);
 
     if (!siteName.trim()) {
-      setCreateError('Please enter your website or brand name');
+      setCreateError(category === 'portfolio' ? 'Please enter your full name to add in your CV' : 'Please enter your website or brand name');
       return;
     }
 
     if (!whatsappPhone.trim() || whatsappPhone.trim() === '91') {
-      setCreateError('Please enter a valid WhatsApp orders number');
+      setCreateError(category === 'portfolio' ? 'Please enter your WhatsApp contact number to add in your CV' : 'Please enter a valid WhatsApp orders number');
       return;
     }
 
@@ -282,7 +282,7 @@ function DashboardContent() {
       return;
     }
 
-    // If customer is creating CV and not logged in, prompt Google 1-Click modal
+    // Always require Google sign-in before creating
     if (!user) {
       setShowGoogleModal(true);
       return;
@@ -313,6 +313,8 @@ function DashboardContent() {
           slug: desiredSlug.trim() || undefined,
           whatsappNumber: whatsappPhone.trim(),
           promoCode: promoCode.trim() || undefined,
+          userEmail: currentUser?.email,
+          userName: currentUser?.fullName,
           // For CV: strictly NO images as requested by customer
           bannerImageUrl: category === 'portfolio' ? undefined : 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80',
           logoUrl: category === 'portfolio' ? undefined : undefined,
@@ -377,6 +379,8 @@ function DashboardContent() {
         isOpen={showGoogleModal}
         onClose={() => setShowGoogleModal(false)}
         isCvSite={category === 'portfolio'}
+        initialName={siteName}
+        initialPhone={whatsappPhone}
         onSuccess={(authedUser) => {
           setUser(authedUser);
           setShowGoogleModal(false);
@@ -611,7 +615,7 @@ function DashboardContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-zinc-900 mb-1">
-                  {category === 'portfolio' ? 'Full Name (Executive)' : 'Business / Website Name'} *
+                  {category === 'portfolio' ? 'Full Name (Add in your CV) *' : 'Business / Store Name *'}
                 </label>
                 <input
                   type="text"
@@ -629,14 +633,17 @@ function DashboardContent() {
                       );
                     }
                   }}
-                  placeholder={category === 'portfolio' ? 'e.g. Rahul Sharma' : 'e.g. Royal Cakes Mumbai'}
+                  placeholder={category === 'portfolio' ? 'e.g. Yahya Mundewadi' : 'e.g. Royal Cakes Mumbai'}
                   className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs sm:text-sm font-semibold text-zinc-950 placeholder-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
+                <span className="text-[11px] text-zinc-500 font-medium mt-1 block">
+                  {category === 'portfolio' ? 'Your executive name as displayed on your CV.' : 'Your brand or store name for customer orders.'}
+                </span>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-zinc-900 mb-1">
-                  WhatsApp Contact &amp; Orders Phone *
+                  {category === 'portfolio' ? 'WhatsApp Phone (Add in your CV) *' : 'WhatsApp Orders Phone (Add to your store) *'}
                 </label>
                 <div className="relative">
                   <MessageCircle className="w-4 h-4 text-emerald-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -645,10 +652,13 @@ function DashboardContent() {
                     required
                     value={whatsappPhone}
                     onChange={(e) => setWhatsappPhone(e.target.value)}
-                    placeholder="919876543210"
+                    placeholder={category === 'portfolio' ? '919307426215' : '919876543210'}
                     className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs sm:text-sm font-mono font-bold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
+                <span className="text-[11px] text-zinc-500 font-medium mt-1 block">
+                  {category === 'portfolio' ? 'Direct WhatsApp line for recruiters & executive hiring.' : 'Customer orders will be dispatched directly to this WhatsApp.'}
+                </span>
               </div>
             </div>
 
@@ -759,12 +769,12 @@ function DashboardContent() {
                 {creating ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                    <span>Initializing Website...</span>
+                    <span>{category === 'portfolio' ? 'Initializing Executive CV...' : 'Initializing Website...'}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4 text-white" />
-                    <span>Open Visual Builder Now</span>
+                    <span>{category === 'portfolio' ? 'Build My Executive CV (100% Free) →' : 'Open Visual Builder Now →'}</span>
                   </>
                 )}
               </button>

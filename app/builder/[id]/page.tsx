@@ -696,6 +696,25 @@ export default function BuilderPage() {
             <span className="hidden sm:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700">
               {site.slug}.linkal.in
             </span>
+            <select
+              value={site.type}
+              onChange={(e) => {
+                const newType = e.target.value as any;
+                const updated = { ...site, type: newType };
+                setSite(updated);
+                if (newType === 'portfolio') {
+                  setActiveTab('cv_profile');
+                } else {
+                  setActiveTab('general');
+                }
+              }}
+              className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
+              title="Change Blueprint Template"
+            >
+              <option value="portfolio">📄 Executive CV</option>
+              <option value="ecommerce">🛍️ Online Store</option>
+              <option value="single_product">⚡ Single Product</option>
+            </select>
           </div>
         </div>
 

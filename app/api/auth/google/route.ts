@@ -61,9 +61,29 @@ export async function POST(req: NextRequest) {
         email: cleanEmail,
         full_name: fullName,
         phone_number: phoneNumber,
-        cv_created_count: 0
+        cv_created_count: 0,
+        created_at: new Date().toISOString()
       };
     }
+
+    // Persist to local cache so admin can read registrations even before Supabase table is applied
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const os = await import('os');
+      const userFile = path.join(os.tmpdir(), 'users.json');
+      let currentUsers: any[] = [];
+      if (fs.existsSync(userFile)) {
+        try { currentUsers = JSON.parse(fs.readFileSync(userFile, 'utf8')); } catch {}
+      }
+      const existingIdx = currentUsers.findIndex((u: any) => u.email === cleanEmail);
+      if (existingIdx !== -1) {
+        currentUsers[existingIdx] = { ...currentUsers[existingIdx], ...userRecord, phone_number: phoneNumber || currentUsers[existingIdx].phone_number };
+      } else {
+        currentUsers.unshift(userRecord);
+      }
+      fs.writeFileSync(userFile, JSON.stringify(currentUsers, null, 2), 'utf8');
+    } catch {}
 
     // 2. Check First 100 Free CVs logic
     let totalCvsCount = 0;

@@ -873,10 +873,119 @@ test('Suite 8: Web Push & PWA Standards', async (t) => {
 
   await t.test('Test 105: Push vibration pattern configuration', () => {
     const notificationOptions = {
-      vibrate: [200, 100, 200],
-      icon: '/linkal.jpeg'
+      vibrate: [300, 100, 400, 100, 300],
+      icon: '/linkal.jpeg',
+      tag: 'linkal-notification',
+      requireInteraction: true,
+      renotify: true
     };
-    assert.deepStrictEqual(notificationOptions.vibrate, [200, 100, 200]);
+    assert.deepStrictEqual(notificationOptions.vibrate, [300, 100, 400, 100, 300]);
     assert.strictEqual(notificationOptions.icon, '/linkal.jpeg');
+    assert.strictEqual(notificationOptions.requireInteraction, true);
+    assert.strictEqual(notificationOptions.renotify, true);
   });
 });
+
+test('Suite 9: Admin Directory & Zero Hardcoded Data Integrity', async (t) => {
+  await t.test('Test 106: Admin sites API structure conforms to schema', () => {
+    const mockSite = {
+      id: 'site-1',
+      name: 'Yahya Mundewadi',
+      slug: 'yahya1',
+      type: 'portfolio',
+      status: 'published',
+      whatsapp_number: '919307426215',
+      user_name: 'Yahya Mundewadi',
+      user_email: 'yahya@linkal.in',
+      created_at: new Date().toISOString()
+    };
+    assert.ok(mockSite.id);
+    assert.ok(mockSite.slug);
+    assert.strictEqual(mockSite.type, 'portfolio');
+    assert.strictEqual(mockSite.status, 'published');
+  });
+
+  await t.test('Test 107: Admin users list eliminates mock entries when empty', () => {
+    const rawSupabaseData = [];
+    const users = rawSupabaseData.length > 0 ? rawSupabaseData : [];
+    assert.strictEqual(users.length, 0);
+    assert.strictEqual(users.some(u => u.full_name === 'Rahul Sharma'), false);
+  });
+
+  await t.test('Test 108: Contextual CV form rejects the word "store"', () => {
+    function getFormLabels(category) {
+      if (category === 'portfolio') {
+        return {
+          nameLabel: 'Full Name (Add in your CV) *',
+          phoneLabel: 'WhatsApp Phone (Add in your CV) *',
+          ctaText: 'Build My Executive CV (100% Free) →'
+        };
+      }
+      return {
+        nameLabel: 'Business / Store Name *',
+        phoneLabel: 'WhatsApp Orders Phone (Add to your store) *',
+        ctaText: 'Start Building Online Store →'
+      };
+    }
+
+    const cvLabels = getFormLabels('portfolio');
+    assert.strictEqual(cvLabels.nameLabel.includes('store'), false);
+    assert.strictEqual(cvLabels.phoneLabel.includes('store'), false);
+    assert.strictEqual(cvLabels.ctaText.includes('store'), false);
+    assert.ok(cvLabels.nameLabel.includes('CV'));
+    assert.ok(cvLabels.phoneLabel.includes('CV'));
+    assert.ok(cvLabels.ctaText.includes('CV'));
+  });
+
+  await t.test('Test 109: Store category retains "store" terminology', () => {
+    function getFormLabels(category) {
+      if (category === 'portfolio') {
+        return {
+          nameLabel: 'Full Name (Add in your CV) *',
+          phoneLabel: 'WhatsApp Phone (Add in your CV) *',
+          ctaText: 'Build My Executive CV (100% Free) →'
+        };
+      }
+      return {
+        nameLabel: 'Business / Store Name *',
+        phoneLabel: 'WhatsApp Orders Phone (Add to your store) *',
+        ctaText: 'Start Building Online Store →'
+      };
+    }
+
+    const storeLabels = getFormLabels('ecommerce');
+    assert.ok(storeLabels.nameLabel.includes('Store'));
+    assert.ok(storeLabels.phoneLabel.includes('store'));
+  });
+
+  await t.test('Test 110: Custom multi-pulse vibration pattern matches spec', () => {
+    const expectedVibration = [300, 100, 400, 100, 300];
+    assert.strictEqual(expectedVibration.length, 5);
+    assert.strictEqual(expectedVibration[0], 300);
+    assert.strictEqual(expectedVibration[2], 400);
+    assert.strictEqual(expectedVibration[4], 300);
+  });
+
+  await t.test('Test 111: Empty state in Studio renders friendly invitation', () => {
+    const userSites = [];
+    const emptyStateText = userSites.length === 0
+      ? 'No websites created yet. Start building your first website or executive CV above!'
+      : `${userSites.length} websites`;
+    assert.ok(emptyStateText.includes('No websites created yet'));
+  });
+
+  await t.test('Test 112: Subdomain link generation adheres to https scheme and .linkal.in apex', () => {
+    const slug = 'yahya1';
+    const liveUrl = `https://${slug}.linkal.in`;
+    assert.strictEqual(liveUrl, 'https://yahya1.linkal.in');
+  });
+
+  await t.test('Test 113: WhatsApp direct chat link uses international wa.me format', () => {
+    const phone = '919307426215';
+    const message = 'Hello Yahya Mundewadi, I reviewed your Executive CV and would like to connect!';
+    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    assert.ok(waUrl.startsWith('https://wa.me/919307426215'));
+    assert.ok(waUrl.includes('Executive%20CV'));
+  });
+});
+

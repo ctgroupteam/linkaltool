@@ -1,5 +1,5 @@
 // Linkal Studio PWA Service Worker v1.0.0
-const CACHE_NAME = 'linkal-studio-v1';
+const CACHE_NAME = 'linkal-studio-v2';
 const PRECACHE_URLS = [
   '/dashboard',
   '/manifest.json',
@@ -33,17 +33,14 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  // Skip Next.js internal HMR or API routes from caching
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/webpack-hmr')) {
     return;
   }
 
-  // Navigation requests: Network-first with cache fallback
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -67,7 +64,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets: Stale-while-revalidate
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const networkFetch = fetch(event.request).then((response) => {
@@ -83,9 +79,9 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Push notification support
+// Push notification support with custom vibration
 self.addEventListener('push', (event) => {
-  let data = { title: 'Linkal Studio', body: 'Your website was updated!' };
+  let data = { title: 'Linkal Studio', body: 'Your website was updated!', url: '/dashboard' };
   try {
     if (event.data) {
       data = event.data.json();
@@ -98,9 +94,17 @@ self.addEventListener('push', (event) => {
     body: data.body,
     icon: '/linkal.jpeg',
     badge: '/linkal.jpeg',
+    vibrate: [300, 100, 400, 100, 300],
+    tag: 'linkal-studio-notification',
+    renotify: true,
+    requireInteraction: true,
     data: {
       url: data.url || '/dashboard'
-    }
+    },
+    actions: [
+      { action: 'open', title: 'Open Studio' },
+      { action: 'close', title: 'Dismiss' }
+    ]
   };
 
   event.waitUntil(
@@ -125,4 +129,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-
