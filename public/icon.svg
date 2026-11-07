@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D1B3E" />
+      <stop offset="100%" stop-color="#1A2744" />
+    </linearGradient>
+    <linearGradient id="blueG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1A56FF" />
+    </linearGradient>
+  </defs>
+  <!-- Background with subtle squircle -->
+  <rect width="512" height="512" rx="115" fill="url(#bg)" />
+  
+  <!-- Outer subtle glow -->
+  <rect x="24" y="24" width="464" height="464" rx="95" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3" />
+
+  <!-- Studio Layered Shapes / Linkal Visual -->
+  <g transform="translate(96, 96)">
+    <!-- Bottom layer -->
+    <path d="M160 270 L280 205 L280 235 L160 300 L40 235 L40 205 Z" fill="#2563EB" opacity="0.6" />
+    
+    <!-- Middle layer -->
+    <path d="M160 210 L280 145 L280 175 L160 240 L40 175 L40 145 Z" fill="#3B82F6" opacity="0.85" />
+    
+    <!-- Top diamond layer -->
+    <polygon points="160,50 280,115 160,180 40,115" fill="url(#blueG)" />
+    
+    <!-- Inner Link spark -->
+    <circle cx="160" cy="115" r="18" fill="#FFFFFF" />
+  </g>
+  
+  <!-- Studio Wordmark Tag -->
+  <text x="256" y="440" text-anchor="middle" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="44" fill="#FFFFFF" letter-spacing="3">STUDIO</text>
+</svg>

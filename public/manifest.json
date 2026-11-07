@@ -1,22 +1,50 @@
 {
+  "id": "linkal-studio-pwa-v1",
   "name": "Linkal Studio",
-  "short_name": "Linkal Studio",
-  "description": "Visual website builder, digital QR menu generator, and executive CV maker.",
-  "start_url": "/dashboard",
+  "short_name": "Studio",
+  "description": "Visual website builder, digital QR menu generator, and executive CV maker under linkal.in",
+  "start_url": "/dashboard?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0D1B3E",
-  "theme_color": "#1A56FF",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0D1B3E",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/linkal.jpeg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
       "src": "/linkal.jpeg",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Websites",
+      "short_name": "Websites",
+      "description": "View and manage your live websites",
+      "url": "/dashboard",
+      "icons": [{ "src": "/linkal.jpeg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Create Website",
+      "short_name": "Create",
+      "description": "Build a new store or executive CV",
+      "url": "/dashboard?action=create",
+      "icons": [{ "src": "/linkal.jpeg", "sizes": "192x192" }]
     }
   ]
 }
-
