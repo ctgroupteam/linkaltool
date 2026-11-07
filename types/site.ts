@@ -148,7 +148,7 @@ export interface SiteData {
   footerEmail?: string;
   
   // Deployment metadata
-  liveUrl?: string; // e.g. 'https://myshop.dominal.in'
+  liveUrl?: string; // e.g. 'https://myshop.linkal.in'
   githubRepoUrl?: string;
   vercelProjectId?: string;
   vercelDeploymentId?: string;
@@ -157,6 +157,14 @@ export interface SiteData {
   lastDeployedAt?: string;
   lastError?: string;
   
+  // Subscription & Free Trial
+  planStatus?: 'trial' | 'active' | 'expired';
+  planType?: 'free_cv' | 'monthly_299' | 'quarterly_799' | 'halfyearly_1499' | 'yearly_2699';
+  isFreeLifetime?: boolean;
+  trialEndsAt?: string;
+  userEmail?: string;
+  userGoogleId?: string;
+
   createdAt: string;
   updatedAt: string;
 }

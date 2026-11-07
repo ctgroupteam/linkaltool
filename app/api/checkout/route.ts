@@ -15,17 +15,25 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. Pricing lookup (INR)
+    // 2. Pricing lookup (INR) - 1 Mo (₹299), 3 Mo (₹799), 6 Mo (₹1,499), 1 Yr (₹2,699)
     const pricingMap: Record<string, number> = {
-      basic: 300,
-      starter: 300,
-      growth: 500,
-      pro: 700,
+      '1_month': 299,
+      '3_months': 799,
+      '6_months': 1499,
+      '1_year': 2699,
+      monthly: 299,
+      quarterly: 799,
+      halfyearly: 1499,
+      yearly: 2699,
+      basic: 299,
+      starter: 299,
+      growth: 799,
+      pro: 1499,
     };
 
-    const amount = pricingMap[planTier] || 300;
+    const amount = pricingMap[planTier] || 299;
     const orderId = `order_${slug || 'site'}_${Date.now()}`;
-    const returnUrl = `https://linkal.in/order/verify?order_id={order_id}&slug=${encodeURIComponent(slug || '')}`;
+    const returnUrl = `https://studio.linkal.in/dashboard?order_id={order_id}&status=success`;
 
     // 3. Create Cashfree Production Order
     const order = await createCashfreeOrder({
@@ -53,3 +61,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

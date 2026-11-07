@@ -1370,6 +1370,39 @@ export function generateStaticHtml(site: SiteData): string {
       startAuto();
     })();
   </script>
+
+  <!-- Linkal 7-Day Soft Paywall Controller -->
+  <script>
+    (function() {
+      var createdAt = ${JSON.stringify(site.createdAt || new Date().toISOString())};
+      var planStatus = ${JSON.stringify(site.planStatus || 'trial')};
+      var isFreeLifetime = ${JSON.stringify(Boolean(site.isFreeLifetime))};
+      var siteSlug = ${JSON.stringify(site.slug || '')};
+      var siteName = ${JSON.stringify(site.name || 'Storefront')};
+      var siteId = ${JSON.stringify(site.id || '')};
+
+      if (!isFreeLifetime && planStatus !== 'active') {
+        var createdTime = new Date(createdAt).getTime();
+        var now = Date.now();
+        var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        if (now - createdTime > sevenDaysMs) {
+          window.addEventListener('DOMContentLoaded', function() {
+            var overlay = document.createElement('div');
+            overlay.id = 'linkal-soft-paywall';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(13,27,62,0.97);backdrop-filter:blur(8px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,system-ui,sans-serif;color:#ffffff;text-align:center;';
+            overlay.innerHTML = '<div style="max-width:440px;width:100%;background:#ffffff;color:#0F172A;padding:2.5rem 2rem;border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.3);border:1px solid #E2E8F0;">' +
+              '<div style="width:56px;height:56px;background:#FEF2F2;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1.25rem;color:#DC2626;font-size:1.75rem;">⏰</div>' +
+              '<h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.6rem;color:#0F172A;letter-spacing:-0.02em;">Free Trial Ended</h2>' +
+              '<p style="font-size:0.92rem;color:#64748B;line-height:1.6;margin-bottom:1.5rem;">Your 7-day free trial for <strong>' + siteName + '</strong> has ended. Continue receiving live customer WhatsApp orders and ranking on Google starting at <strong>₹299/month</strong>.</p>' +
+              '<a href="https://studio.linkal.in/dashboard?renew=' + encodeURIComponent(siteId) + '" style="display:block;background:#1A56FF;color:#ffffff;text-decoration:none;font-weight:700;font-size:0.95rem;padding:0.9rem 1.5rem;border-radius:12px;box-shadow:0 4px 14px rgba(26,86,255,0.4);margin-bottom:0.75rem;">Renew in Linkal Studio (₹299/mo)</a>' +
+              '<p style="font-size:0.75rem;color:#94A3B8;margin-top:0.75rem;">Your catalog, products, and subdomain (' + siteSlug + '.linkal.in) are safely preserved.</p>' +
+              '</div>';
+            document.body.appendChild(overlay);
+          });
+        }
+      }
+    })();
+  </script>
 </body>
 </html>`;
 }

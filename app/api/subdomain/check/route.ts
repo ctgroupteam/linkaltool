@@ -39,8 +39,9 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Check existing registered storefronts / sites
+    const siteId = searchParams.get('siteId');
     const existingSite = await getSiteBySlug(cleanSlug);
-    if (existingSite) {
+    if (existingSite && existingSite.id !== siteId) {
       return NextResponse.json({
         available: false,
         reason: 'taken',
@@ -62,3 +63,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+

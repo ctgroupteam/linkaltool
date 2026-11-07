@@ -17,7 +17,7 @@ export async function createOrUpdateCloudflareCname(
     'Content-Type': 'application/json',
   };
 
-  const domain = 'dominal.in';
+  const domain = 'linkal.in';
   const fullRecordName = `${subdomain}.${domain}`;
 
   // 1. Search for existing DNS record

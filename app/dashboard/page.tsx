@@ -40,6 +40,16 @@ import {
 } from 'lucide-react';
 import { SiteData, SiteType, SiteStatus } from '@/types/site';
 import { generateQrSvg, downloadQrPng, downloadQrSvg } from '@/lib/qrcode';
+import { BillingModal } from '@/app/components/BillingModal';
+
+function CreditCard({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+    </svg>
+  );
+}
 
 function Upload({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
@@ -103,7 +113,17 @@ function DashboardContent() {
   const [deploymentError, setDeploymentError] = useState<string | null>(null);
   const [previewSite, setPreviewSite] = useState<SiteData | null>(null);
   const [qrModalSite, setQrModalSite] = useState<SiteData | null>(null);
+  const [billingModalSite, setBillingModalSite] = useState<SiteData | null>(null);
   const [propagationSeconds, setPropagationSeconds] = useState(30);
+
+  // Auto-open billing if ?renew={siteId} is present
+  const renewParam = searchParams.get('renew');
+  useEffect(() => {
+    if (renewParam && sites.length > 0) {
+      const match = sites.find((s) => s.id === renewParam || s.slug === renewParam);
+      if (match) setBillingModalSite(match);
+    }
+  }, [renewParam, sites]);
 
   // 30-Second Propagation Countdown Timer
   useEffect(() => {
@@ -176,7 +196,7 @@ function DashboardContent() {
                 return {
                   ...serverSite,
                   status: 'live',
-                  liveUrl: localMatch.liveUrl || `https://${serverSite.slug}.dominal.in`,
+                  liveUrl: localMatch.liveUrl || `https://${serverSite.slug}.linkal.in`,
                 };
               }
               if (
@@ -578,7 +598,7 @@ function DashboardContent() {
                   <span className="text-xs font-bold text-zinc-950">Domain Engine</span>
                 </div>
                 <p className="text-[11px] text-zinc-500 font-medium">
-                  Subdomain Provisioning: <code className="text-zinc-950 font-bold font-mono">*.dominal.in</code>
+                  Subdomain Provisioning: <code className="text-zinc-950 font-bold font-mono">*.linkal.in</code>
                 </p>
               </div>
 
@@ -606,7 +626,7 @@ function DashboardContent() {
                   Cloud Configuration Advisory
                 </span>
                 <p className="text-amber-800 font-medium mt-0.5">
-                  Ensure platform API keys are configured in environment variables for automated domain publishing under *.dominal.in.
+                  Ensure platform API keys are configured in environment variables for automated domain publishing under *.linkal.in.
                 </p>
               </div>
             </div>
@@ -624,7 +644,7 @@ function DashboardContent() {
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
-                <strong>Live Cloud Integration Active</strong> &bull; Automated publishing connects directly to Linkal servers &amp; Linkal domain servers (*.dominal.in).
+                <strong>Live Cloud Integration Active</strong> &bull; Automated publishing connects directly to Linkal servers &amp; Linkal domain servers (*.linkal.in).
               </span>
             </div>
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-200 font-mono font-bold text-[10px] text-emerald-900">
@@ -650,7 +670,7 @@ function DashboardContent() {
             </p>
             <div className="flex items-center gap-3 pt-1">
               <a
-                href={recentlyPublishedSite.liveUrl || `https://${recentlyPublishedSite.slug}.dominal.in`}
+                href={recentlyPublishedSite.liveUrl || `https://${recentlyPublishedSite.slug}.linkal.in`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold transition-all shadow-xs"
@@ -659,7 +679,7 @@ function DashboardContent() {
                 <ArrowUpRight className="w-4 h-4" />
               </a>
               <span className="font-mono text-xs font-bold text-emerald-800">
-                https://{recentlyPublishedSite.slug}.dominal.in
+                https://{recentlyPublishedSite.slug}.linkal.in
               </span>
             </div>
           </div>
@@ -722,7 +742,7 @@ function DashboardContent() {
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-black text-emerald-700">{stats.live}</div>
-            <p className="text-[11px] text-emerald-800 font-semibold mt-1">Active on *.dominal.in</p>
+            <p className="text-[11px] text-emerald-800 font-semibold mt-1">Active on *.linkal.in</p>
           </div>
 
           <div
@@ -841,7 +861,7 @@ function DashboardContent() {
                         {site.name}
                       </h3>
                       <p className="text-xs text-zinc-500 font-mono font-medium mt-0.5">
-                        {site.slug}.dominal.in
+                        {site.slug}.linkal.in
                       </p>
                     </div>
 
@@ -886,13 +906,13 @@ function DashboardContent() {
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                         <a
-                          href={site.liveUrl || `https://${site.slug}.dominal.in`}
+                          href={site.liveUrl || `https://${site.slug}.linkal.in`}
                           target="_blank"
                           rel="noreferrer"
                           className="text-xs font-mono font-bold text-emerald-800 hover:text-emerald-950 truncate underline"
-                          title={site.liveUrl || `https://${site.slug}.dominal.in`}
+                          title={site.liveUrl || `https://${site.slug}.linkal.in`}
                         >
-                          https://{site.slug}.dominal.in
+                          https://{site.slug}.linkal.in
                         </a>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
@@ -900,7 +920,7 @@ function DashboardContent() {
                           type="button"
                           onClick={() => {
                             navigator.clipboard.writeText(
-                              site.liveUrl || `https://${site.slug}.dominal.in`
+                              site.liveUrl || `https://${site.slug}.linkal.in`
                             );
                             setCopiedSlug(site.slug);
                             setTimeout(() => setCopiedSlug(null), 2000);
@@ -930,7 +950,7 @@ function DashboardContent() {
                           <span>QR</span>
                         </button>
                         <a
-                          href={site.liveUrl || `https://${site.slug}.dominal.in`}
+                          href={site.liveUrl || `https://${site.slug}.linkal.in`}
                           target="_blank"
                           rel="noreferrer"
                           className="p-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg transition-colors"
@@ -956,7 +976,7 @@ function DashboardContent() {
 
                     {site.status === 'live' ? (
                       <a
-                        href={site.liveUrl || `https://${site.slug}.dominal.in`}
+                        href={site.liveUrl || `https://${site.slug}.linkal.in`}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs"
@@ -996,6 +1016,14 @@ function DashboardContent() {
                     )}
 
                     <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setBillingModalSite(site)}
+                        className="p-1.5 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
+                        title="Subscription & Cashfree Billing"
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                      </button>
+
                       <button
                         onClick={() => setQrModalSite(site)}
                         className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-950 hover:bg-zinc-100"
@@ -1391,7 +1419,7 @@ function DashboardContent() {
                     Storefront QR Code
                   </h3>
                   <p className="text-xs text-zinc-500 font-mono">
-                    https://{qrModalSite.slug}.dominal.in
+                    https://{qrModalSite.slug}.linkal.in
                   </p>
                 </div>
               </div>
@@ -1408,14 +1436,14 @@ function DashboardContent() {
                 className="p-3 bg-white rounded-xl shadow-xs border border-zinc-200"
                 dangerouslySetInnerHTML={{
                   __html: generateQrSvg(
-                    qrModalSite.liveUrl || `https://${qrModalSite.slug}.dominal.in`,
+                    qrModalSite.liveUrl || `https://${qrModalSite.slug}.linkal.in`,
                     220
                   ),
                 }}
               />
               <div className="text-center">
                 <span className="text-xs font-mono font-bold text-zinc-900 block">
-                  https://{qrModalSite.slug}.dominal.in
+                  https://{qrModalSite.slug}.linkal.in
                 </span>
                 <span className="text-[11px] text-zinc-500 font-medium">
                   Scan to instantly open on any smartphone camera
@@ -1429,7 +1457,7 @@ function DashboardContent() {
                   type="button"
                   onClick={() =>
                     downloadQrPng(
-                      qrModalSite.liveUrl || `https://${qrModalSite.slug}.dominal.in`,
+                      qrModalSite.liveUrl || `https://${qrModalSite.slug}.linkal.in`,
                       `${qrModalSite.slug}-qr.png`,
                       800
                     )
@@ -1444,7 +1472,7 @@ function DashboardContent() {
                   type="button"
                   onClick={() =>
                     downloadQrSvg(
-                      qrModalSite.liveUrl || `https://${qrModalSite.slug}.dominal.in`,
+                      qrModalSite.liveUrl || `https://${qrModalSite.slug}.linkal.in`,
                       `${qrModalSite.slug}-qr.svg`
                     )
                   }
@@ -1459,7 +1487,7 @@ function DashboardContent() {
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    qrModalSite.liveUrl || `https://${qrModalSite.slug}.dominal.in`
+                    qrModalSite.liveUrl || `https://${qrModalSite.slug}.linkal.in`
                   );
                   alert('Live link copied to clipboard!');
                 }}
@@ -1490,7 +1518,7 @@ function DashboardContent() {
                     Publishing {activeDeploymentSite.name}
                   </h3>
                   <p className="text-xs text-zinc-500 font-mono">
-                    Target Domain: https://{activeDeploymentSite.slug}.dominal.in
+                    Target Domain: https://{activeDeploymentSite.slug}.linkal.in
                   </p>
                 </div>
               </div>
@@ -1643,7 +1671,7 @@ function DashboardContent() {
                   <div className="flex items-center justify-between">
                     <span className="font-sans font-bold text-zinc-500">Live Subdomain:</span>
                     <span className="font-bold text-emerald-700">
-                      https://{activeDeploymentSite.slug}.dominal.in
+                      https://{activeDeploymentSite.slug}.linkal.in
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -1654,7 +1682,7 @@ function DashboardContent() {
 
                 <div className="flex items-center gap-2 pt-1">
                   <a
-                    href={activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.dominal.in`}
+                    href={activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.linkal.in`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs"
@@ -1666,7 +1694,7 @@ function DashboardContent() {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.dominal.in`
+                        activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.linkal.in`
                       );
                       alert('Live site URL copied to clipboard!');
                     }}
@@ -1681,7 +1709,7 @@ function DashboardContent() {
                   <div
                     className="p-1 bg-white rounded-lg border border-zinc-200 shrink-0"
                     dangerouslySetInnerHTML={{
-                      __html: generateQrSvg(activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.dominal.in`, 76),
+                      __html: generateQrSvg(activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.linkal.in`, 76),
                     }}
                   />
                   <div className="flex-1 min-w-0">
@@ -1697,7 +1725,7 @@ function DashboardContent() {
                         type="button"
                         onClick={() =>
                           downloadQrPng(
-                            activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.dominal.in`,
+                            activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.linkal.in`,
                             `${activeDeploymentSite.slug}-qr.png`,
                             800
                           )
@@ -1711,7 +1739,7 @@ function DashboardContent() {
                         type="button"
                         onClick={() =>
                           downloadQrSvg(
-                            activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.dominal.in`,
+                            activeDeploymentSite.liveUrl || `https://${activeDeploymentSite.slug}.linkal.in`,
                             `${activeDeploymentSite.slug}-qr.svg`
                           )
                         }
@@ -1779,7 +1807,7 @@ function DashboardContent() {
               <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-1">
                 <span className="font-bold text-zinc-950 block">Automated Cloud Engine Active</span>
                 <p className="text-zinc-600 font-medium">
-                  Configured environment keys enable zero-touch publishing of customer storefronts under <code className="text-zinc-950 font-mono bg-zinc-200 px-1 rounded">*.dominal.in</code>.
+                  Configured environment keys enable zero-touch publishing of customer storefronts under <code className="text-zinc-950 font-mono bg-zinc-200 px-1 rounded">*.linkal.in</code>.
                 </p>
               </div>
 
@@ -1812,7 +1840,7 @@ function DashboardContent() {
                   <span className="px-2 py-0.5 rounded bg-zinc-100 font-mono font-bold text-[10px] text-zinc-700">ACTIVE</span>
                 </div>
                 <p className="text-zinc-600 font-medium">
-                  Instant CNAME DNS record creation for customer subdomains under dominal.in.
+                  Instant CNAME DNS record creation for customer subdomains under linkal.in.
                 </p>
               </div>
             </div>
@@ -1828,6 +1856,15 @@ function DashboardContent() {
           </div>
         </div>
       )}
+
+      {/* Production Cashfree Billing Modal */}
+      <BillingModal
+        isOpen={Boolean(billingModalSite)}
+        onClose={() => setBillingModalSite(null)}
+        siteSlug={billingModalSite?.slug}
+        siteName={billingModalSite?.name}
+        siteId={billingModalSite?.id}
+      />
     </div>
   );
 }

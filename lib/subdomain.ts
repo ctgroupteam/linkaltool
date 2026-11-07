@@ -75,3 +75,4 @@ export function generateAvailableAlternatives(slug: string): string[] {
     `my-${clean}`
   ];
 }
+

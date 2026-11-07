@@ -1,6 +1,6 @@
 # 🚀 Linkal Website Builder — SaaS Platform
 
-**Linkal** is a modern, high-performance website builder SaaS designed to create, customize, preview, and one-click publish framework-free, mobile-responsive customer websites with automated GitHub repo creation, Vercel deployment, and Cloudflare DNS provisioning under the `dominal.in` domain.
+**Linkal** is a modern, high-performance website builder SaaS designed to create, customize, preview, and one-click publish framework-free, mobile-responsive customer websites with automated GitHub repo creation, Vercel deployment, and Cloudflare DNS provisioning under the `linkal.in` domain.
 
 ---
 
@@ -16,7 +16,7 @@
 - 🚀 **One-Click Automated Deployment Pipeline**:
   - **GitHub**: Automatic repository creation and file commit (`index.html`).
   - **Vercel**: Project provisioning and custom domain attachment.
-  - **Cloudflare**: CNAME DNS record setup (`{slug}.dominal.in` ➔ `cname.vercel-dns.com` with Proxy OFF).
+  - **Cloudflare**: CNAME DNS record setup (`{slug}.linkal.in` ➔ `cname.vercel-dns.com` with Proxy OFF).
   - **Live Verification**: Automated status checks with real-time log streaming and retry capability.
 - 🔐 **Secure Platform Owner Dashboard**: Protected by JWT session cookies with site metrics, filtering, live links, and full site management.
 

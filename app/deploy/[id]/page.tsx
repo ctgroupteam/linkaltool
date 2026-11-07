@@ -259,7 +259,7 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
       // Await backend completion
       const backendResult = await publishPromise;
 
-      const liveUrl = backendResult.site?.liveUrl || `https://${targetSite.slug}.dominal.in`;
+      const liveUrl = backendResult.site?.liveUrl || `https://${targetSite.slug}.linkal.in`;
       const finalSite: SiteData = {
         ...(backendResult.site || targetSite),
         status: 'live',
@@ -293,13 +293,13 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
 
   const copyLiveLink = () => {
     if (!site) return;
-    const url = site.liveUrl || `https://${site.slug}.dominal.in`;
+    const url = site.liveUrl || `https://${site.slug}.linkal.in`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const liveDomainUrl = site?.liveUrl || (site ? `https://${site.slug}.dominal.in` : 'https://dominal.in');
+  const liveDomainUrl = site?.liveUrl || (site ? `https://${site.slug}.linkal.in` : 'https://linkal.in');
 
   if (loading && !site) {
     return (

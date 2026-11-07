@@ -51,6 +51,7 @@ import {
 } from '@/types/site';
 import { generateStaticHtml } from '@/lib/generator';
 import { generateQrSvg, downloadQrPng, downloadQrSvg } from '@/lib/qrcode';
+import { GoogleAuthModal } from '@/app/components/GoogleAuthModal';
 
 function Upload({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
@@ -145,6 +146,36 @@ export default function BuilderPage() {
   const [deploymentLogs, setDeploymentLogs] = useState<any[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [propagationSeconds, setPropagationSeconds] = useState(30);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [subdomainStatus, setSubdomainStatus] = useState<{
+    checking: boolean;
+    available?: boolean;
+    reason?: string;
+    suggestions?: string[];
+  }>({ checking: false });
+
+  // Debounced 200ms RFC 1035 Subdomain Availability Verification
+  useEffect(() => {
+    if (!site?.slug) return;
+    const timer = setTimeout(async () => {
+      try {
+        setSubdomainStatus({ checking: true });
+        const res = await fetch(
+          `/api/subdomain/check?slug=${encodeURIComponent(site.slug)}&siteId=${encodeURIComponent(site.id)}`
+        );
+        const data = await res.json();
+        setSubdomainStatus({
+          checking: false,
+          available: data.available,
+          reason: data.message || data.reason,
+          suggestions: data.suggestions,
+        });
+      } catch {
+        setSubdomainStatus({ checking: false, available: true });
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [site?.slug, site?.id]);
 
   // 30-Second Propagation Countdown Timer
   useEffect(() => {
@@ -251,9 +282,34 @@ export default function BuilderPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleAuthSuccess = (user: any) => {
+    if (site) {
+      const updated = {
+        ...site,
+        userEmail: user.email,
+        userGoogleId: user.google_id || user.id,
+      };
+      setSite(updated);
+      // Auto-save after successful Google Auth
+      fetch(`/api/sites/${site.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      }).catch(console.warn);
+    }
+  };
+
   // Handle Save Draft
   const handleSave = async () => {
     if (!site) return;
+
+    // Check Google Auth requirement
+    const localUser = typeof window !== 'undefined' ? localStorage.getItem('linkal_user') : null;
+    if (!localUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
     try {
       setSaving(true);
       const res = await fetch(`/api/sites/${site.id}`, {
@@ -290,6 +346,14 @@ export default function BuilderPage() {
   // Handle Publish
   const handlePublish = async () => {
     if (!site) return;
+
+    // Check Google Auth requirement
+    const localUser = typeof window !== 'undefined' ? localStorage.getItem('linkal_user') : null;
+    if (!localUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -382,7 +446,7 @@ export default function BuilderPage() {
               {site.name}
             </span>
             <span className="hidden sm:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700">
-              {site.slug}.dominal.in
+              {site.slug}.linkal.in
             </span>
           </div>
         </div>
@@ -794,21 +858,74 @@ export default function BuilderPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-900 mb-1">
-                    Subdomain Slug (*.dominal.in)
-                  </label>
-                  <input
-                    type="text"
-                    value={site.slug}
-                    onChange={(e) =>
-                      updateSiteField(
-                        'slug',
-                        e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
-                      )
-                    }
-                    className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-950 focus:ring-2 focus:ring-zinc-950"
-                  />
-                  <p className="text-[10px] text-zinc-500 font-mono mt-1">Live URL: https://{site.slug}.dominal.in</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-zinc-900">
+                      Subdomain Slug (*.linkal.in)
+                    </label>
+                    <span className="text-[10px] text-zinc-400 font-mono">RFC 1035</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={site.slug}
+                      onChange={(e) =>
+                        updateSiteField(
+                          'slug',
+                          e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                        )
+                      }
+                      className={`w-full pl-3.5 pr-10 py-2 bg-white border rounded-xl text-xs font-mono font-bold text-zinc-950 focus:outline-none focus:ring-2 ${
+                        subdomainStatus.available === false
+                          ? 'border-red-500 focus:ring-red-500'
+                          : subdomainStatus.available === true
+                          ? 'border-emerald-500 focus:ring-emerald-500'
+                          : 'border-zinc-300 focus:ring-zinc-950'
+                      }`}
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {subdomainStatus.checking ? (
+                        <RefreshCw className="w-3.5 h-3.5 text-zinc-400 animate-spin" />
+                      ) : subdomainStatus.available === true ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      ) : subdomainStatus.available === false ? (
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* Instant Inline Feedback */}
+                  {subdomainStatus.available === true && !subdomainStatus.checking && (
+                    <p className="text-[11px] text-emerald-600 font-semibold mt-1.5 flex items-center gap-1">
+                      <Check className="w-3 h-3 text-emerald-600" />
+                      https://{site.slug}.linkal.in is available!
+                    </p>
+                  )}
+
+                  {subdomainStatus.available === false && !subdomainStatus.checking && (
+                    <div className="mt-1.5 space-y-1">
+                      <p className="text-[11px] text-red-600 font-semibold flex items-center gap-1">
+                        <X className="w-3 h-3 text-red-600" />
+                        {subdomainStatus.reason || 'This subdomain is taken or reserved.'}
+                      </p>
+                      {subdomainStatus.suggestions && subdomainStatus.suggestions.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                          <span className="text-[10px] text-zinc-500 font-medium">Available:</span>
+                          {subdomainStatus.suggestions.slice(0, 3).map((sug) => (
+                            <button
+                              key={sug}
+                              type="button"
+                              onClick={() => updateSiteField('slug', sug)}
+                              className="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-mono font-bold px-1.5 py-0.5 rounded border border-zinc-200 transition-colors"
+                            >
+                              {sug}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-zinc-500 font-mono mt-1">Live URL: https://{site.slug}.linkal.in</p>
                 </div>
 
                 <div>
@@ -2344,7 +2461,7 @@ export default function BuilderPage() {
                     Storefront QR Code
                   </h3>
                   <p className="text-xs text-zinc-500 font-mono">
-                    https://{site.slug}.dominal.in
+                    https://{site.slug}.linkal.in
                   </p>
                 </div>
               </div>
@@ -2361,14 +2478,14 @@ export default function BuilderPage() {
                 className="p-3 bg-white rounded-xl shadow-xs border border-zinc-200"
                 dangerouslySetInnerHTML={{
                   __html: generateQrSvg(
-                    site.liveUrl || `https://${site.slug}.dominal.in`,
+                    site.liveUrl || `https://${site.slug}.linkal.in`,
                     220
                   ),
                 }}
               />
               <div className="text-center">
                 <span className="text-xs font-mono font-bold text-zinc-900 block">
-                  https://{site.slug}.dominal.in
+                  https://{site.slug}.linkal.in
                 </span>
                 <span className="text-[11px] text-zinc-500 font-medium">
                   Scan to instantly open on any smartphone camera
@@ -2382,7 +2499,7 @@ export default function BuilderPage() {
                   type="button"
                   onClick={() =>
                     downloadQrPng(
-                      site.liveUrl || `https://${site.slug}.dominal.in`,
+                      site.liveUrl || `https://${site.slug}.linkal.in`,
                       `${site.slug}-qr.png`,
                       800
                     )
@@ -2397,7 +2514,7 @@ export default function BuilderPage() {
                   type="button"
                   onClick={() =>
                     downloadQrSvg(
-                      site.liveUrl || `https://${site.slug}.dominal.in`,
+                      site.liveUrl || `https://${site.slug}.linkal.in`,
                       `${site.slug}-qr.svg`
                     )
                   }
@@ -2412,7 +2529,7 @@ export default function BuilderPage() {
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    site.liveUrl || `https://${site.slug}.dominal.in`
+                    site.liveUrl || `https://${site.slug}.linkal.in`
                   );
                   alert('Live link copied to clipboard!');
                 }}
@@ -2447,7 +2564,7 @@ export default function BuilderPage() {
                       : 'Publishing Complete'}
                   </h3>
                   <p className="text-xs text-zinc-500 font-mono">
-                    https://{site.slug}.dominal.in
+                    https://{site.slug}.linkal.in
                   </p>
                 </div>
               </div>
@@ -2557,13 +2674,13 @@ export default function BuilderPage() {
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-zinc-500 font-medium">Live Domain Link:</span>
                     <span className="text-emerald-700 font-mono font-bold">
-                      https://{site.slug}.dominal.in
+                      https://{site.slug}.linkal.in
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 pt-1">
                     <a
-                      href={site.liveUrl || `https://${site.slug}.dominal.in`}
+                      href={site.liveUrl || `https://${site.slug}.linkal.in`}
                       target="_blank"
                       rel="noreferrer"
                       className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs"
@@ -2576,7 +2693,7 @@ export default function BuilderPage() {
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          site.liveUrl || `https://${site.slug}.dominal.in`
+                          site.liveUrl || `https://${site.slug}.linkal.in`
                         );
                         alert('Live link copied to clipboard!');
                       }}
@@ -2592,7 +2709,7 @@ export default function BuilderPage() {
                   <div
                     className="p-1.5 bg-white rounded-lg border border-zinc-200 shrink-0"
                     dangerouslySetInnerHTML={{
-                      __html: generateQrSvg(site.liveUrl || `https://${site.slug}.dominal.in`, 76),
+                      __html: generateQrSvg(site.liveUrl || `https://${site.slug}.linkal.in`, 76),
                     }}
                   />
                   <div className="flex-1 min-w-0">
@@ -2608,7 +2725,7 @@ export default function BuilderPage() {
                         type="button"
                         onClick={() =>
                           downloadQrPng(
-                            site.liveUrl || `https://${site.slug}.dominal.in`,
+                            site.liveUrl || `https://${site.slug}.linkal.in`,
                             `${site.slug}-qr.png`,
                             800
                           )
@@ -2622,7 +2739,7 @@ export default function BuilderPage() {
                         type="button"
                         onClick={() =>
                           downloadQrSvg(
-                            site.liveUrl || `https://${site.slug}.dominal.in`,
+                            site.liveUrl || `https://${site.slug}.linkal.in`,
                             `${site.slug}-qr.svg`
                           )
                         }
@@ -2695,6 +2812,14 @@ export default function BuilderPage() {
           </div>
         </div>
       )}
+
+      {/* 1-Click Google Sign-In Modal */}
+      <GoogleAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        isCvSite={site?.type === 'portfolio'}
+      />
     </div>
   );
 }

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
           ...existing,
           ...site,
           status: 'live',
-          liveUrl: site.liveUrl || `https://${site.slug}.dominal.in`,
+          liveUrl: site.liveUrl || `https://${site.slug}.linkal.in`,
         });
       } else if (
         new Date(site.updatedAt || 0).getTime() >

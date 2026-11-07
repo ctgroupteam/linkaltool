@@ -74,9 +74,9 @@ export async function executeDeploymentPipeline(site: SiteData): Promise<Pipelin
       log('vercel', 'success', `Deployed code successfully.`);
 
       // Step 3: Connecting your domain
-      log('cloudflare', 'in_progress', `Connecting your domain (${site.slug}.dominal.in)...`);
+      log('cloudflare', 'in_progress', `Connecting your domain (${site.slug}.linkal.in)...`);
       await new Promise((r) => setTimeout(r, 500));
-      log('cloudflare', 'success', `Connected domain: https://${site.slug}.dominal.in`);
+      log('cloudflare', 'success', `Connected domain: https://${site.slug}.linkal.in`);
 
       // Step 4: Doing Google SEO and all
       log('general', 'in_progress', `Doing Google SEO, OpenGraph tags, and search indexing metadata...`);
@@ -86,9 +86,9 @@ export async function executeDeploymentPipeline(site: SiteData): Promise<Pipelin
       // Step 5: Making your website live
       log('poll', 'in_progress', `Making your website live and verifying SSL routing...`);
       await new Promise((r) => setTimeout(r, 600));
-      log('poll', 'success', `Site is verified live at https://${site.slug}.dominal.in`);
+      log('poll', 'success', `Site is verified live at https://${site.slug}.linkal.in`);
 
-      const liveUrl = `https://${site.slug}.dominal.in`;
+      const liveUrl = `https://${site.slug}.linkal.in`;
       updatedSite.status = 'live';
       updatedSite.liveUrl = liveUrl;
       updatedSite.lastDeployedAt = new Date().toISOString();
@@ -127,7 +127,7 @@ export async function executeDeploymentPipeline(site: SiteData): Promise<Pipelin
     );
     updatedSite.vercelProjectId = vercelProject.projectId;
 
-    const customDomain = `${site.slug}.dominal.in`;
+    const customDomain = `${site.slug}.linkal.in`;
     const domainResult = await addDomainToVercelProject(
       site.slug,
       customDomain,

@@ -15,6 +15,18 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || sup
 // Client-side / public client
 export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey);
 
+export interface UserRecord {
+  id: string;
+  google_id?: string;
+  email: string;
+  full_name: string;
+  phone_number?: string;
+  avatar_url?: string;
+  cv_created_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface StoreRecord {
   id: string;
   user_id: string;
@@ -91,3 +103,4 @@ export interface OrderRecord {
   plan_tier: string;
   created_at: string;
 }
+

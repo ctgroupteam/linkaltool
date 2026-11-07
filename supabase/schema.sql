@@ -137,3 +137,4 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE INDEX IF NOT EXISTS idx_orders_cf_order_id ON orders(cf_order_id);
+
