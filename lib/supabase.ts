@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yuvkbugblplulrzrjamg.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1dmtidWdibHBsdWxyenJqYW1nIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5Mzk2NTQ1MSwiZXhwIjoyMTA5NTQxNDUxfQ.wa3GU56LYGxXn-g8Ni6DE5hWIqkMCv733AHneJOG5pE';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1dmtidWdibHBsdWxyenJqYW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjU0NTEsImV4cCI6MjEwOTU0MTQ1MX0.BRTjFr5TQ4b2HFVx_n0l9wz6mI7ONWj2Clkla4h9O-0';
 
 // Server-side privileged client
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
