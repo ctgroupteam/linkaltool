@@ -592,7 +592,7 @@ function DashboardContent() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 pb-20">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-zinc-50 text-zinc-950 pb-20">
       {/* ─── PWA & NOTIFICATIONS CONTROLLER ─── */}
       <PwaInstallPrompt />
 
@@ -626,7 +626,7 @@ function DashboardContent() {
       )}
 
       {/* ─── TOP CUSTOMER HEADER ─── */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-zinc-200">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-zinc-200 w-full max-w-full overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <a href="/" className="flex items-center gap-2.5 text-decoration-none">
@@ -706,7 +706,7 @@ function DashboardContent() {
       </header>
 
       {/* ─── MAIN CUSTOMER CONTENT ─── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 overflow-hidden">
         {/* ─── TOP FREE LIFETIME ANNOUNCEMENT BANNER ─── */}
         <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3 text-center sm:text-left">

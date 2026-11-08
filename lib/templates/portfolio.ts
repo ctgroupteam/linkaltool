@@ -62,7 +62,9 @@ export function generateCreativePortfolioHtml(site: SiteData): string {
       --border-accent: rgba(99, 102, 241, 0.3);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { max-width: 100vw; width: 100%; overflow-x: hidden; }
     body { background: var(--bg); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; overflow-x: hidden; }
+    img { max-width: 100%; height: auto; }
 
     /* Hero */
     .hero-section { text-align: center; padding: 5rem 1.5rem 3.5rem; background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, var(--bg) 75%); border-bottom: 1px solid var(--border); }

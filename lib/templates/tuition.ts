@@ -54,7 +54,9 @@ export function generateTuitionHtml(site: SiteData): string {
       --green: #10b981;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { max-width: 100vw; width: 100%; overflow-x: hidden; }
     body { background: var(--bg); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; }
+    img { max-width: 100%; height: auto; }
 
     .tui-header { background: linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%); color: #fff; padding: 3.5rem 1.5rem 2.5rem; text-align: center; }
     .tui-badge { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #93c5fd; padding: 0.3rem 0.9rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }

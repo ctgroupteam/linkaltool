@@ -821,23 +821,23 @@ export default function BuilderPage() {
   const getDeviceClass = () => {
     switch (previewDevice) {
       case 'mobile':
-        return 'w-[375px] h-[667px] rounded-3xl shadow-xl border-8 border-zinc-900';
+        return 'w-[375px] max-w-full h-[667px] max-h-full rounded-3xl shadow-xl border-8 border-zinc-900';
       case 'tablet':
-        return 'w-[768px] h-[900px] rounded-2xl shadow-xl border-8 border-zinc-900';
+        return 'w-[768px] max-w-full h-[900px] max-h-full rounded-2xl shadow-xl border-8 border-zinc-900';
       default:
         return 'w-full h-full rounded-xl border border-zinc-200';
     }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col text-zinc-950">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-zinc-50 flex flex-col text-zinc-950">
       {/* Studio Header Bar */}
-      <header className="sticky top-0 z-30 bg-white border-b border-zinc-200 px-4 h-15 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-white border-b border-zinc-200 px-3 sm:px-4 h-15 flex items-center justify-between shadow-xs w-full max-w-full overflow-hidden">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
           {/* Top-Left Hamburger Drawer Menu */}
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-1.5 rounded-lg border border-zinc-200 text-zinc-900 hover:bg-zinc-100 transition-colors"
+            className="p-1.5 rounded-lg border border-zinc-200 text-zinc-900 hover:bg-zinc-100 transition-colors shrink-0"
             title="Open Menu"
           >
             <Menu className="w-5 h-5" />
@@ -845,17 +845,17 @@ export default function BuilderPage() {
 
           <button
             onClick={() => router.push('/dashboard')}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all"
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all shrink-0"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>My Sites</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="font-extrabold text-sm text-zinc-950 truncate max-w-[150px] sm:max-w-xs">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
+            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[100px] sm:max-w-[140px] md:max-w-[180px] shrink-0">
               {site.name}
             </span>
-            <span className="hidden sm:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700">
+            <span className="hidden lg:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700 truncate max-w-[140px] shrink">
               {site.slug}.linkal.in
             </span>
             <select
@@ -872,7 +872,7 @@ export default function BuilderPage() {
                   setActiveTab('general');
                 }
               }}
-              className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
+              className="text-[11px] font-extrabold px-2 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs max-w-[130px] sm:max-w-[180px] md:max-w-[240px] truncate shrink"
               title="Change Blueprint Template"
             >
               <option value="cv">1. Executive ATS CV (100% Free Lifetime)</option>
@@ -892,7 +892,7 @@ export default function BuilderPage() {
         </div>
 
         {/* Center: Device Viewport Switcher */}
-        <div className="hidden md:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200">
+        <div className="hidden xl:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200 shrink-0">
           <button
             onClick={() => setPreviewDevice('desktop')}
             className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
@@ -929,19 +929,19 @@ export default function BuilderPage() {
         </div>
 
         {/* Right Header Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={() => setShowQrModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all shadow-xs"
             title="Generate & Download QR Code"
           >
             <QrIcon className="w-3.5 h-3.5 text-zinc-900" />
-            <span className="hidden sm:inline">QR Code</span>
+            <span className="hidden md:inline">QR Code</span>
           </button>
 
           <button
             onClick={() => window.open(`/api/sites/${site.id}/export`, '_blank')}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all"
             title="Download index.html bundle"
           >
             <Download className="w-3.5 h-3.5" />
@@ -951,22 +951,23 @@ export default function BuilderPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5 text-zinc-900" />
-            <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+            <span className="hidden sm:inline">{saving ? 'Saving...' : 'Save Changes'}</span>
+            <span className="sm:hidden">{saving ? '...' : 'Save'}</span>
           </button>
 
           <button
             onClick={handlePublish}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-black text-white text-xs font-bold transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95"
           >
             <Rocket className="w-3.5 h-3.5 text-emerald-400" />
             <span>Publish</span>
           </button>
 
           {currentUser && (
-            <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-zinc-200">
+            <div className="hidden xl:flex items-center gap-2 pl-2 border-l border-zinc-200">
               <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
                 {currentUser.avatarUrl ? (
                   <img src={currentUser.avatarUrl} alt={currentUser.fullName || ''} className="w-full h-full object-cover" />
@@ -974,7 +975,7 @@ export default function BuilderPage() {
                   <span>{currentUser.fullName ? currentUser.fullName[0].toUpperCase() : 'U'}</span>
                 )}
               </div>
-              <div className="text-left leading-none max-w-[120px] truncate">
+              <div className="text-left leading-none max-w-[100px] truncate">
                 <span className="text-[11px] font-bold text-zinc-900 block truncate">
                   {currentUser.fullName || 'User'}
                 </span>
@@ -1345,10 +1346,10 @@ export default function BuilderPage() {
       )}
 
       {/* Builder Main Work Area */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col md:flex-row w-full max-w-full min-w-0 overflow-hidden pb-16 md:pb-0">
         {/* Left Control Editor Pane */}
         <div
-          className={`w-full md:w-[480px] lg:w-[520px] bg-white border-r border-zinc-200 flex flex-col h-full overflow-y-auto ${
+          className={`w-full md:w-[460px] lg:w-[500px] shrink-0 min-w-0 max-w-full bg-white border-r border-zinc-200 flex flex-col h-full overflow-y-auto overflow-x-hidden ${
             mobileViewMode === 'preview' ? 'hidden md:flex' : 'flex'
           }`}
         >
@@ -2626,7 +2627,7 @@ export default function BuilderPage() {
                   <label className="block text-xs font-bold text-zinc-900 mb-1.5">
                     Website Blueprint / Template Mode
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { type: 'cv', label: '1. Executive ATS CV (Free)', icon: '📄' },
                       { type: 'ecommerce', label: '2. E-Commerce Store', icon: '🛍️' },
@@ -2649,13 +2650,13 @@ export default function BuilderPage() {
                           if (m.type === 'cv') setActiveTab('cv_format');
                           else if (['watch_store', 'restaurant', 'wedding_card', 'tuition', 'boutique', 'portfolio'].includes(m.type)) setActiveTab('type_specific');
                         }}
-                        className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center gap-1.5 min-w-0 ${
                           site.type === m.type
                             ? 'border-blue-600 bg-blue-50 text-blue-900 font-extrabold shadow-xs'
                             : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
                         }`}
                       >
-                        <span>{m.icon}</span>
+                        <span className="shrink-0">{m.icon}</span>
                         <span className="truncate">{m.label}</span>
                       </button>
                     ))}
@@ -5025,17 +5026,17 @@ export default function BuilderPage() {
 
         {/* Right Sandbox Live Iframe Preview (Renders Instant Realtime srcDoc) */}
         <div
-          className={`flex-1 bg-zinc-200 p-4 md:p-6 flex flex-col items-center justify-center relative overflow-hidden ${
+          className={`flex-1 min-w-0 max-w-full bg-zinc-200 p-2 sm:p-4 md:p-6 flex flex-col items-center justify-center relative overflow-hidden ${
             mobileViewMode === 'editor' ? 'hidden md:flex' : 'flex'
           }`}
         >
-          <div className="w-full max-w-6xl h-full flex flex-col items-center justify-center">
+          <div className="w-full max-w-6xl h-full flex flex-col items-center justify-center overflow-hidden">
             <iframe
               ref={iframeRef}
               src={`/api/sites/${site.id}/preview`}
               srcDoc={previewHtml}
               sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              className={`transition-all duration-300 bg-white ${getDeviceClass()}`}
+              className={`transition-all duration-300 bg-white max-w-full max-h-full ${getDeviceClass()}`}
               title="Live Website Sandbox Preview"
             />
           </div>

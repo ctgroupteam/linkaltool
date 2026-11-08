@@ -48,7 +48,9 @@ export function generateBoutiqueHtml(site: SiteData): string {
       --gold: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { max-width: 100vw; width: 100%; overflow-x: hidden; }
     body { background: var(--bg); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; }
+    img { max-width: 100%; height: auto; }
 
     .bt-hero { text-align: center; padding: 4rem 1.5rem 3rem; background: #fff5f2; border-bottom: 1px solid var(--border); }
     .bt-badge { display: inline-block; background: #ffe4e6; color: var(--primary); padding: 0.3rem 0.9rem; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1rem; }

@@ -1348,8 +1348,8 @@ test('Suite 12: 100+ Enterprise Verification Cases — All 11 Templates, Themes,
   });
 
   await t.test('Test 145: Builder iframe device classes support Desktop, Tablet (768px), and Mobile (375px)', () => {
-    assert.ok(builderCode.includes('w-[375px] h-[667px]'));
-    assert.ok(builderCode.includes('w-[768px] h-[900px]'));
+    assert.ok(builderCode.includes('w-[375px]') && builderCode.includes('h-[667px]'));
+    assert.ok(builderCode.includes('w-[768px]') && builderCode.includes('h-[900px]'));
   });
 
   await t.test('Test 146: Subdomain validation rejects RFC 1035 prohibited characters and uppercase in real-time', () => {

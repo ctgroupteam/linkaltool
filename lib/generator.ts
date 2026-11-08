@@ -283,6 +283,11 @@ export function generateAtsCvHtml(site: SiteData): string {
       --paper: #FFFFFF;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      max-width: 100vw;
+      width: 100%;
+      overflow-x: hidden;
+    }
     body {
       font-family: '${site.fontFamily || 'Plus Jakarta Sans'}', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
@@ -291,6 +296,7 @@ export function generateAtsCvHtml(site: SiteData): string {
       -webkit-font-smoothing: antialiased;
       padding-bottom: 3rem;
     }
+    img { max-width: 100%; height: auto; }
     a { color: var(--primary); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
@@ -1121,6 +1127,11 @@ export function generateStaticHtml(site: SiteData): string {
       --font: '${fontFamily}', sans-serif;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      max-width: 100vw;
+      width: 100%;
+      overflow-x: hidden;
+    }
     body {
       font-family: var(--font);
       background-color: var(--bg);

@@ -42,14 +42,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={jakarta.variable}>
+    <html lang="en" className={`${jakarta.variable} overflow-x-hidden w-full max-w-full`}>
       <head>
         <link rel="icon" href="/linkal.jpeg" type="image/jpeg" />
         <link rel="shortcut icon" href="/linkal.jpeg" type="image/jpeg" />
         <link rel="apple-touch-icon" href="/linkal.jpeg" />
         <script src="https://accounts.google.com/gsi/client" async defer></script>
       </head>
-      <body className="min-h-screen bg-white text-zinc-950 antialiased selection:bg-zinc-900 selection:text-white">
+      <body className="min-h-screen w-full max-w-full overflow-x-hidden bg-white text-zinc-950 antialiased selection:bg-zinc-900 selection:text-white">
         {children}
         <PwaInstallPrompt />
       </body>

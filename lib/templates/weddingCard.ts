@@ -64,7 +64,9 @@ export function generateWeddingCardHtml(site: SiteData): string {
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { max-width: 100vw; width: 100%; overflow-x: hidden; }
     body { background: ${t.bg}; color: ${t.text}; font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 2rem 1rem 6rem; }
+    img { max-width: 100%; height: auto; }
 
     .invitation-wrapper { max-width: 680px; width: 100%; background: ${t.card}; border: 2px solid ${t.border}; border-radius: 28px; padding: 3.5rem 2rem; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.45); position: relative; overflow: hidden; }
 

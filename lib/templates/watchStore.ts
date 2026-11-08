@@ -117,7 +117,9 @@ export function generateWatchStoreHtml(site: SiteData): string {
       --border-gold: rgba(217, 119, 6, 0.3);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { max-width: 100vw; width: 100%; overflow-x: hidden; }
     body { background-color: var(--bg-dark); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    img { max-width: 100%; height: auto; }
 
     /* Loading Entrance */
     #watch-loader { position: fixed; inset: 0; background: var(--bg-dark); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.6s ease, visibility 0.6s; }
