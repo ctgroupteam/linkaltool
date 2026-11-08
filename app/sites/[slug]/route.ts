@@ -52,14 +52,16 @@ export async function GET(request: Request, context: RouteContext) {
       );
     }
 
-    // Async increment visit counter
+    // Async increment visit counter (fire-and-forget)
     try {
       site.visitsCount = (site.visitsCount || 0) + 1;
-      saveSite(site).catch(() => {});
-      supabaseAdmin.from('site_visits').insert({
-        slug: cleanSlug,
-        visited_at: new Date().toISOString()
-      }).then(() => {}, () => {});
+      Promise.resolve(saveSite(site)).catch(() => {});
+      Promise.resolve(
+        supabaseAdmin.from('site_visits').insert({
+          slug: cleanSlug,
+          visited_at: new Date().toISOString(),
+        })
+      ).catch(() => {});
     } catch {}
 
     const html = generateStaticHtml(site);
@@ -78,3 +80,4 @@ export async function GET(request: Request, context: RouteContext) {
     );
   }
 }
+
