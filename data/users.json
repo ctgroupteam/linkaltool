@@ -1,10 +1,11 @@
 [
   {
-    "id": "usr-1794125357834",
-    "email": "yahya@ctgroup.in",
-    "full_name": "Yahya Founder",
-    "phone_number": "919307426215",
-    "password_hash": "password123",
-    "created_at": "2026-11-08T08:09:17.834Z"
+    "id": "usr-1794126574737",
+    "email": "heymrbrave@gmail.com",
+    "full_name": "Alex Foster",
+    "phone_number": "918766882442",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocIC5gpvb7M_pdKaiIBgK9agf-Do1lzajlw7iA1aen0MHMWtRoM5=s96-c",
+    "password_hash": "111111",
+    "created_at": "2026-11-08T08:29:34.737Z"
   }
 ]
