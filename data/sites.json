@@ -4,7 +4,7 @@
     "name": "tester",
     "slug": "tester",
     "type": "cv",
-    "status": "draft",
+    "status": "deploying",
     "userEmail": "heymrbrave@gmail.com",
     "userName": "Alex Foster",
     "whatsappNumber": "919999999999",
@@ -100,8 +100,9 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-08T14:13:18.231Z",
-    "updatedAt": "2026-11-08T14:13:32.799Z",
+    "updatedAt": "2026-11-08T14:13:33.744Z",
     "visitsCount": 0,
-    "clicksCount": 0
+    "clicksCount": 0,
+    "deploymentLogs": []
   }
 ]
