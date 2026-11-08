@@ -100,7 +100,7 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-08T14:13:18.231Z",
-    "updatedAt": "2026-11-08T14:13:34.648Z",
+    "updatedAt": "2026-11-08T14:13:35.536Z",
     "visitsCount": 0,
     "clicksCount": 0,
     "deploymentLogs": [
@@ -121,6 +121,60 @@
         "status": "in_progress",
         "message": "Saving site data to Linkal Multi-Tenant database (tester)...",
         "timestamp": "2026-11-08T14:13:34.635Z"
+      },
+      {
+        "step": "github",
+        "status": "success",
+        "message": "Saved site to Linkal High-Speed Database.",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "vercel",
+        "status": "in_progress",
+        "message": "Routing tester.linkal.in through Linkal Multi-Tenant Edge Engine...",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "vercel",
+        "status": "success",
+        "message": "Routed to Linkal Multi-Tenant Edge Engine.",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "cloudflare",
+        "status": "in_progress",
+        "message": "Configuring Cloudflare CDN caching and SSL routing for tester.linkal.in...",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "cloudflare",
+        "status": "success",
+        "message": "Cloudflare CDN Shield active: https://tester.linkal.in",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "general",
+        "status": "in_progress",
+        "message": "Configuring Google SEO, OpenGraph tags, and search indexing metadata...",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "general",
+        "status": "success",
+        "message": "Google SEO and search tags configured.",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "poll",
+        "status": "in_progress",
+        "message": "Verifying Linkal domain & SSL routing...",
+        "timestamp": "2026-11-08T14:13:35.522Z"
+      },
+      {
+        "step": "poll",
+        "status": "success",
+        "message": "Site is verified live at https://tester.linkal.in",
+        "timestamp": "2026-11-08T14:13:35.522Z"
       }
     ],
     "liveUrl": "https://tester.linkal.in",
