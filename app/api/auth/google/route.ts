@@ -97,11 +97,11 @@ export async function POST(req: NextRequest) {
     // 1. Check or Upsert in Supabase 'users' table
     let userRecord: any = null;
     try {
-      const { data: existingUser } = await supabaseAdmin
+      const { data: existingUser, error: selectErr } = await supabaseAdmin
         .from('users')
         .select('*')
         .eq('email', cleanEmail)
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
         if (action === 'signin' && existingUser.password_hash && password) {
@@ -121,14 +121,15 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', existingUser.id)
           .select()
-          .single();
+          .maybeSingle();
 
         userRecord = updated || existingUser;
       } else {
-        const { data: inserted } = await supabaseAdmin
+        const newId = `usr-${Date.now()}`;
+        const { data: inserted, error: insertErr } = await supabaseAdmin
           .from('users')
           .insert({
-            id: `usr-${Date.now()}`,
+            id: newId,
             email: cleanEmail,
             full_name: cleanName,
             google_id: googleId || `google-${Date.now()}`,
@@ -139,12 +140,18 @@ export async function POST(req: NextRequest) {
             created_at: new Date().toISOString()
           })
           .select()
-          .single();
+          .maybeSingle();
 
-        userRecord = inserted;
+        if (inserted) {
+          userRecord = inserted;
+        }
       }
     } catch (err: any) {
-      // Supabase table fallback
+      console.warn('[Auth] Supabase upsert error fallback:', err);
+    }
+
+    // Guarantee userRecord is a valid object if Supabase returned null or failed
+    if (!userRecord || !userRecord.id) {
       userRecord = {
         id: `usr-${Date.now()}`,
         email: cleanEmail,

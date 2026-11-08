@@ -126,7 +126,7 @@ export interface SiteData {
   logoUrl?: string;
   themeColor: string; // hex e.g. '#2563eb'
   fontFamily: 'Inter' | 'Plus Jakarta Sans' | 'Outfit' | 'Roboto' | 'Poppins';
-  
+
   // Header customization
   headerCtaText?: string;
 
@@ -139,13 +139,13 @@ export interface SiteData {
   // Banner slider
   bannerSlider: BannerSlide[];
   sliderAutoRotateSeconds?: number;
-  
+
   // E-commerce specific
   products?: ProductItem[];
-  
+
   // Single product specific
   singleProduct?: SingleProductDetails;
-  
+
   // Portfolio & Executive CV specific
   portfolioAbout?: string;
   portfolioSkills?: PortfolioSkill[];
@@ -205,7 +205,7 @@ export interface SiteData {
   footerInstagramUrl?: string;
   footerAddress?: string;
   footerEmail?: string;
-  
+
   // Deployment metadata
   liveUrl?: string; // e.g. 'https://myshop.linkal.in'
   githubRepoUrl?: string;
@@ -215,7 +215,7 @@ export interface SiteData {
   deploymentLogs?: DeploymentLogEntry[];
   lastDeployedAt?: string;
   lastError?: string;
-  
+
   // Subscription & Free Trial
   planStatus?: 'trial' | 'active' | 'expired';
   planType?: 'free_cv' | 'monthly_299' | 'quarterly_799' | 'halfyearly_1499' | 'yearly_2699';

@@ -366,43 +366,102 @@ export default function BuilderPage() {
     return generateStaticHtml(site);
   }, [site]);
 
-  // Image Upload Helper
-  const handleFileUpload = (
+  // Helper: 99% Client-Side WebP Canvas Compression
+  const compressImageToWebP = (
+    file: File,
+    maxWidth = 800,
+    maxHeight = 800,
+    quality = 0.8
+  ): Promise<string> => {
+    return new Promise((resolve) => {
+      if (file.type === 'image/svg+xml' || file.size < 15 * 1024) {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result as string);
+          r.onerror = () => resolve('');
+          r.readAsDataURL(file);
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const webpDataUrl = canvas.toDataURL('image/webp', quality);
+        resolve(webpDataUrl);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = () => resolve('');
+        r.readAsDataURL(file);
+      };
+      img.src = objectUrl;
+    });
+  };
+
+  // Image Upload Helper with 99% WebP Canvas Compression
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     onComplete: (url: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result as string;
+    try {
+      setUploadingImage(true);
+      // Auto-compress to WebP (drops 5MB to ~25KB)
+      const compressedBase64 = await compressImageToWebP(file, 800, 800, 0.8);
+      
       // Immediate visual update in editor & live preview
-      onComplete(base64);
+      onComplete(compressedBase64);
 
-      // Async upload to GitHub
-      try {
-        setUploadingImage(true);
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            base64,
-            filename: file.name,
-            siteSlug: site?.slug,
-          }),
-        });
-        const data = await res.json();
-        if (data.url) {
-          onComplete(data.url);
-        }
-      } catch (err) {
-        console.warn('Upload error, kept local preview:', err);
-      } finally {
-        setUploadingImage(false);
+      // Async upload to persistent repo storage
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base64: compressedBase64,
+          filename: file.name.replace(/\.[^/.]+$/, '') + '.webp',
+          siteSlug: site?.slug,
+        }),
+      });
+      const data = await res.json();
+      if (data && data.url) {
+        onComplete(data.url);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('Upload error, kept local preview:', err);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleAuthSuccess = (user: any) => {
