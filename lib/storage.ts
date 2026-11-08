@@ -2,16 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { SiteData } from '@/types/site';
+import { supabaseAdmin } from '@/lib/supabase';
 
 const INITIAL_SITES: SiteData[] = [];
 
 const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
-// Helper: Dynamically locate the data file path across environments (root, subfolder, serverless)
+// Helper: Dynamically locate the data file path across environments
 function getDataFilePath(): string {
   if (isServerless) {
     const tmpFile = path.join(os.tmpdir(), 'sites.json');
-    // If /tmp file doesn't exist yet on cold start, seed from bundled project data
     if (!fs.existsSync(tmpFile)) {
       const seedCandidates = [
         path.join(process.cwd(), 'data', 'sites.json'),
@@ -30,7 +30,6 @@ function getDataFilePath(): string {
     return tmpFile;
   }
 
-  // Local development / server environment: detect active directory
   const localCandidates = [
     path.join(process.cwd(), 'data', 'sites.json'),
     path.join(process.cwd(), 'Linkal Tool', 'data', 'sites.json'),
@@ -41,14 +40,12 @@ function getDataFilePath(): string {
     }
   }
 
-  // Fallback path creation
   if (fs.existsSync(path.join(process.cwd(), 'Linkal Tool'))) {
     return path.join(process.cwd(), 'Linkal Tool', 'data', 'sites.json');
   }
   return path.join(process.cwd(), 'data', 'sites.json');
 }
 
-// Seed in-memory store from disk immediately on module load if available
 function loadInitialDiskSites(): SiteData[] {
   try {
     const localCandidates = [
@@ -60,7 +57,8 @@ function loadInitialDiskSites(): SiteData[] {
         const raw = fs.readFileSync(c, 'utf-8');
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          // Filter out legacy dummy sites
+          return parsed.filter((s: any) => s.slug !== 'barchi-s-furniture' && s.slug !== 'adil-portfolio' && s.slug !== 'solapurshop');
         }
       }
     }
@@ -68,25 +66,20 @@ function loadInitialDiskSites(): SiteData[] {
   return [...INITIAL_SITES];
 }
 
-// Memory store initialized with available local disk sites or default demos
 let inMemorySites: SiteData[] = loadInitialDiskSites();
 let lastSyncedFromRemote = false;
 
-// Helper: Sync sites from GitHub repository if available
+// Helper: Sync sites from GitHub repository (ctgroupteam/linkaltool)
 async function fetchRemoteSitesFromGitHub(): Promise<SiteData[] | null> {
   const token = process.env.GITHUB_TOKEN;
   const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
-  const repo = process.env.GITHUB_REPO || 'linkal-tool';
+  const repo = process.env.GITHUB_REPO || 'linkaltool';
   if (!token) return null;
 
-  // Search candidate repositories in order:
-  // 1. Configured owner/repo
-  // 2. Upstream repo where data/sites.json is published
-  // 3. Main multi-tenant repo fallback
   const reposToTry = [
     { owner, repo },
-    { owner: 'mdyahhya', repo: 'linkal-tool' },
-    { owner, repo: 'linkal' },
+    { owner: 'ctgroupteam', repo: 'linkaltool' },
+    { owner: 'ctgroupteam', repo: 'linkal' },
   ].filter((v, idx, arr) => arr.findIndex(x => x.owner === v.owner && x.repo === v.repo) === idx);
 
   for (const target of reposToTry) {
@@ -105,14 +98,14 @@ async function fetchRemoteSitesFromGitHub(): Promise<SiteData[] | null> {
         const data = await res.json();
         if (data && data.content) {
           const content = Buffer.from(data.content, 'base64').toString('utf-8');
-          const sites = JSON.parse(content);
-          if (Array.isArray(sites) && sites.length > 0) {
+          const rawSites = JSON.parse(content);
+          if (Array.isArray(rawSites)) {
+            // Clean out any legacy dummy sites
+            const sites = rawSites.filter((s: any) => s.slug !== 'barchi-s-furniture' && s.slug !== 'adil-portfolio' && s.slug !== 'solapurshop');
             console.log(`[Storage] Synced ${sites.length} sites from GitHub (${target.owner}/${target.repo})`);
             return sites;
           }
         }
-      } else if (res.status !== 404) {
-        console.warn(`[Storage] GitHub fetch from ${target.owner}/${target.repo} returned status: ${res.status}`);
       }
     } catch (err) {
       console.warn(`[Storage] Could not fetch remote sites from GitHub (${target.owner}/${target.repo}):`, err);
@@ -126,18 +119,20 @@ async function fetchRemoteSitesFromGitHub(): Promise<SiteData[] | null> {
 async function saveRemoteSitesToGitHub(sites: SiteData[]): Promise<boolean> {
   const token = process.env.GITHUB_TOKEN;
   const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
-  const repo = process.env.GITHUB_REPO || 'linkal-tool';
+  const repo = process.env.GITHUB_REPO || 'linkaltool';
   if (!token) return false;
 
   const reposToTry = [
     { owner, repo },
-    { owner: 'mdyahhya', repo: 'linkal-tool' },
+    { owner: 'ctgroupteam', repo: 'linkaltool' },
   ].filter((v, idx, arr) => arr.findIndex(x => x.owner === v.owner && x.repo === v.repo) === idx);
+
+  // Clean out any legacy dummy sites before saving
+  const cleanSites = sites.filter((s: any) => s.slug !== 'barchi-s-furniture' && s.slug !== 'adil-portfolio' && s.slug !== 'solapurshop');
 
   for (const target of reposToTry) {
     try {
       const url = `https://api.github.com/repos/${target.owner}/${target.repo}/contents/data/sites.json`;
-      // 1. Get existing file sha
       let existingSha: string | undefined;
       const checkRes = await fetch(url, {
         headers: {
@@ -152,8 +147,7 @@ async function saveRemoteSitesToGitHub(sites: SiteData[]): Promise<boolean> {
         existingSha = data.sha;
       }
 
-      // 2. Put file
-      const content = Buffer.from(JSON.stringify(sites, null, 2), 'utf-8').toString('base64');
+      const content = Buffer.from(JSON.stringify(cleanSites, null, 2), 'utf-8').toString('base64');
       const putRes = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -163,18 +157,15 @@ async function saveRemoteSitesToGitHub(sites: SiteData[]): Promise<boolean> {
           'User-Agent': 'Linkal-Website-Builder',
         },
         body: JSON.stringify({
-          message: `Sync customer sites database [${sites.length} sites]`,
+          message: `Sync customer sites database [${cleanSites.length} sites]`,
           content,
           sha: existingSha,
         }),
       });
 
       if (putRes.ok) {
-        console.log(`[Storage] Successfully committed ${sites.length} sites to GitHub database (${target.owner}/${target.repo})`);
+        console.log(`[Storage] Successfully committed ${cleanSites.length} sites to GitHub database (${target.owner}/${target.repo})`);
         return true;
-      } else {
-        const errText = await putRes.text();
-        console.warn(`[Storage] GitHub commit to ${target.owner}/${target.repo} returned ${putRes.status}:`, errText);
       }
     } catch (err) {
       console.warn(`[Storage] Could not save sites to GitHub database (${target.owner}/${target.repo}):`, err);
@@ -202,10 +193,48 @@ function ensureDataFile(): void {
 export async function getAllSites(): Promise<SiteData[]> {
   const dataFile = getDataFilePath();
 
-  // 1. If not yet synced from GitHub on this instance, fetch remote database
-  if (!lastSyncedFromRemote && process.env.GITHUB_TOKEN) {
+  // 1. Try fetching from Supabase stores table if table exists
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('stores')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (data && data.length > 0) {
+      const dbSites: SiteData[] = data.map((row: any) => {
+        if (row.site_data && typeof row.site_data === 'object' && row.site_data.id) {
+          return {
+            ...row.site_data,
+            visitsCount: row.visits_count || row.site_data.visitsCount || 0,
+            clicksCount: row.clicks_count || row.site_data.clicksCount || 0,
+          };
+        }
+        return {
+          id: row.id,
+          name: row.business_name || row.slug,
+          slug: row.slug,
+          type: row.category === 'portfolio' ? 'portfolio' : row.category === 'single_product' ? 'single_product' : 'ecommerce',
+          whatsappNumber: row.whatsapp_number,
+          userEmail: row.contact_email,
+          status: row.is_active ? 'live' : 'draft',
+          visitsCount: row.visits_count || 0,
+          clicksCount: row.clicks_count || 0,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        } as SiteData;
+      });
+
+      inMemorySites = dbSites;
+      return dbSites;
+    }
+  } catch (err) {
+    // Supabase table not created yet or connection error; fallback gracefully
+  }
+
+  // 2. Fetch from remote GitHub database
+  if (!lastSyncedFromRemote) {
     const remoteSites = await fetchRemoteSitesFromGitHub();
-    if (remoteSites && remoteSites.length > 0) {
+    if (remoteSites !== null) {
       inMemorySites = remoteSites;
       lastSyncedFromRemote = true;
       try {
@@ -217,15 +246,15 @@ export async function getAllSites(): Promise<SiteData[]> {
     lastSyncedFromRemote = true;
   }
 
-  // 2. Check local disk
+  // 3. Local disk cache
   try {
     ensureDataFile();
     if (fs.existsSync(dataFile)) {
       const content = fs.readFileSync(dataFile, 'utf-8');
       const parsed = JSON.parse(content);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        inMemorySites = parsed;
-        return parsed;
+      if (Array.isArray(parsed)) {
+        inMemorySites = parsed.filter((s: any) => s.slug !== 'barchi-s-furniture' && s.slug !== 'adil-portfolio' && s.slug !== 'solapurshop');
+        return inMemorySites;
       }
     }
   } catch (error) {
@@ -251,6 +280,8 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
   
   const updatedSite: SiteData = {
     ...site,
+    visitsCount: site.visitsCount || 0,
+    clicksCount: site.clicksCount || 0,
     updatedAt: new Date().toISOString()
   };
   
@@ -262,7 +293,7 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
 
   inMemorySites = sites;
   
-  // Save locally / tmp
+  // 1. Save locally / tmp
   try {
     ensureDataFile();
     const dataFile = getDataFilePath();
@@ -271,11 +302,31 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
     console.warn('Write storage fallback:', error);
   }
 
-  // Save to GitHub database safely without crashing local operations
+  // 2. Commit to GitHub database
   try {
     await saveRemoteSitesToGitHub(sites);
   } catch (e) {
     console.error('[Storage] Remote GitHub save error:', e);
+  }
+
+  // 3. Upsert to Supabase stores table if available
+  try {
+    await supabaseAdmin.from('stores').upsert({
+      id: site.id,
+      slug: site.slug,
+      business_name: site.name,
+      category: site.type || 'ecommerce',
+      template_id: site.templateId || 'modern',
+      whatsapp_number: site.whatsappNumber || '',
+      contact_email: site.userEmail || site.cvEmail || '',
+      site_data: updatedSite,
+      is_active: site.status === 'live',
+      visits_count: updatedSite.visitsCount || 0,
+      clicks_count: updatedSite.clicksCount || 0,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn('[Storage] Supabase stores upsert note:', err);
   }
 
   return updatedSite;
@@ -296,12 +347,15 @@ export async function deleteSite(id: string): Promise<boolean> {
     console.warn('Delete storage fallback:', error);
   }
 
-  // Sync delete to GitHub database
   try {
     await saveRemoteSitesToGitHub(filtered);
   } catch (e) {
     console.error('[Storage] Remote GitHub delete error:', e);
   }
+
+  try {
+    await supabaseAdmin.from('stores').delete().eq('id', id);
+  } catch (e) {}
 
   return true;
 }

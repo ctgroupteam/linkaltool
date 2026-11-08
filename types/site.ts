@@ -225,6 +225,9 @@ export interface SiteData {
   userName?: string;
   contactEmail?: string;
   userGoogleId?: string;
+  visitsCount?: number;
+  clicksCount?: number;
+  templateId?: string;
 
   createdAt: string;
   updatedAt: string;

@@ -30,12 +30,20 @@ function urlBase64ToUint8Array(base64String: string) {
 export function PwaInstallPrompt() {
   const [showInstallPrompt, setShowInstallPrompt] = useState<boolean>(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState<boolean>(false);
+  const [showIosGuide, setShowIosGuide] = useState<boolean>(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [notifGranted, setNotifGranted] = useState<boolean>(false);
+  const [isIOS, setIsIOS] = useState<boolean>(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Detect iOS
+    const iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(iosDevice);
+
     // 1. Register Service Worker for PWA & Push
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .catch((err) => {
@@ -45,26 +53,11 @@ export function PwaInstallPrompt() {
 
     // 2. Check if already installed in standalone mode
     const isStandalone =
-      typeof window !== 'undefined' &&
-      (window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone === true);
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
 
-    const today = new Date().toISOString().slice(0, 10);
-    let todayPromptCount = 0;
-    try {
-      const raw = localStorage.getItem('linkal_pwa_install_daily');
-      if (raw) {
-        const d = JSON.parse(raw);
-        if (d.date === today) todayPromptCount = d.count || 0;
-      }
-    } catch {}
-
-    // Show Install Prompt max 3 times a day until installed
-    if (!isStandalone && todayPromptCount < 3) {
-      const timer = setTimeout(() => {
-        setShowInstallPrompt(true);
-      }, 1200);
-
+    // Show Install Prompt if not installed
+    if (!isStandalone) {
       const handleBeforeInstall = (e: any) => {
         e.preventDefault();
         setDeferredPrompt(e);
@@ -73,20 +66,29 @@ export function PwaInstallPrompt() {
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstall as any);
 
+      // If on mobile browser, show prompt after 1.5s
+      const timer = setTimeout(() => {
+        if (!sessionStorage.getItem('linkal_pwa_dismissed')) {
+          setShowInstallPrompt(true);
+        }
+      }, 1500);
+
       return () => {
         clearTimeout(timer);
         window.removeEventListener('beforeinstallprompt', handleBeforeInstall as any);
       };
     }
 
-    // Polite Push Notification Prompt: ask once per session if not decided
-    if ('Notification' in window && Notification.permission === 'default') {
-      const sessionPrompted = sessionStorage.getItem('linkal_notif_asked_session');
-      if (!sessionPrompted) {
+    // 3. Persistent Notification Prompt until allowed
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        localStorage.setItem('linkal_notification_granted', 'true');
+        setNotifGranted(true);
+      } else {
+        // Not granted yet: prompt user until allowed
         const timer = setTimeout(() => {
           setShowNotificationPrompt(true);
-          sessionStorage.setItem('linkal_notif_asked_session', 'true');
-        }, 2200);
+        }, 2000);
         return () => clearTimeout(timer);
       }
     }
@@ -94,33 +96,28 @@ export function PwaInstallPrompt() {
 
   const dismissInstallPrompt = () => {
     setShowInstallPrompt(false);
-    const today = new Date().toISOString().slice(0, 10);
-    try {
-      const raw = localStorage.getItem('linkal_pwa_install_daily');
-      let count = 1;
-      if (raw) {
-        const d = JSON.parse(raw);
-        if (d.date === today) count = (d.count || 0) + 1;
-      }
-      localStorage.setItem('linkal_pwa_install_daily', JSON.stringify({ date: today, count }));
-    } catch {}
+    sessionStorage.setItem('linkal_pwa_dismissed', 'true');
   };
 
   const handleInstallClick = async () => {
+    if (isIOS) {
+      setShowIosGuide(true);
+      return;
+    }
+
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         setShowInstallPrompt(false);
-        // After installation accepted, suggest notifications
-        if ('Notification' in window && Notification.permission === 'default') {
+        // After install, prompt notifications
+        if ('Notification' in window && Notification.permission !== 'granted') {
           setTimeout(() => setShowNotificationPrompt(true), 1500);
         }
       }
       setDeferredPrompt(null);
     } else {
-      alert('To install Linkal Studio App: Tap your browser menu and select "Install App" or "Add to Home Screen".');
-      dismissInstallPrompt();
+      setShowIosGuide(true);
     }
   };
 
@@ -130,6 +127,8 @@ export function PwaInstallPrompt() {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           setNotifGranted(true);
+          localStorage.setItem('linkal_notification_granted', 'true');
+
           if ('serviceWorker' in navigator) {
             const reg = await navigator.serviceWorker.ready;
             try {
@@ -158,7 +157,7 @@ export function PwaInstallPrompt() {
 
   return (
     <>
-      {/* 1. Install PWA Prompt (Max 3 times/day until installed, Remind Later option) */}
+      {/* 1. Install PWA Prompt */}
       {showInstallPrompt && (
         <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm z-50 animate-in slide-in-from-bottom duration-300">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl p-4.5 space-y-3.5 backdrop-blur-md bg-white/95">
@@ -171,7 +170,7 @@ export function PwaInstallPrompt() {
                 />
                 <div>
                   <h4 className="text-sm font-bold text-zinc-950">Install Linkal Studio</h4>
-                  <p className="text-[11px] text-zinc-500 leading-tight">Mobile website &amp; CV management</p>
+                  <p className="text-[11px] text-zinc-500 leading-tight">Fast website &amp; CV builder app</p>
                 </div>
               </div>
               <button
@@ -184,7 +183,7 @@ export function PwaInstallPrompt() {
             </div>
 
             <p className="text-xs text-zinc-600 leading-relaxed">
-              Install to keep editing your website and executive CV seamlessly from your mobile anytime.
+              Install to manage your sites, receive instant recruiter messages, and edit offline.
             </p>
 
             <div className="flex items-center gap-2 pt-1">
@@ -193,20 +192,20 @@ export function PwaInstallPrompt() {
                 className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition-all"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Install App</span>
+                <span>{isIOS ? 'How to Install on iOS' : 'Install App'}</span>
               </button>
               <button
                 onClick={dismissInstallPrompt}
                 className="inline-flex items-center justify-center gap-1 px-3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-semibold transition-colors"
               >
-                <span>Remind Later</span>
+                <span>Later</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 2. Push Notification Permission Popup in PWA & Studio */}
+      {/* 2. Persistent Notification Prompt (Prompts on open until user allows) */}
       {showNotificationPrompt && (
         <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:top-6 sm:max-w-sm z-50 animate-in slide-in-from-top duration-300">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl p-4.5 space-y-3.5 backdrop-blur-md bg-white/95">
@@ -216,8 +215,8 @@ export function PwaInstallPrompt() {
                   <BellRingIcon className="w-5 h-5 text-white animate-bounce" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-zinc-950">Enable Live Notifications</h4>
-                  <p className="text-[11px] text-zinc-500 leading-tight">Instant off-app updates &amp; alerts</p>
+                  <h4 className="text-sm font-bold text-zinc-950">Allow Notifications</h4>
+                  <p className="text-[11px] text-zinc-500 leading-tight">Instant vibration alerts</p>
                 </div>
               </div>
               <button
@@ -230,7 +229,7 @@ export function PwaInstallPrompt() {
             </div>
 
             <p className="text-xs text-zinc-600 leading-relaxed">
-              Allow notifications to receive instant vibration alerts when recruiters view your CV or customers place orders.
+              Enable notifications to receive instant vibration alerts when recruiters view your CV or customers place orders.
             </p>
 
             <div className="flex items-center gap-2 pt-1">
@@ -251,9 +250,53 @@ export function PwaInstallPrompt() {
                 onClick={() => setShowNotificationPrompt(false)}
                 className="inline-flex items-center justify-center px-3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-semibold transition-colors"
               >
-                <span>Later</span>
+                <span>Dismiss</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Apple iOS Safari Installation Guide Modal */}
+      {showIosGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowIosGuide(false)} />
+          <div className="relative z-10 w-full max-w-sm bg-white rounded-3xl border border-zinc-200 shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-xl bg-zinc-950 text-white flex items-center justify-center text-xs font-bold"></span>
+                <h3 className="font-extrabold text-base text-zinc-950">Install on Apple iPhone / iPad</h3>
+              </div>
+              <button onClick={() => setShowIosGuide(false)} className="p-1 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              To install Linkal Studio and enable notifications on iOS Safari (iOS 16.4+):
+            </p>
+
+            <div className="space-y-2.5 text-xs text-zinc-800">
+              <div className="flex items-start gap-2.5 p-2.5 bg-zinc-50 rounded-xl border border-zinc-100">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
+                <span>Tap the <strong>Share</strong> button <span className="font-mono font-bold">⎋</span> in Safari's bottom toolbar.</span>
+              </div>
+              <div className="flex items-start gap-2.5 p-2.5 bg-zinc-50 rounded-xl border border-zinc-100">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
+                <span>Scroll down and tap <strong>"Add to Home Screen"</strong> (<span className="font-mono font-bold">⊞</span>).</span>
+              </div>
+              <div className="flex items-start gap-2.5 p-2.5 bg-zinc-50 rounded-xl border border-zinc-100">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
+                <span>Open Linkal Studio from your Home Screen &amp; tap <strong>"Allow Notifications"</strong>!</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowIosGuide(false)}
+              className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold transition-colors"
+            >
+              Got It
+            </button>
           </div>
         </div>
       )}

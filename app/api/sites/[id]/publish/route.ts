@@ -29,6 +29,24 @@ export async function POST(request: Request, context: RouteContext) {
 
     const result = await executeDeploymentPipeline(site);
 
+    // Notify Founder Admin of new live published site / CV
+    try {
+      const isCv = site.type === 'portfolio';
+      await fetch('https://admin.linkal.in/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: isCv ? 'new_cv' : 'new_site',
+          title: isCv ? '📄 New Executive CV Published' : '🛍️ New Website Created',
+          body: `${site.userName || site.cvTitle || site.name} published https://${site.slug}.linkal.in | Phone: ${site.whatsappNumber || '—'}`,
+          userName: site.userName || site.cvTitle || site.name,
+          siteSlug: site.slug,
+          userPhone: site.whatsappNumber,
+          userEmail: site.userEmail || site.cvEmail,
+        }),
+      });
+    } catch (e) {}
+
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json(

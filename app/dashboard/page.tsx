@@ -931,16 +931,44 @@ function DashboardContent() {
                             ? 'Single Product'
                             : 'E-commerce'}
                         </span>
-                        <h3 className="font-extrabold text-base text-zinc-950 tracking-tight">
-                          {site.name}
-                        </h3>
-                        <p className="text-xs text-blue-600 font-mono font-bold mt-0.5">
+                        <a
+                          href={`/stats/${site.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-extrabold text-base text-zinc-950 tracking-tight hover:text-blue-600 block transition-colors"
+                        >
+                          {site.name} ↗
+                        </a>
+                        <a
+                          href={`/stats/${site.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-blue-600 font-mono font-bold mt-0.5 hover:underline block"
+                        >
                           {site.slug}.linkal.in
-                        </p>
+                        </a>
                       </div>
 
-                      <div className="w-9 h-9 rounded-xl bg-zinc-100 text-zinc-800 flex items-center justify-center font-bold text-xs border border-zinc-200">
+                      <a
+                        href={`/stats/${site.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center justify-center font-bold text-xs border border-blue-200/80 transition-colors"
+                        title="View Website Stats"
+                      >
                         {site.name.substring(0, 2).toUpperCase()}
+                      </a>
+                    </div>
+
+                    {/* Quick Live Stats Indicator */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100 text-xs">
+                      <div className="flex items-center gap-1.5 text-zinc-600">
+                        <span className="text-[10px] uppercase font-bold text-zinc-400">Visits:</span>
+                        <strong className="text-zinc-950 font-mono font-bold">{(site.visitsCount || 0).toLocaleString()}</strong>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-zinc-600">
+                        <span className="text-[10px] uppercase font-bold text-zinc-400">Clicks:</span>
+                        <strong className="text-emerald-700 font-mono font-bold">{(site.clicksCount || 0).toLocaleString()}</strong>
                       </div>
                     </div>
 
@@ -965,23 +993,32 @@ function DashboardContent() {
 
                   {/* Card Action Buttons */}
                   <div className="space-y-2 pt-2 border-t border-zinc-100">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5">
                       <button
                         onClick={() => router.push(`/builder/${site.id}`)}
-                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
+                        className="inline-flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-all shadow-xs"
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-white" />
-                        <span>Edit Builder</span>
+                        <Edit3 className="w-3 h-3 text-white" />
+                        <span>Edit</span>
                       </button>
+
+                      <a
+                        href={`/stats/${site.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold transition-all shadow-xs"
+                      >
+                        <span>Stats 📊</span>
+                      </a>
 
                       <a
                         href={site.liveUrl || `https://${site.slug}.linkal.in`}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold transition-all shadow-xs"
+                        className="inline-flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-[11px] font-bold transition-all shadow-xs"
                       >
-                        <span>Visit Live</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
+                        <span>Live</span>
+                        <ArrowUpRight className="w-3 h-3" />
                       </a>
                     </div>
 
@@ -1094,6 +1131,23 @@ function DashboardContent() {
                     <span className="text-[10px] text-zinc-500">Only your created websites appear here.</span>
                   </div>
                   <span className="font-extrabold text-blue-600 font-mono text-base">{sites.length}</span>
+                </div>
+
+                {/* Apple iOS Safari Installation & Web Push Instructions */}
+                <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 text-xs space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-zinc-900 text-white flex items-center justify-center text-xs font-bold"></span>
+                    <strong className="text-zinc-950 font-extrabold">Apple iOS (iPhone &amp; iPad) Installation &amp; Notifications</strong>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 leading-relaxed">
+                    On iOS 16.4+, Apple requires adding the app to your Home Screen from Safari to enable Web Push notifications:
+                  </p>
+                  <ol className="text-[11px] text-zinc-700 space-y-1.5 pl-4 list-decimal leading-relaxed">
+                    <li>Open <strong>studio.linkal.in</strong> in <strong>Safari</strong> on your iPhone or iPad.</li>
+                    <li>Tap the <strong>Share</strong> button (box with upward arrow <span className="font-mono font-bold">⎋</span>) in Safari's bottom toolbar.</li>
+                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong> (<span className="font-mono font-bold">⊞</span>).</li>
+                    <li>Launch Linkal Studio from your Home Screen &amp; tap <strong>"Allow Notifications"</strong> when prompted.</li>
+                  </ol>
                 </div>
 
                 <div className="pt-2 flex items-center justify-between gap-3">

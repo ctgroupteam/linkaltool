@@ -1,21 +1,100 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+
+// Helper: Sync users database to GitHub ctgroupteam/linkaltool
+async function saveUsersToGitHub(users: any[]): Promise<boolean> {
+  const token = process.env.GITHUB_TOKEN;
+  const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
+  const repo = process.env.GITHUB_REPO || 'linkaltool';
+  if (!token) return false;
+
+  try {
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/data/users.json`;
+    let existingSha: string | undefined;
+    const checkRes = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'Linkal-Website-Builder',
+      },
+      cache: 'no-store',
+    });
+    if (checkRes.ok) {
+      const data = await checkRes.json();
+      existingSha = data.sha;
+    }
+
+    const content = Buffer.from(JSON.stringify(users, null, 2), 'utf-8').toString('base64');
+    const putRes = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Linkal-Website-Builder',
+      },
+      body: JSON.stringify({
+        message: `Sync registered users database [${users.length} users]`,
+        content,
+        sha: existingSha,
+      }),
+    });
+
+    return putRes.ok;
+  } catch (err) {
+    console.warn('[Users] Remote GitHub sync note:', err);
+    return false;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, fullName, googleId, avatarUrl, phoneNumber, action, promoCode } = body;
+    const { email, fullName, googleId, avatarUrl, phoneNumber, password, action } = body;
 
-    if (!email || !fullName) {
+    // Handle Forgot Password Request
+    if (action === 'forgot_password') {
+      if (!email && !phoneNumber) {
+        return NextResponse.json({ error: 'Please enter your registered Email or WhatsApp Phone' }, { status: 400 });
+      }
+
+      // Notify Founder Admin immediately
+      try {
+        await fetch('https://admin.linkal.in/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventType: 'forgot_password',
+            title: '🔑 Password Assistance Requested',
+            body: `User ${fullName || 'Registered User'} (${email || 'No email'}) requested password assistance. Phone: ${phoneNumber || '—'}`,
+            userName: fullName || 'User',
+            userEmail: email || '',
+            userPhone: phoneNumber || '',
+          })
+        });
+      } catch (e) {}
+
+      return NextResponse.json({
+        success: true,
+        message: 'Password reset request received. Linkal Admin has been notified and will assist you.'
+      });
+    }
+
+    if (!email || !email.includes('@')) {
       return NextResponse.json(
-        { error: 'Email and full name are required for authentication.' },
+        { error: 'A valid email address is required.' },
         { status: 400 }
       );
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const cleanName = (fullName || cleanEmail.split('@')[0]).trim();
+    const cleanPhone = (phoneNumber || '').trim();
 
-    // 1. Upsert user in Supabase 'users' table
+    // 1. Check or Upsert in Supabase 'users' table
     let userRecord: any = null;
     try {
       const { data: existingUser } = await supabaseAdmin
@@ -25,13 +104,20 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (existingUser) {
-        const { data: updated, error: updateError } = await supabaseAdmin
+        if (action === 'signin' && existingUser.password_hash && password) {
+          if (existingUser.password_hash !== password) {
+            return NextResponse.json({ error: 'Incorrect password. Click "Forgot Password?" for assistance.' }, { status: 401 });
+          }
+        }
+
+        const { data: updated } = await supabaseAdmin
           .from('users')
           .update({
-            full_name: fullName,
+            full_name: cleanName || existingUser.full_name,
             avatar_url: avatarUrl || existingUser.avatar_url,
-            phone_number: phoneNumber || existingUser.phone_number,
-            updated_at: new Date().toISOString()
+            phone_number: cleanPhone || existingUser.phone_number,
+            password_hash: password || existingUser.password_hash,
+            last_login: new Date().toISOString()
           })
           .eq('id', existingUser.id)
           .select()
@@ -39,15 +125,18 @@ export async function POST(req: NextRequest) {
 
         userRecord = updated || existingUser;
       } else {
-        const { data: inserted, error: insertError } = await supabaseAdmin
+        const { data: inserted } = await supabaseAdmin
           .from('users')
           .insert({
+            id: `usr-${Date.now()}`,
             email: cleanEmail,
-            full_name: fullName,
+            full_name: cleanName,
             google_id: googleId || `google-${Date.now()}`,
             avatar_url: avatarUrl,
-            phone_number: phoneNumber,
-            cv_created_count: 0
+            phone_number: cleanPhone,
+            password_hash: password || '',
+            role: 'user',
+            created_at: new Date().toISOString()
           })
           .select()
           .single();
@@ -55,22 +144,20 @@ export async function POST(req: NextRequest) {
         userRecord = inserted;
       }
     } catch (err: any) {
-      console.warn('Supabase users table sync note (using fallback):', err.message);
+      // Supabase table fallback
       userRecord = {
         id: `usr-${Date.now()}`,
         email: cleanEmail,
-        full_name: fullName,
-        phone_number: phoneNumber,
-        cv_created_count: 0,
+        full_name: cleanName,
+        phone_number: cleanPhone,
+        avatar_url: avatarUrl,
+        password_hash: password || '',
         created_at: new Date().toISOString()
       };
     }
 
-    // Persist to local cache so admin can read registrations even before Supabase table is applied
+    // 2. Persist to local disk and GitHub database
     try {
-      const fs = await import('fs');
-      const path = await import('path');
-      const os = await import('os');
       const userFile = path.join(os.tmpdir(), 'users.json');
       let currentUsers: any[] = [];
       if (fs.existsSync(userFile)) {
@@ -78,74 +165,43 @@ export async function POST(req: NextRequest) {
       }
       const existingIdx = currentUsers.findIndex((u: any) => u.email === cleanEmail);
       if (existingIdx !== -1) {
-        currentUsers[existingIdx] = { ...currentUsers[existingIdx], ...userRecord, phone_number: phoneNumber || currentUsers[existingIdx].phone_number };
+        currentUsers[existingIdx] = { ...currentUsers[existingIdx], ...userRecord };
       } else {
         currentUsers.unshift(userRecord);
       }
       fs.writeFileSync(userFile, JSON.stringify(currentUsers, null, 2), 'utf8');
+
+      // Also save to GitHub ctgroupteam/linkaltool/data/users.json
+      saveUsersToGitHub(currentUsers).catch(() => {});
     } catch {}
 
-    // 2. Check First 100 Free CVs logic
-    let totalCvsCount = 0;
+    // 3. Dispatch Instant Push Notification to Founder Admin
     try {
-      const { count } = await supabaseAdmin
-        .from('cv_profiles')
-        .select('*', { count: 'exact', head: true });
-      totalCvsCount = count || 0;
-    } catch {}
-
-    const isFirst100 = totalCvsCount < 100;
-    const remainingFirst100 = Math.max(0, 100 - totalCvsCount);
-
-    // 3. Check 1 Free CV per user rule
-    const userCvCount = userRecord?.cv_created_count || 0;
-    const hasUsedFreeCv = userCvCount >= 1;
-
-    // 4. Validate Promo Code if provided or if past 100 free CVs
-    let promoValid = false;
-    let promoReason = '';
-    if (promoCode) {
-      try {
-        const { data: promo } = await supabaseAdmin
-          .from('promo_codes')
-          .select('*')
-          .eq('code', promoCode.toUpperCase().trim())
-          .eq('is_active', true)
-          .single();
-
-        if (promo) {
-          promoValid = true;
-        } else {
-          promoReason = 'Invalid or expired promotional code.';
-        }
-      } catch {
-        // Fallback default promo check
-        if (promoCode.toUpperCase().trim() === 'LINKALCV' || promoCode.toUpperCase().trim() === 'VIPCV') {
-          promoValid = true;
-        } else {
-          promoReason = 'Invalid promotional code.';
-        }
-      }
-    }
+      await fetch('https://admin.linkal.in/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'new_user',
+          title: '🎉 New User Registered',
+          body: `${cleanName} signed up. Phone: ${cleanPhone || '—'}, Email: ${cleanEmail}`,
+          userName: cleanName,
+          userPhone: cleanPhone,
+          userEmail: cleanEmail,
+        })
+      });
+    } catch (e) {}
 
     return NextResponse.json({
       success: true,
-      user: userRecord,
-      cvEligibility: {
-        canCreateFreeCv: !hasUsedFreeCv,
-        hasUsedFreeCv,
-        isFirst100,
-        totalCvsCount,
-        remainingFirst100,
-        promoValid,
-        promoReason
+      user: {
+        id: userRecord.id,
+        email: userRecord.email,
+        fullName: userRecord.full_name || cleanName,
+        phoneNumber: userRecord.phone_number || cleanPhone,
+        avatarUrl: userRecord.avatar_url || avatarUrl,
       }
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Authentication error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message || 'Authentication failed' }, { status: 500 });
   }
 }
-

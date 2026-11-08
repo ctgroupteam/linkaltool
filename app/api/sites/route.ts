@@ -197,6 +197,25 @@ export async function POST(request: Request) {
     };
 
     const saved = await saveSite(newSite);
+
+    // Notify Founder Admin of new site or CV initialized
+    try {
+      const isCv = newSite.type === 'portfolio';
+      await fetch('https://admin.linkal.in/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: isCv ? 'new_cv' : 'new_site',
+          title: isCv ? '📄 New Executive CV Started' : '🛍️ New Website Started',
+          body: `${userName || saved.cvTitle || saved.name} started https://${saved.slug}.linkal.in | WhatsApp: ${whatsappNumber}`,
+          userName: userName || saved.cvTitle || saved.name,
+          siteSlug: saved.slug,
+          userPhone: whatsappNumber,
+          userEmail: userEmail || saved.cvEmail,
+        }),
+      });
+    } catch (e) {}
+
     return NextResponse.json({ site: saved }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

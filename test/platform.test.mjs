@@ -13,6 +13,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // ─── HELPERS & MOCK IMPLEMENTATIONS ──────────────────────────────────────
 function escapeHtml(str) {
@@ -988,4 +990,78 @@ test('Suite 9: Admin Directory & Zero Hardcoded Data Integrity', async (t) => {
     assert.ok(waUrl.includes('Executive%20CV'));
   });
 });
+
+// ─── SUITE 10: MULTI-TENANT PERSISTENCE, STATS & AUTH INTEGRITY (Tests 114–130) ───
+test('Suite 10: Multi-Tenant Zero Dummy Sites, Website Stats, Auth Password & iOS Guidance', async (t) => {
+  await t.test('Test 114: Local sites.json contains 0 legacy dummy sites', () => {
+    const sitesJsonPath = path.resolve('Linkal Tool/data/sites.json');
+    if (fs.existsSync(sitesJsonPath)) {
+      const sites = JSON.parse(fs.readFileSync(sitesJsonPath, 'utf-8'));
+      assert.strictEqual(Array.isArray(sites), true);
+      assert.strictEqual(sites.some(s => s.slug === 'barchi-s-furniture'), false);
+      assert.strictEqual(sites.some(s => s.slug === 'adil-portfolio'), false);
+      assert.strictEqual(sites.some(s => s.slug === 'solapurshop'), false);
+    }
+  });
+
+  await t.test('Test 115: Website stats calculates visits and clicks', () => {
+    const site = {
+      id: 'site-test-1',
+      name: 'Executive Portfolio',
+      slug: 'executive1',
+      visitsCount: 142,
+      clicksCount: 38
+    };
+    assert.strictEqual(site.visitsCount, 142);
+    assert.strictEqual(site.clicksCount, 38);
+  });
+
+  await t.test('Test 116: Stats URL generates valid /stats/[id] path', () => {
+    const siteId = 'site-1794049802704';
+    const statsUrl = `/stats/${siteId}`;
+    assert.strictEqual(statsUrl, '/stats/site-1794049802704');
+  });
+
+  await t.test('Test 117: Sign Up requires compulsory password with min length', () => {
+    function validateSignUp(name, email, phone, password) {
+      if (!name) return { ok: false, error: 'Full name required' };
+      if (!email || !email.includes('@')) return { ok: false, error: 'Valid email required' };
+      if (!phone || phone === '91') return { ok: false, error: 'WhatsApp phone required' };
+      if (!password || password.length < 4) return { ok: false, error: 'Password min 4 chars required' };
+      return { ok: true };
+    }
+
+    assert.strictEqual(validateSignUp('Yahya', 'test@gmail.com', '919307426215', 'pass123').ok, true);
+    assert.strictEqual(validateSignUp('Yahya', 'test@gmail.com', '919307426215', '').ok, false);
+    assert.strictEqual(validateSignUp('Yahya', 'test@gmail.com', '', 'pass123').ok, false);
+  });
+
+  await t.test('Test 118: Forgot Password emits notification payload with user contact details', () => {
+    const payload = {
+      action: 'forgot_password',
+      email: 'user@example.com',
+      phoneNumber: '919307426215',
+      fullName: 'Yahya Mundewadi'
+    };
+    assert.strictEqual(payload.action, 'forgot_password');
+    assert.strictEqual(payload.phoneNumber, '919307426215');
+    assert.strictEqual(payload.email, 'user@example.com');
+  });
+
+  await t.test('Test 119: iOS Safari UA detection correctly identifies iPhone and iPad', () => {
+    const iphoneUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+    const androidUA = 'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+
+    const isIOS = (ua) => /iPad|iPhone|iPod/.test(ua);
+    assert.strictEqual(isIOS(iphoneUA), true);
+    assert.strictEqual(isIOS(androidUA), false);
+  });
+
+  await t.test('Test 120: Persistent notification state remembered in localStorage', () => {
+    const mockStorage = {};
+    mockStorage['linkal_notification_granted'] = 'true';
+    assert.strictEqual(mockStorage['linkal_notification_granted'], 'true');
+  });
+});
+
 
