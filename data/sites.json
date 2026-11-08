@@ -1,1 +1,107 @@
-[]
+[
+  {
+    "id": "site-1794147198230",
+    "name": "tester",
+    "slug": "tester",
+    "type": "cv",
+    "status": "draft",
+    "userEmail": "heymrbrave@gmail.com",
+    "userName": "Alex Foster",
+    "whatsappNumber": "919999999999",
+    "defaultWhatsappMessage": "Hello tester, I reviewed your CV/portfolio on Linkal and would like to connect!",
+    "themeColor": "#0f172a",
+    "fontFamily": "Inter",
+    "bannerSlider": [],
+    "sliderAutoRotateSeconds": 4,
+    "cvTitle": "tester",
+    "cvHeadline": "Professional Title",
+    "cvLocation": "City, Country",
+    "cvEmail": "heymrbrave@gmail.com",
+    "cvPhone": "919999999999",
+    "cvLinkedin": "",
+    "cvLinkedinClickable": true,
+    "cvGithub": "",
+    "cvGithubClickable": true,
+    "cvWebsite": "https://tester.linkal.in",
+    "cvWebsiteClickable": true,
+    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
+    "cvExperiences": [
+      {
+        "id": "exp-1",
+        "company": "Company ABC",
+        "role": "Role / Position",
+        "period": "2022 — Present",
+        "location": "City, Country",
+        "description": "Key responsibilities, accomplishments, and quantifiable impact.",
+        "companyUrl": "",
+        "isCompanyUrlClickable": true
+      }
+    ],
+    "cvEducations": [
+      {
+        "id": "edu-1",
+        "institution": "University / Institute Name",
+        "degree": "Degree / Course Name",
+        "year": "2018 — 2022",
+        "honors": ""
+      }
+    ],
+    "cvSkills": [
+      "Skill 1",
+      "Skill 2",
+      "Skill 3",
+      "Project Planning",
+      "Communication"
+    ],
+    "cvProjects": [
+      {
+        "id": "proj-1",
+        "title": "Project Title Alpha",
+        "description": "Designed and implemented end-to-end functionality to meet client objectives.",
+        "link": "https://tester.linkal.in",
+        "isLinkClickable": true,
+        "techStack": "Tools & Technologies"
+      }
+    ],
+    "cvCertifications": [
+      {
+        "id": "cert-1",
+        "name": "Certification Title",
+        "issuer": "Issuing Organization",
+        "year": "2024",
+        "url": "",
+        "isUrlClickable": true
+      }
+    ],
+    "cvCustomCategories": [
+      {
+        "id": "cat-languages",
+        "name": "Languages",
+        "visible": true,
+        "items": [
+          {
+            "id": "lang-1",
+            "title": "English",
+            "subtitle": "Professional Working Proficiency"
+          },
+          {
+            "id": "lang-2",
+            "title": "Hindi",
+            "subtitle": "Native / Bilingual Proficiency"
+          }
+        ]
+      }
+    ],
+    "cvShowSummary": true,
+    "cvShowExperience": true,
+    "cvShowEducation": true,
+    "cvShowSkills": true,
+    "cvShowProjects": true,
+    "cvShowCertifications": true,
+    "cvFormat": "classic",
+    "createdAt": "2026-11-08T14:13:18.231Z",
+    "updatedAt": "2026-11-08T14:13:18.252Z",
+    "visitsCount": 0,
+    "clicksCount": 0
+  }
+]
