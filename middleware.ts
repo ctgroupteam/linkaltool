@@ -27,8 +27,8 @@ export function middleware(request: NextRequest) {
   if (hostname.endsWith('.linkal.in')) {
     const slug = hostname.replace('.linkal.in', '').trim();
     
-    // Pass platform subdomains through untouched
-    if (slug === 'studio' || slug === 'www' || slug === 'linkal' || slug === '') {
+    // Pass platform & standalone subdomains through untouched
+    if (slug === 'studio' || slug === 'www' || slug === 'linkal' || slug === 'turkishzaika' || slug === '') {
       return NextResponse.next();
     }
     
