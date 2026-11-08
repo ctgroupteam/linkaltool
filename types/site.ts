@@ -1,4 +1,16 @@
-export type SiteType = 'ecommerce' | 'portfolio' | 'single_product';
+export type SiteType =
+  | 'cv'
+  | 'portfolio'
+  | 'watch_store'
+  | 'restaurant'
+  | 'boutique'
+  | 'wedding_card'
+  | 'tuition'
+  | 'bakery'
+  | 'salon'
+  | 'electronics'
+  | 'ecommerce'
+  | 'single_product';
 
 export type SiteStatus = 'draft' | 'published' | 'deploying' | 'live' | 'failed';
 
@@ -21,6 +33,92 @@ export interface ProductItem {
   inStock?: boolean;
 }
 
+export interface WatchItem {
+  id: string;
+  brand: string;
+  model: string;
+  price: string;
+  mrp?: string;
+  dialColor?: string;
+  caseDiameter?: string;
+  movement?: string;
+  waterResistance?: string;
+  strapMaterial?: string;
+  imageUrl: string;
+  badge?: string;
+  inStock?: boolean;
+}
+
+export interface WeddingCardEvent {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  venue: string;
+}
+
+export interface WeddingCardDetails {
+  themeId: string; // 1 to 10
+  groomName: string;
+  brideName: string;
+  groomParents?: string;
+  brideParents?: string;
+  weddingDate: string;
+  venueName: string;
+  venueAddress: string;
+  venueMapUrl?: string;
+  rsvpPhone: string;
+  events: WeddingCardEvent[];
+  couplePhotoUrl?: string;
+  weddingHashtag?: string;
+}
+
+export interface TuitionBatch {
+  id: string;
+  className: string;
+  subjects: string;
+  timing: string;
+  monthlyFee: string;
+  annualFee?: string;
+}
+
+export interface TuitionDetails {
+  academyName: string;
+  tagline?: string;
+  standardsCovered?: string;
+  batches: TuitionBatch[];
+  resultsHighlight?: string;
+  admissionHelpline: string;
+}
+
+export interface RestaurantMenuItem {
+  id: string;
+  name: string;
+  category: string;
+  price: string;
+  description?: string;
+  imageUrl?: string;
+  isVeg?: boolean;
+  badge?: string;
+}
+
+export interface CvCustomCategoryItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  period?: string;
+  description?: string;
+  link?: string;
+  isLinkClickable?: boolean;
+}
+
+export interface CvCustomCategory {
+  id: string;
+  name: string;
+  items: CvCustomCategoryItem[];
+  visible?: boolean;
+}
+
 export interface CvExperience {
   id: string;
   company: string;
@@ -29,6 +127,7 @@ export interface CvExperience {
   location?: string;
   description: string;
   companyUrl?: string;
+  isCompanyUrlClickable?: boolean;
 }
 
 export interface CvEducation {
@@ -44,6 +143,7 @@ export interface CvProject {
   title: string;
   description: string;
   link?: string;
+  isLinkClickable?: boolean;
   techStack?: string;
 }
 
@@ -53,6 +153,7 @@ export interface CvCertification {
   issuer: string;
   year?: string;
   url?: string;
+  isUrlClickable?: boolean;
 }
 
 export interface PortfolioProject {
@@ -160,14 +261,26 @@ export interface SiteData {
   cvEmail?: string;
   cvPhone?: string;
   cvLinkedin?: string;
+  cvLinkedinClickable?: boolean;
   cvGithub?: string;
+  cvGithubClickable?: boolean;
   cvWebsite?: string;
+  cvWebsiteClickable?: boolean;
   cvSummary?: string;
   cvExperiences?: CvExperience[];
   cvEducations?: CvEducation[];
   cvProjects?: CvProject[];
   cvSkills?: string[];
   cvCertifications?: CvCertification[];
+  cvCustomCategories?: CvCustomCategory[];
+
+  // Dedicated Category Specific Data
+  watchItems?: WatchItem[];
+  weddingCard?: WeddingCardDetails;
+  tuition?: TuitionDetails;
+  restaurantMenu?: RestaurantMenuItem[];
+  restaurantLoadingAnimation?: boolean;
+  boutiqueLookbook?: ProductItem[];
 
   // CV Section Display Toggles & Layout Formats
   cvShowSummary?: boolean;

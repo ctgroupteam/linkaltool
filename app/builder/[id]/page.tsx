@@ -43,6 +43,10 @@ import {
   SiteData,
   BannerSlide,
   ProductItem,
+  WatchItem,
+  RestaurantMenuItem,
+  WeddingCardDetails,
+  TuitionDetails,
   PortfolioProject,
   PortfolioSkill,
   TrustBadgeItem,
@@ -170,7 +174,8 @@ export type TabType =
   | 'cv_education'
   | 'cv_skills'
   | 'cv_projects'
-  | 'cv_certifications';
+  | 'cv_certifications'
+  | 'cv_custom';
 
 export default function BuilderPage() {
   const params = useParams();
@@ -257,7 +262,7 @@ export default function BuilderPage() {
         if (res.ok) {
           const data = await res.json();
           const loadedSite: SiteData = data.site;
-          if (loadedSite.type === 'portfolio') {
+          if (loadedSite.type === 'cv') {
             setActiveTab('cv_profile');
             // Ensure clean generic CV defaults if missing (NO Harvard / executive hardcoding)
             if (!loadedSite.cvExperiences || loadedSite.cvExperiences.length === 0) {
@@ -708,6 +713,88 @@ export default function BuilderPage() {
     updateSiteField('cvCertifications', list);
   };
 
+  // ─── DEDICATED ATS CV CUSTOM SECTIONS HANDLERS ─────────────────────────
+  const handleAddCustomCategory = () => {
+    if (!site) return;
+    const newCat = {
+      id: `cat-${Date.now()}`,
+      name: 'New Custom Section',
+      visible: true,
+      items: [
+        {
+          id: `item-${Date.now()}`,
+          title: 'Section Item Title',
+          subtitle: 'Role / Context',
+          period: '2023',
+          description: 'Description of key achievement or detail.',
+          link: '',
+          isLinkClickable: true,
+        },
+      ],
+    };
+    const updated = [...(site.cvCustomCategories || []), newCat];
+    updateSiteField('cvCustomCategories', updated);
+  };
+
+  const handleDeleteCustomCategory = (catIdx: number) => {
+    if (!site) return;
+    const list = (site.cvCustomCategories || []).filter((_, i) => i !== catIdx);
+    updateSiteField('cvCustomCategories', list);
+  };
+
+  const handleUpdateCustomCategory = (catIdx: number, field: string, val: any) => {
+    if (!site) return;
+    const list = [...(site.cvCustomCategories || [])];
+    if (list[catIdx]) {
+      list[catIdx] = { ...list[catIdx], [field]: val };
+      updateSiteField('cvCustomCategories', list);
+    }
+  };
+
+  const handleAddCustomCategoryItem = (catIdx: number) => {
+    if (!site) return;
+    const list = [...(site.cvCustomCategories || [])];
+    if (list[catIdx]) {
+      const newItem = {
+        id: `item-${Date.now()}`,
+        title: '',
+        subtitle: '',
+        period: '',
+        description: '',
+        link: '',
+        isLinkClickable: true,
+      };
+      list[catIdx] = {
+        ...list[catIdx],
+        items: [...(list[catIdx].items || []), newItem],
+      };
+      updateSiteField('cvCustomCategories', list);
+    }
+  };
+
+  const handleDeleteCustomCategoryItem = (catIdx: number, itemIdx: number) => {
+    if (!site) return;
+    const list = [...(site.cvCustomCategories || [])];
+    if (list[catIdx]) {
+      list[catIdx] = {
+        ...list[catIdx],
+        items: (list[catIdx].items || []).filter((_, i) => i !== itemIdx),
+      };
+      updateSiteField('cvCustomCategories', list);
+    }
+  };
+
+  const handleUpdateCustomCategoryItem = (catIdx: number, itemIdx: number, field: string, val: any) => {
+    if (!site) return;
+    const list = [...(site.cvCustomCategories || [])];
+    if (list[catIdx] && list[catIdx].items?.[itemIdx]) {
+      const items = [...list[catIdx].items];
+      items[itemIdx] = { ...items[itemIdx], [field]: val };
+      list[catIdx] = { ...list[catIdx], items };
+      updateSiteField('cvCustomCategories', list);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
@@ -769,8 +856,10 @@ export default function BuilderPage() {
                 const newType = e.target.value as any;
                 const updated = { ...site, type: newType };
                 setSite(updated);
-                if (newType === 'portfolio') {
+                if (newType === 'cv') {
                   setActiveTab('cv_profile');
+                } else if (['watch_store', 'restaurant', 'wedding_card', 'tuition', 'boutique', 'portfolio'].includes(newType)) {
+                  setActiveTab('type_specific');
                 } else {
                   setActiveTab('general');
                 }
@@ -778,8 +867,17 @@ export default function BuilderPage() {
               className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
               title="Change Blueprint Template"
             >
-              <option value="portfolio">📄 Executive CV</option>
-              <option value="ecommerce">🛍️ Online Store</option>
+              <option value="cv">📄 1. Executive ATS CV (100% Free)</option>
+              <option value="portfolio">🎨 2. Creative Portfolio (7-Day Trial)</option>
+              <option value="watch_store">⌚ 3. Watch Business &amp; Horology</option>
+              <option value="restaurant">🍽️ 4. Restaurant Menu (Turkish Zaika)</option>
+              <option value="boutique">👗 5. Fashion &amp; Boutique</option>
+              <option value="wedding_card">💌 6. Royal Wedding Invitation (10 Themes)</option>
+              <option value="tuition">📚 7. Tuition &amp; Coaching Academy</option>
+              <option value="bakery">🎂 8. Bakery &amp; Cake Shop</option>
+              <option value="salon">✂️ 9. Salon &amp; Beauty Lounge</option>
+              <option value="electronics">📱 10. Electronics &amp; Gadgets</option>
+              <option value="ecommerce">🛍️ E-commerce Store</option>
               <option value="single_product">⚡ Single Product</option>
             </select>
           </div>
@@ -917,7 +1015,7 @@ export default function BuilderPage() {
                   <span>My Sites Overview</span>
                 </button>
 
-                {site.type === 'portfolio' ? (
+                {site.type === 'cv' ? (
                   <>
                     <button
                       onClick={() => {
@@ -1037,6 +1135,21 @@ export default function BuilderPage() {
                     >
                       <AwardIcon className="w-4 h-4 text-yellow-600" />
                       <span>Certifications</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setActiveTab('cv_custom');
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-left transition-all ${
+                        activeTab === 'cv_custom'
+                          ? 'bg-zinc-100 text-zinc-950'
+                          : 'hover:bg-zinc-100 text-zinc-700'
+                      }`}
+                    >
+                      <Plus className="w-4 h-4 text-emerald-600" />
+                      <span>Custom Sections</span>
                     </button>
 
                     <button
@@ -1233,7 +1346,7 @@ export default function BuilderPage() {
         >
           {/* Editor Sub-Tabs */}
           <div className="p-2.5 border-b border-zinc-200 bg-zinc-50 flex items-center gap-1.5 overflow-x-auto">
-            {site.type === 'portfolio' ? (
+            {site.type === 'cv' ? (
               <>
                 <button
                   onClick={() => setActiveTab('cv_format')}
@@ -1316,6 +1429,16 @@ export default function BuilderPage() {
                   Certifications
                 </button>
                 <button
+                  onClick={() => setActiveTab('cv_custom')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'cv_custom'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  Custom Sections
+                </button>
+                <button
                   onClick={() => setActiveTab('branding')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                     activeTab === 'branding'
@@ -1328,6 +1451,28 @@ export default function BuilderPage() {
               </>
             ) : (
               <>
+                <button
+                  onClick={() => setActiveTab('type_specific')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTab === 'type_specific'
+                      ? 'bg-zinc-950 text-white shadow-xs'
+                      : 'text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  {site.type === 'watch_store'
+                    ? '⌚ Watch Catalog'
+                    : site.type === 'restaurant'
+                    ? '🍽️ Menu & Zaika Bar'
+                    : site.type === 'wedding_card'
+                    ? '💌 10 Themes & Details'
+                    : site.type === 'tuition'
+                    ? '📚 Batches & Fee Structure'
+                    : site.type === 'boutique'
+                    ? '👗 Boutique Lookbook'
+                    : site.type === 'portfolio'
+                    ? '🎨 Portfolio Showcase'
+                    : '🛍️ Products Catalog'}
+                </button>
                 <button
                   onClick={() => setActiveTab('general')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
@@ -1367,16 +1512,6 @@ export default function BuilderPage() {
                   }`}
                 >
                   Banners
-                </button>
-                <button
-                  onClick={() => setActiveTab('type_specific')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                    activeTab === 'type_specific'
-                      ? 'bg-zinc-950 text-white shadow-xs'
-                      : 'text-zinc-600 hover:bg-zinc-200'
-                  }`}
-                >
-                  Products
                 </button>
                 <button
                   onClick={() => setActiveTab('trust_badges')}
@@ -1631,40 +1766,73 @@ export default function BuilderPage() {
                   <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Social &amp; Professional Links (ATS Verified)</h4>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-zinc-700 mb-1">
-                      LinkedIn Profile URL
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-bold text-zinc-700">
+                        LinkedIn Profile URL
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={site.cvLinkedinClickable !== false}
+                          onChange={(e) => updateSiteField('cvLinkedinClickable', e.target.checked)}
+                          className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>Clickable Link</span>
+                      </label>
+                    </div>
                     <input
                       type="url"
                       value={site.cvLinkedin || ''}
                       onChange={(e) => updateSiteField('cvLinkedin', e.target.value)}
-                      placeholder="https://linkedin.com/in/yahyamundewadi"
+                      placeholder="https://linkedin.com/in/username"
                       className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-950 focus:ring-2 focus:ring-zinc-950"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-zinc-700 mb-1">
-                      GitHub Profile URL
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-bold text-zinc-700">
+                        GitHub Profile URL
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={site.cvGithubClickable !== false}
+                          onChange={(e) => updateSiteField('cvGithubClickable', e.target.checked)}
+                          className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>Clickable Link</span>
+                      </label>
+                    </div>
                     <input
                       type="url"
                       value={site.cvGithub || ''}
                       onChange={(e) => updateSiteField('cvGithub', e.target.value)}
-                      placeholder="https://github.com/yahyamundewadi"
+                      placeholder="https://github.com/username"
                       className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-950 focus:ring-2 focus:ring-zinc-950"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-zinc-700 mb-1">
-                      Personal Portfolio / Website
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-bold text-zinc-700">
+                        Personal Portfolio / Website
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={site.cvWebsiteClickable !== false}
+                          onChange={(e) => updateSiteField('cvWebsiteClickable', e.target.checked)}
+                          className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>Clickable Link</span>
+                      </label>
+                    </div>
                     <input
                       type="url"
                       value={site.cvWebsite || ''}
                       onChange={(e) => updateSiteField('cvWebsite', e.target.value)}
-                      placeholder="https://yahya.in"
+                      placeholder="https://mysite.in"
                       className="w-full px-3.5 py-2 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-950 focus:ring-2 focus:ring-zinc-950"
                     />
                   </div>
@@ -1850,7 +2018,18 @@ export default function BuilderPage() {
                         </div>
 
                         <div>
-                          <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Company Website URL (Clickable)</label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[10px] font-bold text-zinc-600 uppercase">Company Website URL</label>
+                            <label className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={exp.isCompanyUrlClickable !== false}
+                                onChange={(e) => handleUpdateExperience(idx, 'isCompanyUrlClickable', e.target.checked as any)}
+                                className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500"
+                              />
+                              <span>Clickable Link</span>
+                            </label>
+                          </div>
                           <input
                             type="url"
                             value={exp.companyUrl || ''}
@@ -2115,7 +2294,18 @@ export default function BuilderPage() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <div>
-                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Clickable Project Link / GitHub URL</label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[10px] font-bold text-zinc-600 uppercase">Project Link / URL</label>
+                              <label className="flex items-center gap-1 text-[10px] text-zinc-500 font-semibold cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={proj.isLinkClickable !== false}
+                                  onChange={(e) => handleUpdateCvProject(idx, 'isLinkClickable', e.target.checked as any)}
+                                  className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500"
+                                />
+                                <span>Clickable</span>
+                              </label>
+                            </div>
                             <input
                               type="url"
                               value={proj.link || ''}
@@ -2246,7 +2436,18 @@ export default function BuilderPage() {
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Credential URL (Clickable)</label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[10px] font-bold text-zinc-600 uppercase">Credential URL</label>
+                              <label className="flex items-center gap-1 text-[10px] text-zinc-500 font-semibold cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={cert.isUrlClickable !== false}
+                                  onChange={(e) => handleUpdateCertification(idx, 'isUrlClickable', e.target.checked as any)}
+                                  className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500"
+                                />
+                                <span>Clickable</span>
+                              </label>
+                            </div>
                             <input
                               type="url"
                               value={cert.url || ''}
@@ -2255,6 +2456,152 @@ export default function BuilderPage() {
                               className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-mono text-zinc-950"
                             />
                           </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CV Custom Categories / Sections */}
+            {activeTab === 'cv_custom' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Custom Sections &amp; Categories</h4>
+                    <p className="text-[11px] text-zinc-500">Add custom sections like Languages, Publications, Patents, or Awards.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomCategory}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 text-white rounded-xl text-xs font-bold hover:bg-black transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Custom Section</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {(!site.cvCustomCategories || site.cvCustomCategories.length === 0) ? (
+                    <div className="text-center py-8 bg-zinc-50 rounded-2xl border border-dashed border-zinc-300 p-6">
+                      <Layers className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-zinc-700">No custom sections created yet</p>
+                      <p className="text-[11px] text-zinc-500 mt-1">Click "Add Custom Section" to create your own category (e.g. Languages, Patents, Honors).</p>
+                    </div>
+                  ) : (
+                    site.cvCustomCategories.map((cat, catIdx) => (
+                      <div key={cat.id || catIdx} className="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3">
+                        <div className="flex items-center justify-between gap-2 border-b border-zinc-200/80 pb-2.5">
+                          <div className="flex-1">
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-0.5">Section Title</label>
+                            <input
+                              type="text"
+                              value={cat.name}
+                              onChange={(e) => handleUpdateCustomCategory(catIdx, 'name', e.target.value)}
+                              placeholder="e.g. Languages / Publications / Honors"
+                              className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded-lg text-xs font-extrabold text-zinc-950"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 pt-3">
+                            <label className="flex items-center gap-1 text-[10px] text-zinc-600 font-semibold cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={cat.visible !== false}
+                                onChange={(e) => handleUpdateCustomCategory(catIdx, 'visible', e.target.checked)}
+                                className="w-3.5 h-3.5 rounded text-blue-600"
+                              />
+                              <span>Visible</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCustomCategory(catIdx)}
+                              className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
+                              title="Delete Section"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Section Items */}
+                        <div className="space-y-2.5 pt-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-zinc-600 uppercase">Items ({cat.items?.length || 0})</span>
+                            <button
+                              type="button"
+                              onClick={() => handleAddCustomCategoryItem(catIdx)}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Item</span>
+                            </button>
+                          </div>
+
+                          {cat.items?.map((item, itemIdx) => (
+                            <div key={item.id || itemIdx} className="p-3 bg-white border border-zinc-200 rounded-xl space-y-2 relative">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-zinc-400">#{itemIdx + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCustomCategoryItem(catIdx, itemIdx)}
+                                  className="text-zinc-300 hover:text-red-600 p-0.5"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  value={item.title}
+                                  onChange={(e) => handleUpdateCustomCategoryItem(catIdx, itemIdx, 'title', e.target.value)}
+                                  placeholder="Title (e.g. English, Patent Title)"
+                                  className="px-2.5 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs font-bold text-zinc-950"
+                                />
+                                <input
+                                  type="text"
+                                  value={item.subtitle || ''}
+                                  onChange={(e) => handleUpdateCustomCategoryItem(catIdx, itemIdx, 'subtitle', e.target.value)}
+                                  placeholder="Subtitle / Role (e.g. Fluent, USPTO)"
+                                  className="px-2.5 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs text-zinc-700"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  value={item.period || ''}
+                                  onChange={(e) => handleUpdateCustomCategoryItem(catIdx, itemIdx, 'period', e.target.value)}
+                                  placeholder="Year / Period (e.g. 2024)"
+                                  className="px-2.5 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs text-zinc-600"
+                                />
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="url"
+                                    value={item.link || ''}
+                                    onChange={(e) => handleUpdateCustomCategoryItem(catIdx, itemIdx, 'link', e.target.value)}
+                                    placeholder="Optional URL..."
+                                    className="flex-1 px-2.5 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs text-zinc-600 font-mono"
+                                  />
+                                  <label className="flex items-center gap-1 text-[9px] text-zinc-500 font-semibold shrink-0 cursor-pointer" title="Make link clickable">
+                                    <input
+                                      type="checkbox"
+                                      checked={item.isLinkClickable !== false}
+                                      onChange={(e) => handleUpdateCustomCategoryItem(catIdx, itemIdx, 'isLinkClickable', e.target.checked)}
+                                      className="w-3 h-3 text-blue-600 rounded"
+                                    />
+                                    <span>Link</span>
+                                  </label>
+                                </div>
+                              </div>
+                              <input
+                                type="text"
+                                value={item.description || ''}
+                                onChange={(e) => handleUpdateCustomCategoryItem(catIdx, itemIdx, 'description', e.target.value)}
+                                placeholder="Short description or notes..."
+                                className="w-full px-2.5 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs text-zinc-600"
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))
@@ -2273,9 +2620,17 @@ export default function BuilderPage() {
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { type: 'portfolio', label: 'Personal ATS CV', icon: '📄' },
+                      { type: 'cv', label: '1. Executive ATS CV', icon: '📄' },
+                      { type: 'portfolio', label: '2. Creative Portfolio', icon: '🎨' },
+                      { type: 'watch_store', label: '3. Watch Business', icon: '⌚' },
+                      { type: 'restaurant', label: '4. Restaurant Menu', icon: '🍽️' },
+                      { type: 'boutique', label: '5. Fashion Boutique', icon: '👗' },
+                      { type: 'wedding_card', label: '6. Wedding Card', icon: '💌' },
+                      { type: 'tuition', label: '7. Tuition Academy', icon: '📚' },
+                      { type: 'bakery', label: '8. Bakery & Cake', icon: '🎂' },
+                      { type: 'salon', label: '9. Salon & Spa', icon: '✂️' },
+                      { type: 'electronics', label: '10. Electronics', icon: '📱' },
                       { type: 'ecommerce', label: 'E-commerce Store', icon: '🛍️' },
-                      { type: 'restaurant', label: 'Restaurant Menu', icon: '🍽️' },
                       { type: 'single_product', label: 'Single Product', icon: '⚡' },
                     ].map((m) => (
                       <button
@@ -2283,7 +2638,8 @@ export default function BuilderPage() {
                         type="button"
                         onClick={() => {
                           updateSiteField('type', m.type as any);
-                          if (m.type === 'portfolio') setActiveTab('cv_format');
+                          if (m.type === 'cv') setActiveTab('cv_format');
+                          else if (['watch_store', 'restaurant', 'wedding_card', 'tuition', 'boutique', 'portfolio'].includes(m.type)) setActiveTab('type_specific');
                         }}
                         className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center gap-1.5 ${
                           site.type === m.type
@@ -2297,7 +2653,7 @@ export default function BuilderPage() {
                     ))}
                   </div>
                   <p className="text-[10px] text-zinc-500 mt-1">
-                    Select &quot;Personal ATS CV&quot; to transform into an executive resume layout, or choose an e-commerce template.
+                    Select your website blueprint. Watch Business is positioned 3rd, Restaurant features the Turkish Zaika standard, and Wedding Card features 10 luxury themes.
                   </p>
                 </div>
 
@@ -2652,7 +3008,779 @@ export default function BuilderPage() {
                   Upload images, set prices and names. Live preview reflects edits immediately.
                 </p>
 
-                {site.type === 'ecommerce' && (
+                {/* 3. Luxury Watch Business Catalog (3rd Position) */}
+                {site.type === 'watch_store' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-zinc-900 text-zinc-100 rounded-2xl flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 font-bold text-sm">⌚</span>
+                        <div>
+                          <p className="text-xs font-bold text-white">Watch Business &amp; Horology</p>
+                          <p className="text-[10px] text-zinc-400">Positioned in #3. Add dial photos, specs, prices, and 1-tap WhatsApp orders.</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newWatch: WatchItem = {
+                            id: `watch-${Date.now()}`,
+                            brand: 'Chronos',
+                            model: 'Diver Pro 300M',
+                            price: '7,999',
+                            mrp: '12,999',
+                            dialColor: 'Sunburst Black',
+                            caseDiameter: '41mm',
+                            movement: 'Automatic Mechanical',
+                            waterResistance: '200m / 20 ATM',
+                            strapMaterial: 'Stainless Steel',
+                            imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80',
+                            badge: 'Best Seller',
+                            inStock: true,
+                          };
+                          updateSiteField('watchItems', [...(site.watchItems || []), newWatch]);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-zinc-950 rounded-xl text-xs font-extrabold transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Watch</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {(!site.watchItems || site.watchItems.length === 0) ? (
+                        <div className="p-6 text-center bg-zinc-50 border border-dashed border-zinc-300 rounded-2xl">
+                          <p className="text-xs font-bold text-zinc-700">No timepieces added yet</p>
+                          <p className="text-[10px] text-zinc-500 mt-1">Click "Add Watch" to add timepieces with dial photos and horology specs.</p>
+                        </div>
+                      ) : (
+                        site.watchItems.map((watch, index) => (
+                          <div key={watch.id || index} className="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-extrabold text-zinc-950">
+                                {watch.brand || 'Watch'} {watch.model || ''}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = site.watchItems?.filter((_, i) => i !== index);
+                                  updateSiteField('watchItems', updated);
+                                }}
+                                className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* Watch Dial Photo Upload */}
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={watch.imageUrl}
+                                alt="Watch Dial"
+                                className="w-14 h-14 rounded-xl object-cover border border-zinc-300 bg-white shrink-0"
+                              />
+                              <div className="flex-1 space-y-1">
+                                <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-950 hover:bg-black text-white text-[10px] font-bold cursor-pointer transition-all">
+                                  <Upload className="w-3 h-3" />
+                                  <span>Upload Watch Photo (WebP)</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) =>
+                                      handleFileUpload(e, (url) => {
+                                        const updated = [...(site.watchItems || [])];
+                                        updated[index].imageUrl = url;
+                                        updateSiteField('watchItems', updated);
+                                      })
+                                    }
+                                  />
+                                </label>
+                                <input
+                                  type="url"
+                                  value={watch.imageUrl}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].imageUrl = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="Or paste image URL..."
+                                  className="w-full px-2 py-1 bg-white border border-zinc-300 rounded text-[11px]"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Brand & Model */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-0.5">Brand</label>
+                                <input
+                                  type="text"
+                                  value={watch.brand}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].brand = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="e.g. Rolex / Seiko / Casio"
+                                  className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-bold text-zinc-950"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-0.5">Model</label>
+                                <input
+                                  type="text"
+                                  value={watch.model}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].model = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="e.g. Submariner 41mm"
+                                  className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-semibold text-zinc-950"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Price & MRP */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-0.5">Selling Price (₹)</label>
+                                <input
+                                  type="text"
+                                  value={watch.price}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].price = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="e.g. 7,999"
+                                  className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-bold text-emerald-700"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-0.5">MRP / Strikethrough (₹)</label>
+                                <input
+                                  type="text"
+                                  value={watch.mrp || ''}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].mrp = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="e.g. 14,999"
+                                  className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs text-zinc-500"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Horology Specs */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                              <div>
+                                <label className="block text-[9px] font-bold text-zinc-500 uppercase">Movement</label>
+                                <input
+                                  type="text"
+                                  value={watch.movement || ''}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].movement = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="Automatic"
+                                  className="w-full px-2 py-1 bg-white border border-zinc-300 rounded text-[11px]"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[9px] font-bold text-zinc-500 uppercase">Case Size</label>
+                                <input
+                                  type="text"
+                                  value={watch.caseDiameter || ''}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].caseDiameter = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="41mm"
+                                  className="w-full px-2 py-1 bg-white border border-zinc-300 rounded text-[11px]"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[9px] font-bold text-zinc-500 uppercase">Dial Color</label>
+                                <input
+                                  type="text"
+                                  value={watch.dialColor || ''}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].dialColor = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="Sunburst Navy"
+                                  className="w-full px-2 py-1 bg-white border border-zinc-300 rounded text-[11px]"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[9px] font-bold text-zinc-500 uppercase">Water Resist</label>
+                                <input
+                                  type="text"
+                                  value={watch.waterResistance || ''}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].waterResistance = e.target.value;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  placeholder="100m / 10 ATM"
+                                  className="w-full px-2 py-1 bg-white border border-zinc-300 rounded text-[11px]"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Badge & In Stock */}
+                            <div className="flex items-center justify-between pt-1 border-t border-zinc-200">
+                              <input
+                                type="text"
+                                value={watch.badge || ''}
+                                onChange={(e) => {
+                                  const updated = [...(site.watchItems || [])];
+                                  updated[index].badge = e.target.value;
+                                  updateSiteField('watchItems', updated);
+                                }}
+                                placeholder="Badge (e.g. Best Seller, Limited Edition)"
+                                className="w-48 px-2 py-0.5 bg-white border border-zinc-300 rounded text-[10px]"
+                              />
+                              <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={watch.inStock !== false}
+                                  onChange={(e) => {
+                                    const updated = [...(site.watchItems || [])];
+                                    updated[index].inStock = e.target.checked;
+                                    updateSiteField('watchItems', updated);
+                                  }}
+                                  className="w-3.5 h-3.5 text-emerald-600 rounded"
+                                />
+                                <span>In Stock</span>
+                              </label>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Restaurant & Cafe Menu (Turkish Zaika Standard) */}
+                {site.type === 'restaurant' && (
+                  <div className="space-y-4">
+                    {/* Entrance Loading Overlay Toggle (Turkish Zaika standard) */}
+                    <div className="p-3.5 bg-orange-50 border border-orange-200 rounded-2xl flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-orange-950 block">Turkish Zaika Entrance Loading Bar</span>
+                        <span className="text-[11px] text-orange-700">Display luxury 0%–100% progress bar animation with restaurant logo pulse on site load.</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={site.restaurantLoadingAnimation !== false}
+                        onChange={(e) => updateSiteField('restaurantLoadingAnimation', e.target.checked)}
+                        className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-zinc-900 uppercase">
+                        Menu Dishes ({site.restaurantMenu?.length || 0})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newDish: RestaurantMenuItem = {
+                            id: `dish-${Date.now()}`,
+                            name: 'Signature Chicken Dum Biryani',
+                            category: 'Biryani & Rice',
+                            price: '280',
+                            description: 'Aromatic basmati rice layered with spiced tender chicken and saffron.',
+                            imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80',
+                            isVeg: false,
+                            badge: 'Chef Special',
+                          };
+                          updateSiteField('restaurantMenu', [...(site.restaurantMenu || []), newDish]);
+                        }}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-orange-700 hover:text-orange-800"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Dish</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {site.restaurantMenu?.map((dish, index) => (
+                        <div key={dish.id || index} className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {/* Veg/Non-Veg Dot Badge Indicator */}
+                              <span
+                                className={`w-3.5 h-3.5 rounded border flex items-center justify-center p-0.5 ${
+                                  dish.isVeg ? 'border-emerald-600 bg-emerald-50' : 'border-red-600 bg-red-50'
+                                }`}
+                                title={dish.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${dish.isVeg ? 'bg-emerald-600' : 'bg-red-600'}`} />
+                              </span>
+                              <span className="text-xs font-bold text-zinc-950">{dish.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = site.restaurantMenu?.filter((_, i) => i !== index);
+                                updateSiteField('restaurantMenu', updated);
+                              }}
+                              className="text-red-600 hover:text-red-800 p-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Dish Photo Upload */}
+                          {dish.imageUrl && (
+                            <div className="flex items-center gap-3">
+                              <img src={dish.imageUrl} alt={dish.name} className="w-12 h-12 rounded-lg object-cover border" />
+                              <div className="flex-1 space-y-1">
+                                <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-950 text-white rounded text-[10px] font-bold cursor-pointer">
+                                  <Upload className="w-3 h-3" />
+                                  <span>Change Photo (WebP)</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) =>
+                                      handleFileUpload(e, (url) => {
+                                        const updated = [...(site.restaurantMenu || [])];
+                                        updated[index].imageUrl = url;
+                                        updateSiteField('restaurantMenu', updated);
+                                      })
+                                    }
+                                  />
+                                </label>
+                                <input
+                                  type="url"
+                                  value={dish.imageUrl}
+                                  onChange={(e) => {
+                                    const updated = [...(site.restaurantMenu || [])];
+                                    updated[index].imageUrl = e.target.value;
+                                    updateSiteField('restaurantMenu', updated);
+                                  }}
+                                  placeholder="Image URL..."
+                                  className="w-full px-2 py-0.5 bg-white border border-zinc-300 rounded text-[10px]"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input
+                              type="text"
+                              value={dish.name}
+                              onChange={(e) => {
+                                const updated = [...(site.restaurantMenu || [])];
+                                updated[index].name = e.target.value;
+                                updateSiteField('restaurantMenu', updated);
+                              }}
+                              placeholder="Dish Name"
+                              className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={dish.category}
+                              onChange={(e) => {
+                                const updated = [...(site.restaurantMenu || [])];
+                                updated[index].category = e.target.value;
+                                updateSiteField('restaurantMenu', updated);
+                              }}
+                              placeholder="Category (e.g. Starters, Biryani)"
+                              className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs"
+                            />
+                            <input
+                              type="text"
+                              value={dish.price}
+                              onChange={(e) => {
+                                const updated = [...(site.restaurantMenu || [])];
+                                updated[index].price = e.target.value;
+                                updateSiteField('restaurantMenu', updated);
+                              }}
+                              placeholder="Price (₹)"
+                              className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-bold text-emerald-700"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={dish.isVeg === true}
+                                onChange={(e) => {
+                                  const updated = [...(site.restaurantMenu || [])];
+                                  updated[index].isVeg = e.target.checked;
+                                  updateSiteField('restaurantMenu', updated);
+                                }}
+                                className="w-3.5 h-3.5 text-emerald-600 rounded"
+                              />
+                              <span>Pure Veg (Green Dot)</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={dish.badge || ''}
+                              onChange={(e) => {
+                                const updated = [...(site.restaurantMenu || [])];
+                                updated[index].badge = e.target.value;
+                                updateSiteField('restaurantMenu', updated);
+                              }}
+                              placeholder="Badge (e.g. Chef Special)"
+                              className="w-36 px-2 py-0.5 bg-white border border-zinc-300 rounded text-[10px]"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. Wedding Card Invitation (10 Themes) */}
+                {site.type === 'wedding_card' && (
+                  <div className="space-y-4">
+                    {/* 10 Luxury Color Themes Palette */}
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-900 mb-1.5 uppercase">
+                        Select Luxury Theme (10 Designer Color Themes)
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        {[
+                          { id: '1', name: 'Maroon & Gold', primary: '#7F1D1D', secondary: '#F59E0B' },
+                          { id: '2', name: 'Emerald & Champagne', primary: '#064E3B', secondary: '#D97706' },
+                          { id: '3', name: 'Navy & Rose Gold', primary: '#0F172A', secondary: '#F43F5E' },
+                          { id: '4', name: 'Royal Purple', primary: '#581C87', secondary: '#E2E8F0' },
+                          { id: '5', name: 'Ruby & Ivory', primary: '#881337', secondary: '#FEF3C7' },
+                          { id: '6', name: 'Sapphire Gold', primary: '#1E3A8A', secondary: '#FBBF24' },
+                          { id: '7', name: 'Sunset Terracotta', primary: '#9A3412', secondary: '#F97316' },
+                          { id: '8', name: 'Forest Jade', primary: '#14532D', secondary: '#F0FDF4' },
+                          { id: '9', name: 'Black Tie Gold', primary: '#09090B', secondary: '#EAB308' },
+                          { id: '10', name: 'Rose Blush', primary: '#831843', secondary: '#FBCFE8' },
+                        ].map((thm) => (
+                          <button
+                            key={thm.id}
+                            type="button"
+                            onClick={() => {
+                              updateSiteField('weddingCard', {
+                                ...(site.weddingCard || {
+                                  themeId: '1',
+                                  groomName: '',
+                                  brideName: '',
+                                  weddingDate: '',
+                                  venueName: '',
+                                  venueAddress: '',
+                                  rsvpPhone: site.whatsappNumber,
+                                  events: []
+                                }),
+                                themeId: thm.id,
+                              });
+                            }}
+                            className={`p-2 rounded-xl border text-left transition-all ${
+                              (site.weddingCard?.themeId || '1') === thm.id
+                                ? 'border-blue-600 ring-2 ring-blue-600/30 bg-blue-50/50'
+                                : 'border-zinc-200 bg-white hover:border-zinc-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: thm.primary }} />
+                              <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: thm.secondary }} />
+                            </div>
+                            <span className="text-[10px] font-bold text-zinc-950 block truncate">{thm.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Couple & Parents */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Groom's Name</label>
+                        <input
+                          type="text"
+                          value={site.weddingCard?.groomName || ''}
+                          onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), groomName: e.target.value })}
+                          placeholder="e.g. Aarav Sharma"
+                          className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Bride's Name</label>
+                        <input
+                          type="text"
+                          value={site.weddingCard?.brideName || ''}
+                          onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), brideName: e.target.value })}
+                          placeholder="e.g. Ananya Verma"
+                          className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Date & RSVP */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Wedding Date</label>
+                        <input
+                          type="date"
+                          value={site.weddingCard?.weddingDate || ''}
+                          onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), weddingDate: e.target.value })}
+                          className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">RSVP WhatsApp Phone</label>
+                        <input
+                          type="text"
+                          value={site.weddingCard?.rsvpPhone || site.whatsappNumber}
+                          onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), rsvpPhone: e.target.value })}
+                          placeholder="919307426215"
+                          className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Venue & Google Maps */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Venue &amp; Google Maps Link</label>
+                      <input
+                        type="text"
+                        value={site.weddingCard?.venueName || ''}
+                        onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), venueName: e.target.value })}
+                        placeholder="Venue Name (e.g. The Grand Palace)"
+                        className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold mb-1"
+                      />
+                      <input
+                        type="text"
+                        value={site.weddingCard?.venueAddress || ''}
+                        onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), venueAddress: e.target.value })}
+                        placeholder="Full Street Address"
+                        className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs mb-1"
+                      />
+                      <input
+                        type="url"
+                        value={site.weddingCard?.venueMapUrl || ''}
+                        onChange={(e) => updateSiteField('weddingCard', { ...(site.weddingCard as any), venueMapUrl: e.target.value })}
+                        placeholder="Google Maps Link (e.g. https://maps.google.com/?q=...)"
+                        className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 7. Tuition & Coaching Academy */}
+                {site.type === 'tuition' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-900 mb-1">Academy Name &amp; Standards</label>
+                      <input
+                        type="text"
+                        value={site.tuition?.academyName || site.name}
+                        onChange={(e) => updateSiteField('tuition', { ...(site.tuition as any), academyName: e.target.value })}
+                        placeholder="Academy / Coaching Classes Name"
+                        className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold mb-1.5"
+                      />
+                      <input
+                        type="text"
+                        value={site.tuition?.standardsCovered || ''}
+                        onChange={(e) => updateSiteField('tuition', { ...(site.tuition as any), standardsCovered: e.target.value })}
+                        placeholder="e.g. Class 8th to 12th • CBSE / State Board • NEET &amp; JEE"
+                        className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs text-zinc-700"
+                      />
+                    </div>
+
+                    {/* Batches & Fee Structure */}
+                    <div className="space-y-2 pt-2 border-t border-zinc-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-zinc-900">Batches &amp; Fee Matrix</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newBatch = {
+                              id: `batch-${Date.now()}`,
+                              className: 'Class 10th Board Mastery',
+                              subjects: 'Maths, Science & English',
+                              timing: 'Mon - Fri: 5:00 PM - 7:00 PM',
+                              monthlyFee: '2,500',
+                              annualFee: '26,000',
+                            };
+                            updateSiteField('tuition', {
+                              ...(site.tuition || { academyName: site.name, admissionHelpline: site.whatsappNumber, batches: [] }),
+                              batches: [...(site.tuition?.batches || []), newBatch],
+                            });
+                          }}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Batch</span>
+                        </button>
+                      </div>
+
+                      {site.tuition?.batches?.map((b, bIdx) => (
+                        <div key={b.id || bIdx} className="p-3 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-zinc-950">{b.className}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = site.tuition?.batches?.filter((_, i) => i !== bIdx);
+                                updateSiteField('tuition', { ...(site.tuition as any), batches: updated || [] });
+                              }}
+                              className="text-red-500 hover:text-red-700 p-0.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={b.className}
+                              onChange={(e) => {
+                                const updated = [...(site.tuition?.batches || [])];
+                                updated[bIdx].className = e.target.value;
+                                updateSiteField('tuition', { ...(site.tuition as any), batches: updated });
+                              }}
+                              placeholder="Batch Name (e.g. Class 10th)"
+                              className="px-2 py-1 bg-white border border-zinc-300 rounded text-xs font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={b.timing}
+                              onChange={(e) => {
+                                const updated = [...(site.tuition?.batches || [])];
+                                updated[bIdx].timing = e.target.value;
+                                updateSiteField('tuition', { ...(site.tuition as any), batches: updated });
+                              }}
+                              placeholder="Timings (e.g. 5:00 PM - 7:00 PM)"
+                              className="px-2 py-1 bg-white border border-zinc-300 rounded text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={b.monthlyFee}
+                              onChange={(e) => {
+                                const updated = [...(site.tuition?.batches || [])];
+                                updated[bIdx].monthlyFee = e.target.value;
+                                updateSiteField('tuition', { ...(site.tuition as any), batches: updated });
+                              }}
+                              placeholder="Monthly Fee (₹)"
+                              className="px-2 py-1 bg-white border border-zinc-300 rounded text-xs font-bold text-emerald-700"
+                            />
+                            <input
+                              type="text"
+                              value={b.annualFee || ''}
+                              onChange={(e) => {
+                                const updated = [...(site.tuition?.batches || [])];
+                                updated[bIdx].annualFee = e.target.value;
+                                updateSiteField('tuition', { ...(site.tuition as any), batches: updated });
+                              }}
+                              placeholder="Annual Fee (₹)"
+                              className="px-2 py-1 bg-white border border-zinc-300 rounded text-xs"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Fashion & Boutique */}
+                {site.type === 'boutique' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-pink-50 border border-pink-200 rounded-2xl flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-pink-100 text-pink-700 text-sm">👗</span>
+                        <div>
+                          <p className="text-xs font-bold text-pink-950">Boutique &amp; Ethnic Wear Lookbook</p>
+                          <p className="text-[10px] text-pink-700">Display sarees, kurtis, lehengas with fabric details and S-XXL sizes.</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newBoutiqueItem: ProductItem = {
+                            id: `btq-${Date.now()}`,
+                            name: 'Handcrafted Silk Saree',
+                            price: '3,499',
+                            currency: '₹',
+                            description: 'Pure handcrafted silk with antique zari border. Available in S, M, L, XL.',
+                            imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
+                            badge: 'Bridal Pick',
+                            inStock: true,
+                          };
+                          updateSiteField('boutiqueLookbook', [...(site.boutiqueLookbook || []), newBoutiqueItem]);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Look</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {site.boutiqueLookbook?.map((item, index) => (
+                        <div key={item.id || index} className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-zinc-950">{item.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = site.boutiqueLookbook?.filter((_, i) => i !== index);
+                                updateSiteField('boutiqueLookbook', updated);
+                              }}
+                              className="text-red-500 hover:text-red-700 p-0.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => {
+                                const updated = [...(site.boutiqueLookbook || [])];
+                                updated[index].name = e.target.value;
+                                updateSiteField('boutiqueLookbook', updated);
+                              }}
+                              placeholder="Outfit Name"
+                              className="px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={item.price}
+                              onChange={(e) => {
+                                const updated = [...(site.boutiqueLookbook || [])];
+                                updated[index].price = e.target.value;
+                                updateSiteField('boutiqueLookbook', updated);
+                              }}
+                              placeholder="Price (₹)"
+                              className="px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-bold text-emerald-700"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={item.description}
+                            onChange={(e) => {
+                              const updated = [...(site.boutiqueLookbook || [])];
+                              updated[index].description = e.target.value;
+                              updateSiteField('boutiqueLookbook', updated);
+                            }}
+                            placeholder="Fabric details, embroidery &amp; sizes (e.g. Pure Georgette • S, M, L, XL)"
+                            className="w-full px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs text-zinc-700"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* General E-Commerce / Bakery / Salon / Electronics */}
+                {['ecommerce', 'bakery', 'salon', 'electronics'].includes(site.type) && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-zinc-900">
@@ -3041,24 +4169,38 @@ export default function BuilderPage() {
                     {/* Portfolio Projects */}
                     <div className="space-y-2 pt-2 border-t border-zinc-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-zinc-900">Projects Showcase ({site.portfolioProjects?.length || 0})</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newProj: PortfolioProject = {
-                              id: `proj-${Date.now()}`,
-                              title: 'Brand Identity Project',
-                              description: 'Full identity design, typography guidelines, and packaging collateral.',
-                              imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
-                              tags: ['Branding', 'Web'],
-                            };
-                            updateSiteField('portfolioProjects', [...(site.portfolioProjects || []), newProj]);
-                          }}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Add Project</span>
-                        </button>
+                        <div>
+                          <span className="text-xs font-bold text-zinc-900 block">
+                            Projects Showcase ({site.portfolioProjects?.length || 0}/5)
+                          </span>
+                          <span className="text-[10px] text-zinc-500 font-medium">
+                            Max 5 project images allowed. 7-day free trial.
+                          </span>
+                        </div>
+                        {(site.portfolioProjects?.length || 0) < 5 ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newProj: PortfolioProject = {
+                                id: `proj-${Date.now()}`,
+                                title: 'Brand Identity & Web Showcase',
+                                description: 'Designed end-to-end creative deliverables and digital experience.',
+                                imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
+                                tags: ['Branding', 'Web'],
+                                link: '',
+                              };
+                              updateSiteField('portfolioProjects', [...(site.portfolioProjects || []), newProj]);
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Add Project (Max 5)</span>
+                          </button>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                            Max 5 Reached
+                          </span>
+                        )}
                       </div>
 
                       {site.portfolioProjects?.map((proj, index) => (
@@ -3125,6 +4267,33 @@ export default function BuilderPage() {
                             placeholder="Project Title..."
                             className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-bold text-zinc-950"
                           />
+
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="url"
+                              value={proj.link || ''}
+                              onChange={(e) => {
+                                const updated = [...(site.portfolioProjects || [])];
+                                updated[index].link = e.target.value;
+                                updateSiteField('portfolioProjects', updated);
+                              }}
+                              placeholder="Project live URL (e.g. https://...)"
+                              className="flex-1 px-2.5 py-1 bg-white border border-zinc-300 rounded text-xs font-mono"
+                            />
+                            <label className="flex items-center gap-1 text-[10px] text-zinc-600 font-semibold cursor-pointer shrink-0">
+                              <input
+                                type="checkbox"
+                                checked={(proj as any).isLinkClickable !== false}
+                                onChange={(e) => {
+                                  const updated = [...(site.portfolioProjects || [])];
+                                  (updated[index] as any).isLinkClickable = e.target.checked;
+                                  updateSiteField('portfolioProjects', updated);
+                                }}
+                                className="w-3.5 h-3.5 text-blue-600 rounded"
+                              />
+                              <span>Clickable</span>
+                            </label>
+                          </div>
 
                           <textarea
                             rows={2}

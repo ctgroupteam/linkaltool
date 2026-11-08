@@ -57,7 +57,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const validTypes: SiteType[] = ['ecommerce', 'portfolio', 'single_product'];
+    const validTypes: SiteType[] = [
+      'cv',
+      'portfolio',
+      'watch_store',
+      'restaurant',
+      'boutique',
+      'wedding_card',
+      'tuition',
+      'bakery',
+      'salon',
+      'electronics',
+      'ecommerce',
+      'single_product',
+    ];
     const siteType: SiteType = validTypes.includes(type) ? type : 'ecommerce';
 
     const existingSites = await getAllSites();
@@ -90,13 +103,21 @@ export async function POST(request: Request) {
       userEmail: userEmail ? userEmail.toLowerCase().trim() : undefined,
       userName: userName || name,
       whatsappNumber: cleanPhone,
-      defaultWhatsappMessage: siteType === 'portfolio'
-        ? `Hello ${name}, I reviewed your CV and would like to connect!`
+      defaultWhatsappMessage: siteType === 'cv' || siteType === 'portfolio'
+        ? `Hello ${name}, I reviewed your CV/portfolio on Linkal and would like to connect!`
+        : siteType === 'watch_store'
+        ? `Hello ${name}, I am interested in purchasing a watch from your collection!`
+        : siteType === 'restaurant'
+        ? `Hello ${name}, I would like to place an order from your digital menu!`
+        : siteType === 'wedding_card'
+        ? `Hello, RSVP confirmation for the wedding celebration!`
+        : siteType === 'tuition'
+        ? `Hello ${name}, I would like to enquire about coaching admissions and batch timings!`
         : `Hi ${name}, I saw your website and would like to place an order!`,
-      logoUrl: siteType === 'portfolio' ? undefined : (logoUrl || undefined),
-      themeColor: siteType === 'portfolio' ? '#0f172a' : siteType === 'single_product' ? '#ea580c' : '#059669',
+      logoUrl: (siteType === 'cv' || siteType === 'portfolio') ? undefined : (logoUrl || undefined),
+      themeColor: siteType === 'cv' ? '#0f172a' : siteType === 'watch_store' ? '#18181b' : siteType === 'wedding_card' ? '#7f1d1d' : siteType === 'single_product' ? '#ea580c' : '#059669',
       fontFamily: 'Inter',
-      bannerSlider: siteType === 'portfolio' ? [] : [
+      bannerSlider: (siteType === 'cv' || siteType === 'wedding_card') ? [] : [
         {
           id: `slide-1`,
           imageUrl: initialBannerImage,
@@ -106,7 +127,7 @@ export async function POST(request: Request) {
         },
       ],
       sliderAutoRotateSeconds: 4,
-      products: siteType === 'ecommerce' ? [
+      products: siteType === 'ecommerce' || siteType === 'bakery' || siteType === 'salon' || siteType === 'electronics' ? [
         {
           id: 'prod-1',
           name: initialProdName,
@@ -118,6 +139,126 @@ export async function POST(request: Request) {
           inStock: true,
         }
       ] : undefined,
+      // Watch Business Catalog Defaults (3rd position)
+      watchItems: siteType === 'watch_store' ? [
+        {
+          id: 'watch-1',
+          brand: 'Chronos Heritage',
+          model: 'Ocean Diver Pro 300M',
+          price: '8,499',
+          mrp: '14,999',
+          dialColor: 'Midnight Black',
+          caseDiameter: '41mm',
+          movement: 'Automatic Self-Winding',
+          waterResistance: '300m / 30 ATM',
+          strapMaterial: '316L Stainless Steel Oyster',
+          imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80',
+          badge: 'Best Seller',
+          inStock: true,
+        },
+        {
+          id: 'watch-2',
+          brand: 'Aethelgard Horology',
+          model: 'Aviator GMT Automatic',
+          price: '11,999',
+          mrp: '19,999',
+          dialColor: 'Sunburst Navy',
+          caseDiameter: '40mm',
+          movement: 'Swiss Mechanical Automatic',
+          waterResistance: '100m / 10 ATM',
+          strapMaterial: 'Handcrafted Italian Calf Leather',
+          imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80',
+          badge: 'New Arrival',
+          inStock: true,
+        }
+      ] : undefined,
+      // Turkish Zaika Restaurant Standard Menu Defaults
+      restaurantLoadingAnimation: siteType === 'restaurant' ? true : undefined,
+      restaurantMenu: siteType === 'restaurant' ? [
+        {
+          id: 'dish-1',
+          name: 'Special Chicken Dum Biryani',
+          category: 'Biryani & Rice',
+          price: '280',
+          description: 'Slow-cooked aromatic basmati rice layered with tender spiced chicken and saffron.',
+          imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80',
+          isVeg: false,
+          badge: 'Signature Dish',
+        },
+        {
+          id: 'dish-2',
+          name: 'Paneer Butter Masala',
+          category: 'Gravy & Curries',
+          price: '240',
+          description: 'Fresh cottage cheese simmered in rich buttery tomato and cashew gravy.',
+          imageUrl: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fit=crop&q=80',
+          isVeg: true,
+          badge: 'Chef Special',
+        },
+        {
+          id: 'dish-3',
+          name: 'Garlic Butter Naan',
+          category: 'Tandoor Breads',
+          price: '60',
+          description: 'Traditional clay oven baked flatbread infused with roasted garlic and melted butter.',
+          imageUrl: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&auto=format&fit=crop&q=80',
+          isVeg: true,
+        }
+      ] : undefined,
+      // Wedding Card & Digital Invitation Defaults (10 Themes)
+      weddingCard: siteType === 'wedding_card' ? {
+        themeId: '1',
+        groomName: 'Aarav Sharma',
+        brideName: 'Ananya Verma',
+        groomParents: 'Mr. Rajesh & Mrs. Sunita Sharma',
+        brideParents: 'Mr. Vikram & Mrs. Meera Verma',
+        weddingDate: '2026-12-18',
+        venueName: 'The Grand Heritage Palace',
+        venueAddress: 'Near Gateway Circle, Marine Drive, Mumbai',
+        venueMapUrl: 'https://maps.google.com',
+        rsvpPhone: cleanPhone,
+        weddingHashtag: '#AaravWedsAnanya',
+        events: [
+          { id: 'ev-1', name: 'Mehendi & Sangeet', date: 'Dec 17, 2026', time: '6:30 PM Onwards', venue: 'Royal Ballroom' },
+          { id: 'ev-2', name: 'Wedding Muhurat', date: 'Dec 18, 2026', time: '11:00 AM', venue: 'Heritage Mandap' },
+          { id: 'ev-3', name: 'Grand Reception Dinner', date: 'Dec 18, 2026', time: '7:30 PM', venue: 'Palace Lawns' }
+        ]
+      } : undefined,
+      // Tuition & Coaching Academy Defaults
+      tuition: siteType === 'tuition' ? {
+        academyName: name,
+        tagline: 'Excellence in Academics & Competitive Exam Foundation',
+        standardsCovered: 'Class 8th to 12th • CBSE / ICSE / State Board • NEET & JEE',
+        admissionHelpline: cleanPhone,
+        resultsHighlight: '98.6% Top Score in 2024 Boards • 45+ NEET / JEE Selections',
+        batches: [
+          { id: 'b-1', className: 'Class 10th Board Mastery', subjects: 'Mathematics, Science & English', timing: 'Mon - Fri: 5:00 PM - 7:00 PM', monthlyFee: '2,500', annualFee: '26,000' },
+          { id: 'b-2', className: 'Class 11th - 12th Science (PCM/B)', subjects: 'Physics, Chemistry, Maths & Biology', timing: 'Daily: 7:00 AM - 10:00 AM', monthlyFee: '4,000', annualFee: '42,000' }
+        ]
+      } : undefined,
+      // Boutique Fashion Collection Defaults
+      boutiqueLookbook: siteType === 'boutique' ? [
+        {
+          id: 'btq-1',
+          name: 'Handcrafted Chanderi Silk Saree',
+          price: '3,899',
+          currency: '₹',
+          description: 'Pure Chanderi silk with antique gold zari border and handcrafted motifs.',
+          imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
+          badge: 'Bridal Collection',
+          inStock: true,
+        },
+        {
+          id: 'btq-2',
+          name: 'Royal Velvet Embroidered Anarkali',
+          price: '4,999',
+          currency: '₹',
+          description: 'Deep crimson velvet with intricate zardozi hand embroidery and matching dupatta.',
+          imageUrl: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&auto=format&fit=crop&q=80',
+          badge: 'Limited Edition',
+          inStock: true,
+        }
+      ] : undefined,
       // Clean generic ATS CV fields for portfolios (NO Harvard / executive fallbacks)
       cvTitle: name || 'XYZ',
       cvHeadline: 'Professional Title',
@@ -125,10 +266,13 @@ export async function POST(request: Request) {
       cvEmail: userEmail || '',
       cvPhone: cleanPhone,
       cvLinkedin: '',
+      cvLinkedinClickable: true,
       cvGithub: '',
+      cvGithubClickable: true,
       cvWebsite: `https://${finalSlug}.linkal.in`,
+      cvWebsiteClickable: true,
       cvSummary: 'A brief professional summary highlighting key strengths, background, and career accomplishments.',
-      cvExperiences: siteType === 'portfolio' ? [
+      cvExperiences: (siteType === 'cv' || siteType === 'portfolio') ? [
         {
           id: 'exp-1',
           company: 'Company ABC',
@@ -136,10 +280,11 @@ export async function POST(request: Request) {
           period: '2022 — Present',
           location: 'City, Country',
           description: 'Key responsibilities, accomplishments, and quantifiable impact.',
-          companyUrl: ''
+          companyUrl: '',
+          isCompanyUrlClickable: true,
         }
       ] : undefined,
-      cvEducations: siteType === 'portfolio' ? [
+      cvEducations: (siteType === 'cv' || siteType === 'portfolio') ? [
         {
           id: 'edu-1',
           institution: 'University / Institute Name',
@@ -148,29 +293,42 @@ export async function POST(request: Request) {
           honors: ''
         }
       ] : undefined,
-      cvSkills: siteType === 'portfolio' ? [
+      cvSkills: (siteType === 'cv' || siteType === 'portfolio') ? [
         'Skill 1',
         'Skill 2',
         'Skill 3',
         'Project Planning',
         'Communication'
       ] : undefined,
-      cvProjects: siteType === 'portfolio' ? [
+      cvProjects: (siteType === 'cv' || siteType === 'portfolio') ? [
         {
           id: 'proj-1',
           title: 'Project Title Alpha',
           description: 'Designed and implemented end-to-end functionality to meet client objectives.',
           link: `https://${finalSlug}.linkal.in`,
+          isLinkClickable: true,
           techStack: 'Tools & Technologies'
         }
       ] : undefined,
-      cvCertifications: siteType === 'portfolio' ? [
+      cvCertifications: (siteType === 'cv' || siteType === 'portfolio') ? [
         {
           id: 'cert-1',
           name: 'Certification Title',
           issuer: 'Issuing Organization',
           year: '2024',
-          url: ''
+          url: '',
+          isUrlClickable: true,
+        }
+      ] : undefined,
+      cvCustomCategories: siteType === 'cv' ? [
+        {
+          id: 'cat-languages',
+          name: 'Languages',
+          visible: true,
+          items: [
+            { id: 'lang-1', title: 'English', subtitle: 'Professional Working Proficiency' },
+            { id: 'lang-2', title: 'Hindi', subtitle: 'Native / Bilingual Proficiency' }
+          ]
         }
       ] : undefined,
       // CV Display Toggles & Format Defaults

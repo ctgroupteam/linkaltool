@@ -148,8 +148,8 @@ function DashboardContent() {
   const [user, setUser] = useState<{ id: string; email: string; fullName: string; phoneNumber?: string } | null>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
 
-  // Active category selection - default to executive portfolio (CV)
-  const [category, setCategory] = useState<'portfolio' | 'restaurant' | 'ecommerce' | 'single_product'>('portfolio');
+  // Active category selection - default to executive CV
+  const [category, setCategory] = useState<SiteType>('cv');
 
   // Creation form state
   const [siteName, setSiteName] = useState('');
@@ -273,12 +273,28 @@ function DashboardContent() {
     setCreateError(null);
 
     if (!siteName.trim()) {
-      setCreateError(category === 'portfolio' ? 'Please enter your full name to add in your CV' : 'Please enter your website or brand name');
+      setCreateError(
+        category === 'cv'
+          ? 'Please enter your full name to generate your ATS CV'
+          : category === 'portfolio'
+          ? 'Please enter your name or studio name'
+          : category === 'wedding_card'
+          ? 'Please enter Couple names (e.g. Aarav & Ananya)'
+          : category === 'tuition'
+          ? 'Please enter your Academy or Tuition name'
+          : 'Please enter your website or brand name'
+      );
       return;
     }
 
     if (!whatsappPhone.trim() || whatsappPhone.trim() === '91') {
-      setCreateError(category === 'portfolio' ? 'Please enter your WhatsApp contact number to add in your CV' : 'Please enter a valid WhatsApp orders number');
+      setCreateError(
+        category === 'cv'
+          ? 'Please enter your WhatsApp contact number for your CV'
+          : category === 'wedding_card'
+          ? 'Please enter your WhatsApp RSVP contact number'
+          : 'Please enter a valid WhatsApp orders number'
+      );
       return;
     }
 
@@ -302,12 +318,7 @@ function DashboardContent() {
       setCreateError(null);
 
       // Determine template type
-      const siteType: SiteType =
-        category === 'portfolio'
-          ? 'portfolio'
-          : category === 'single_product'
-          ? 'single_product'
-          : 'ecommerce';
+      const siteType: SiteType = category;
 
       const res = await fetch('/api/sites', {
         method: 'POST',
@@ -321,8 +332,8 @@ function DashboardContent() {
           userEmail: currentUser?.email,
           userName: currentUser?.fullName,
           // For CV: strictly NO images as requested by customer
-          bannerImageUrl: category === 'portfolio' ? undefined : 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80',
-          logoUrl: category === 'portfolio' ? undefined : undefined,
+          bannerImageUrl: (category === 'cv' || category === 'wedding_card') ? undefined : 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80',
+          logoUrl: category === 'cv' ? undefined : undefined,
         }),
       });
 
@@ -383,7 +394,7 @@ function DashboardContent() {
       <GoogleAuthModal
         isOpen={showGoogleModal}
         onClose={() => setShowGoogleModal(false)}
-        isCvSite={category === 'portfolio'}
+        isCvSite={category === 'cv'}
         initialName={siteName}
         initialPhone={whatsappPhone}
         onSuccess={(authedUser) => {
@@ -542,11 +553,37 @@ function DashboardContent() {
               <label className="block text-xs font-bold text-zinc-900 uppercase tracking-wider mb-2.5">
                 1. Select Website Blueprint *
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                {/* CV & Portfolio */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {/* 1. Executive ATS CV */}
+                <div
+                  onClick={() => setCategory('cv')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'cv'
+                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="p-1.5 rounded-xl bg-blue-100 text-blue-700 text-lg">📄</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        100% Free
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xs text-zinc-950">1. Executive ATS CV</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
+                      ATS-optimized, clean typography, 0 image uploads, clickable link toggles &amp; custom categories.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-emerald-700">
+                    ₹0 Free Lifetime
+                  </div>
+                </div>
+
+                {/* 2. Freelancer Portfolio */}
                 <div
                   onClick={() => setCategory('portfolio')}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'portfolio'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
@@ -554,27 +591,51 @@ function DashboardContent() {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="p-2 rounded-xl bg-blue-100 text-blue-700">
-                        <FileTextIcon className="w-5 h-5" />
-                      </span>
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        100% Free with LINKAL
+                      <span className="p-1.5 rounded-xl bg-purple-100 text-purple-700 text-lg">🎨</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                        7-Day Trial
                       </span>
                     </div>
-                    <h3 className="font-extrabold text-sm text-zinc-950">Personal CV &amp; Portfolio</h3>
+                    <h3 className="font-extrabold text-xs text-zinc-950">2. Creative Portfolio</h3>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
-                      Executive monochrome layout, bio, credentials, experience &amp; links. <strong>Zero images for CV</strong>.
+                      Visual project showcase with up to 5 WebP project image uploads &amp; WhatsApp hire CTA.
                     </p>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-zinc-200/60 text-[11px] font-bold text-blue-700">
-                    Free for First 100 CVs &bull; ₹0
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-purple-700">
+                    Trial ends {trialEndFormatted}
                   </div>
                 </div>
 
-                {/* Restaurant Digital Menu */}
+                {/* 3. Luxury Watch Business (3rd Position) */}
+                <div
+                  onClick={() => setCategory('watch_store')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'watch_store'
+                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="p-1.5 rounded-xl bg-amber-100 text-amber-700 text-lg">⌚</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                        Horology Special
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xs text-zinc-950">3. Watch Business</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
+                      Luxury dark layout, timepiece dial photos, movement/case specs, MRP discounts &amp; 1-tap WhatsApp buy.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-amber-700">
+                    Trial ends {trialEndFormatted}
+                  </div>
+                </div>
+
+                {/* 4. Restaurant & Cafe Menu (Turkish Zaika Standard) */}
                 <div
                   onClick={() => setCategory('restaurant')}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'restaurant'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
@@ -582,76 +643,174 @@ function DashboardContent() {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="p-2 rounded-xl bg-amber-100 text-amber-700">
-                        <UtensilsIcon className="w-5 h-5" />
+                      <span className="p-1.5 rounded-xl bg-orange-100 text-orange-700 text-lg">🍽️</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">
+                        Zaika Standard
                       </span>
+                    </div>
+                    <h3 className="font-extrabold text-xs text-zinc-950">4. Restaurant &amp; Cafe Menu</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
+                      Turkish Zaika entrance loading bar, veg/non-veg dot badges, dish photos &amp; WhatsApp orders.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-orange-700">
+                    Trial ends {trialEndFormatted}
+                  </div>
+                </div>
+
+                {/* 5. Fashion & Boutique */}
+                <div
+                  onClick={() => setCategory('boutique')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'boutique'
+                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="p-1.5 rounded-xl bg-pink-100 text-pink-700 text-lg">👗</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800">
+                        7-Day Trial
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xs text-zinc-950">5. Fashion Boutique</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
+                      Sarees, lehengas, kurtis lookbook, S-XXL size selector, fabric details &amp; WhatsApp orders.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-pink-700">
+                    Trial ends {trialEndFormatted}
+                  </div>
+                </div>
+
+                {/* 6. Royal Wedding Invitation (10 Themes) */}
+                <div
+                  onClick={() => setCategory('wedding_card')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'wedding_card'
+                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="p-1.5 rounded-xl bg-rose-100 text-rose-700 text-lg">💌</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                        10 Themes
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xs text-zinc-950">6. Wedding Card Invitation</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
+                      10 luxury pre-built color themes, couple bios, countdown timer, event itinerary &amp; Google Maps RSVP.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-rose-700">
+                    Trial ends {trialEndFormatted}
+                  </div>
+                </div>
+
+                {/* 7. Tuition & Coaching Academy */}
+                <div
+                  onClick={() => setCategory('tuition')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'tuition'
+                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="p-1.5 rounded-xl bg-indigo-100 text-indigo-700 text-lg">📚</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+                        7-Day Trial
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xs text-zinc-950">7. Tuition &amp; Coaching</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
+                      8th-12th standards, batch timings schedule, subject fee matrix (monthly/annual) &amp; admission helpline.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-indigo-700">
+                    Trial ends {trialEndFormatted}
+                  </div>
+                </div>
+
+                {/* 8. Bakery & Cake Shop */}
+                <div
+                  onClick={() => setCategory('bakery')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'bakery'
+                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="p-1.5 rounded-xl bg-amber-100 text-amber-700 text-lg">🎂</span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                        7 Days Free Trial
+                        7-Day Trial
                       </span>
                     </div>
-                    <h3 className="font-extrabold text-sm text-zinc-950">Restaurant Digital QR Menu</h3>
+                    <h3 className="font-extrabold text-xs text-zinc-950">8. Bakery &amp; Cake Shop</h3>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
-                      Dishes, categories, table QR code generator, and instant WhatsApp food orders.
+                      Custom designer cakes, pastries, egg/eggless flavor options &amp; WhatsApp cake ordering.
                     </p>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-zinc-200/60 text-[11px] font-bold text-amber-700">
-                    Free trial ends on {trialEndFormatted}
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-amber-700">
+                    Trial ends {trialEndFormatted}
                   </div>
                 </div>
 
-                {/* E-commerce Store */}
+                {/* 9. Salon & Beauty Lounge */}
                 <div
-                  onClick={() => setCategory('ecommerce')}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                    category === 'ecommerce'
+                  onClick={() => setCategory('salon')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'salon'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
-                        <ShoppingBag className="w-5 h-5 text-emerald-600" />
-                      </span>
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        7 Days Free Trial
+                      <span className="p-1.5 rounded-xl bg-fuchsia-100 text-fuchsia-700 text-lg">✂️</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-fuchsia-100 text-fuchsia-800">
+                        7-Day Trial
                       </span>
                     </div>
-                    <h3 className="font-extrabold text-sm text-zinc-950">E-commerce Store</h3>
+                    <h3 className="font-extrabold text-xs text-zinc-950">9. Salon &amp; Beauty Lounge</h3>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
-                      Full product catalog, shopping bag, WhatsApp checkout, pricing, and variants.
+                      Hair styling, bridal makeup, spa treatments, pricing menu &amp; WhatsApp appointment booking.
                     </p>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-zinc-200/60 text-[11px] font-bold text-emerald-700">
-                    Free trial ends on {trialEndFormatted}
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-fuchsia-700">
+                    Trial ends {trialEndFormatted}
                   </div>
                 </div>
 
-                {/* Single Product Hero */}
+                {/* 10. Electronics & Gadgets */}
                 <div
-                  onClick={() => setCategory('single_product')}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                    category === 'single_product'
+                  onClick={() => setCategory('electronics')}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    category === 'electronics'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="p-2 rounded-xl bg-purple-100 text-purple-700">
-                        <Zap className="w-5 h-5 text-purple-600" />
-                      </span>
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
-                        7 Days Free Trial
+                      <span className="p-1.5 rounded-xl bg-cyan-100 text-cyan-700 text-lg">📱</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800">
+                        7-Day Trial
                       </span>
                     </div>
-                    <h3 className="font-extrabold text-sm text-zinc-950">Single Product Hero</h3>
+                    <h3 className="font-extrabold text-xs text-zinc-950">10. Electronics &amp; Gadgets</h3>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
-                      High-converting hero landing with reviews, video embeds &amp; 1-tap WhatsApp buy.
+                      Smart devices, tech specs, accessories, warranty highlights &amp; fast WhatsApp checkout.
                     </p>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-zinc-200/60 text-[11px] font-bold text-purple-700">
-                    Free trial ends on {trialEndFormatted}
+                  <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-cyan-700">
+                    Trial ends {trialEndFormatted}
                   </div>
                 </div>
               </div>

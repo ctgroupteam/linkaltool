@@ -1,4 +1,10 @@
 import { SiteData } from '@/types/site';
+import { generateRestaurantHtml } from './templates/restaurant';
+import { generateWatchStoreHtml } from './templates/watchStore';
+import { generateWeddingCardHtml } from './templates/weddingCard';
+import { generateTuitionHtml } from './templates/tuition';
+import { generateCreativePortfolioHtml } from './templates/portfolio';
+import { generateBoutiqueHtml } from './templates/boutique';
 
 function cleanPhone(phone: string): string {
   return phone.replace(/[^0-9]/g, '');
@@ -724,9 +730,9 @@ export function generateAtsCvHtml(site: SiteData): string {
         ${location ? `<span class="cv-contact-item">📍 ${location}</span>` : ''}
         ${email ? `<span class="cv-dot">&bull;</span><a href="mailto:${email}" class="cv-contact-item">✉️ ${email}</a>` : ''}
         ${displayPhone ? `<span class="cv-dot">&bull;</span><a href="tel:${displayPhone}" class="cv-contact-item">📞 ${displayPhone}</a>` : ''}
-        ${linkedin ? `<span class="cv-dot">&bull;</span><a href="${linkedin.startsWith('http') ? linkedin : 'https://' + linkedin}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">LinkedIn ↗</a>` : ''}
-        ${github ? `<span class="cv-dot">&bull;</span><a href="${github.startsWith('http') ? github : 'https://' + github}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">GitHub ↗</a>` : ''}
-        ${website ? `<span class="cv-dot">&bull;</span><a href="${website.startsWith('http') ? website : 'https://' + website}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">Website ↗</a>` : ''}
+        ${linkedin ? `<span class="cv-dot">&bull;</span>${site.cvLinkedinClickable !== false ? `<a href="${linkedin.startsWith('http') ? linkedin : 'https://' + linkedin}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">LinkedIn ↗</a>` : `<span class="cv-contact-item">LinkedIn: ${escapeHtml(linkedin)}</span>`}` : ''}
+        ${github ? `<span class="cv-dot">&bull;</span>${site.cvGithubClickable !== false ? `<a href="${github.startsWith('http') ? github : 'https://' + github}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">GitHub ↗</a>` : `<span class="cv-contact-item">GitHub: ${escapeHtml(github)}</span>`}` : ''}
+        ${website ? `<span class="cv-dot">&bull;</span>${site.cvWebsiteClickable !== false ? `<a href="${website.startsWith('http') ? website : 'https://' + website}" target="_blank" rel="noopener noreferrer" class="cv-contact-item">Website ↗</a>` : `<span class="cv-contact-item">Website: ${escapeHtml(website)}</span>`}` : ''}
       </div>
     </header>
 
@@ -830,6 +836,26 @@ export function generateAtsCvHtml(site: SiteData): string {
       `).join('\n')}
     </section>
     ` : ''}
+
+    ${(site.cvCustomCategories && site.cvCustomCategories.length > 0) ? site.cvCustomCategories.filter(cat => cat.visible !== false).map(cat => `
+    <!-- Custom Category: ${escapeHtml(cat.name)} -->
+    <section class="cv-section">
+      <h2 class="cv-section-title">${escapeHtml(cat.name)}</h2>
+      ${(cat.items || []).map(item => `
+        <div class="cv-item">
+          <div class="cv-item-header">
+            <div>
+              <span class="cv-item-role">${escapeHtml(item.title)}</span>
+              ${item.subtitle ? ` &mdash; <span class="cv-item-company">${escapeHtml(item.subtitle)}</span>` : ''}
+              ${item.link ? (item.isLinkClickable !== false ? ` <a href="${item.link.startsWith('http') ? item.link : 'https://' + item.link}" target="_blank" rel="noopener noreferrer" class="cv-project-link">Link ↗</a>` : ` <span class="cv-project-tech">(${escapeHtml(item.link)})</span>`) : ''}
+            </div>
+            ${item.period ? `<span class="cv-item-period">${escapeHtml(item.period)}</span>` : ''}
+          </div>
+          ${item.description ? `<div class="cv-item-desc">${escapeHtml(item.description)}</div>` : ''}
+        </div>
+      `).join('\n')}
+    </section>
+    `).join('\n') : ''}
   </main>
   `}
 
@@ -838,9 +864,27 @@ export function generateAtsCvHtml(site: SiteData): string {
 }
 
 export function generateStaticHtml(site: SiteData): string {
-  // If CV / Portfolio mode: generate pure ATS Executive CV
-  if (site.type === 'portfolio') {
+  // Category-Specific Dispatch
+  if (site.type === 'cv') {
     return generateAtsCvHtml(site);
+  }
+  if (site.type === 'portfolio') {
+    return generateCreativePortfolioHtml(site);
+  }
+  if (site.type === 'watch_store') {
+    return generateWatchStoreHtml(site);
+  }
+  if (site.type === 'restaurant') {
+    return generateRestaurantHtml(site);
+  }
+  if (site.type === 'wedding_card') {
+    return generateWeddingCardHtml(site);
+  }
+  if (site.type === 'tuition') {
+    return generateTuitionHtml(site);
+  }
+  if (site.type === 'boutique') {
+    return generateBoutiqueHtml(site);
   }
   const phone = cleanPhone(site.whatsappNumber);
   const themeColor = site.themeColor || '#2563eb';
@@ -1806,6 +1850,19 @@ export function generateStaticHtml(site: SiteData): string {
   </style>
 </head>
 <body>
+
+  <!-- Signature Fast Entrance Loading Bar -->
+  <div id="ecom-loading-overlay" style="position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; transition:opacity 0.5s ease, visibility 0.5s;">
+    <div style="text-align:center; max-width:320px; width:100%;">
+      ${site.logoUrl ? `<img src="${escapeHtml(site.logoUrl)}" style="width:76px; height:76px; border-radius:50%; object-fit:cover; margin:0 auto 16px; box-shadow:0 6px 18px rgba(0,0,0,0.12); display:block;" />` : ''}
+      <div style="font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:4px;">${siteTitle}</div>
+      <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:${themeColor}; font-weight:700; margin-bottom:16px;">Verified Storefront</div>
+      <div style="width:100%; height:4px; background:#e2e8f0; border-radius:99px; overflow:hidden; margin-bottom:8px;">
+        <div id="ecom-pbar" style="height:100%; width:0%; background:${themeColor}; border-radius:99px; transition:width 0.12s ease-out;"></div>
+      </div>
+      <div id="ecom-ptxt" style="font-size:0.75rem; color:#64748b; font-weight:600;">Loading 0%</div>
+    </div>
+  </div>
 
   <!-- Announcement Bar (Top) -->
   ${site.announcementEnabled !== false && (site.announcementText || '').trim() ? `

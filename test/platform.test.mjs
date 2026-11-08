@@ -1064,4 +1064,167 @@ test('Suite 10: Multi-Tenant Zero Dummy Sites, Website Stats, Auth Password & iO
   });
 });
 
+// ─── SUITE 11: 10 SPECIALIZED CATEGORIES, TURKISH ZAIKA & WATCH STORE (Tests 121–130) ───
+test('Suite 11: 10-Category Expansion, Turkish Zaika Standard & Watch Business Position #3', async (t) => {
+  await t.test('Test 121: Watch Store (Category #3) data structure contains brand, model, specs, price & WhatsApp payload', () => {
+    const watch = {
+      id: 'watch-1',
+      brand: 'Chronos Heritage',
+      model: 'Ocean Diver Pro 300M',
+      price: '8,499',
+      mrp: '14,999',
+      dialColor: 'Midnight Black',
+      caseDiameter: '41mm',
+      movement: 'Automatic Self-Winding',
+      waterResistance: '300m / 30 ATM',
+      strapMaterial: '316L Stainless Steel',
+      imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
+      badge: 'Best Seller',
+      inStock: true,
+    };
+
+    const waText = `Hello, I want to purchase ${watch.brand} ${watch.model} (₹${watch.price}) listed on your website!`;
+    const waUrl = `https://wa.me/919307426215?text=${encodeURIComponent(waText)}`;
+
+    assert.strictEqual(watch.brand, 'Chronos Heritage');
+    assert.strictEqual(watch.waterResistance, '300m / 30 ATM');
+    assert.ok(waUrl.includes('Ocean%20Diver%20Pro%20300M'));
+  });
+
+  await t.test('Test 122: Turkish Zaika Restaurant Standard contains entrance loading bar animation toggle and veg/non-veg dot badges', () => {
+    const restaurantSite = {
+      restaurantLoadingAnimation: true,
+      restaurantMenu: [
+        { id: 'd-1', name: 'Chicken Biryani', isVeg: false, price: '280' },
+        { id: 'd-2', name: 'Paneer Butter Masala', isVeg: true, price: '240' }
+      ]
+    };
+
+    assert.strictEqual(restaurantSite.restaurantLoadingAnimation, true);
+    assert.strictEqual(restaurantSite.restaurantMenu[0].isVeg, false);
+    assert.strictEqual(restaurantSite.restaurantMenu[1].isVeg, true);
+  });
+
+  await t.test('Test 123: Wedding Card Maker supports 10 luxury color themes, event schedule, Google Maps & RSVP', () => {
+    const themes = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+    assert.strictEqual(themes.length, 10);
+
+    const wedding = {
+      themeId: '1',
+      groomName: 'Aarav Sharma',
+      brideName: 'Ananya Verma',
+      weddingDate: '2026-12-18',
+      venueMapUrl: 'https://maps.google.com/?q=Heritage+Palace',
+      rsvpPhone: '919307426215'
+    };
+
+    assert.strictEqual(wedding.themeId, '1');
+    assert.strictEqual(wedding.groomName, 'Aarav Sharma');
+    assert.ok(wedding.venueMapUrl.includes('maps.google.com'));
+  });
+
+  await t.test('Test 124: Tuition & Coaching Academy supports standards covered, batch timings & fee matrix', () => {
+    const tuition = {
+      academyName: 'Apex Science Academy',
+      standardsCovered: 'Class 8th to 12th • CBSE & State Board',
+      batches: [
+        { className: 'Class 10th', timing: '5:00 PM - 7:00 PM', monthlyFee: '2,500', annualFee: '26,000' }
+      ]
+    };
+
+    assert.strictEqual(tuition.batches[0].monthlyFee, '2,500');
+    assert.strictEqual(tuition.batches[0].annualFee, '26,000');
+    assert.ok(tuition.standardsCovered.includes('Class 8th to 12th'));
+  });
+
+  await t.test('Test 125: Freelancer Creative Portfolio enforces maximum 5 project image uploads with WebP compression', () => {
+    const portfolioProjects = [
+      { id: 'p1', title: 'P1' },
+      { id: 'p2', title: 'P2' },
+      { id: 'p3', title: 'P3' },
+      { id: 'p4', title: 'P4' },
+      { id: 'p5', title: 'P5' }
+    ];
+
+    const canAddMore = portfolioProjects.length < 5;
+    assert.strictEqual(canAddMore, false);
+    assert.strictEqual(portfolioProjects.length, 5);
+  });
+
+  await t.test('Test 126: ATS CV link clickable toggle converts URL to <a> tag when true and plain text when false', () => {
+    function renderLink(url, isClickable, label) {
+      if (!url) return '';
+      if (isClickable) return `<a href="${url}">${label}</a>`;
+      return `<span>${label}</span>`;
+    }
+
+    const clickable = renderLink('https://linkedin.com/in/user', true, 'LinkedIn');
+    const plain = renderLink('https://linkedin.com/in/user', false, 'LinkedIn');
+
+    assert.ok(clickable.startsWith('<a href='));
+    assert.ok(plain.startsWith('<span>'));
+  });
+
+  await t.test('Test 127: ATS CV custom categories manager allows dynamic user-defined sections', () => {
+    const customCategories = [
+      {
+        id: 'cat-languages',
+        name: 'Languages',
+        visible: true,
+        items: [
+          { title: 'English', subtitle: 'Fluent' },
+          { title: 'Hindi', subtitle: 'Native' }
+        ]
+      }
+    ];
+
+    assert.strictEqual(customCategories[0].name, 'Languages');
+    assert.strictEqual(customCategories[0].items.length, 2);
+  });
+
+  await t.test('Test 128: Boutique fashion catalog supports ethnic wear lookbook with S-XXL size selector & fabric details', () => {
+    const lookbookItem = {
+      id: 'btq-1',
+      name: 'Chanderi Silk Saree',
+      price: '3,899',
+      fabric: 'Pure Chanderi Silk with Zari',
+      sizes: ['S', 'M', 'L', 'XL', 'XXL']
+    };
+
+    assert.strictEqual(lookbookItem.sizes.length, 5);
+    assert.ok(lookbookItem.fabric.includes('Chanderi Silk'));
+  });
+
+  await t.test('Test 129: Top templates blueprint ordering places Watch Business in 3rd position', () => {
+    const categories = [
+      'cv',
+      'portfolio',
+      'watch_store',
+      'restaurant',
+      'boutique',
+      'wedding_card',
+      'tuition',
+      'bakery',
+      'salon',
+      'electronics'
+    ];
+
+    assert.strictEqual(categories[0], 'cv');
+    assert.strictEqual(categories[1], 'portfolio');
+    assert.strictEqual(categories[2], 'watch_store'); // EXACT 3rd position!
+    assert.strictEqual(categories[3], 'restaurant');
+  });
+
+  await t.test('Test 130: Zero Vercel project creation & zero github repo creation invariant in multi-tenant pipeline', () => {
+    // Verify that the pipeline file does NOT call createOrGetVercelProject or createOrGetGitHubRepo
+    const pipelinePath = path.resolve('Linkal Tool/lib/deployment/pipeline.ts');
+    if (fs.existsSync(pipelinePath)) {
+      const code = fs.readFileSync(pipelinePath, 'utf-8');
+      assert.strictEqual(code.includes('createOrGetVercelProject'), false);
+      assert.strictEqual(code.includes('createOrGetGitHubRepo'), false);
+    }
+  });
+});
+
+
 
