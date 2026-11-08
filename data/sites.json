@@ -4,7 +4,7 @@
     "name": "tester",
     "slug": "tester",
     "type": "cv",
-    "status": "deploying",
+    "status": "live",
     "userEmail": "heymrbrave@gmail.com",
     "userName": "Alex Foster",
     "whatsappNumber": "919999999999",
@@ -100,9 +100,30 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-08T14:13:18.231Z",
-    "updatedAt": "2026-11-08T14:13:33.744Z",
+    "updatedAt": "2026-11-08T14:13:34.648Z",
     "visitsCount": 0,
     "clicksCount": 0,
-    "deploymentLogs": []
+    "deploymentLogs": [
+      {
+        "step": "general",
+        "status": "in_progress",
+        "message": "Compiling zero-dependency static HTML bundle...",
+        "timestamp": "2026-11-08T14:13:34.632Z"
+      },
+      {
+        "step": "general",
+        "status": "success",
+        "message": "Generated self-contained site bundle (14788 bytes).",
+        "timestamp": "2026-11-08T14:13:34.635Z"
+      },
+      {
+        "step": "github",
+        "status": "in_progress",
+        "message": "Saving site data to Linkal Multi-Tenant database (tester)...",
+        "timestamp": "2026-11-08T14:13:34.635Z"
+      }
+    ],
+    "liveUrl": "https://tester.linkal.in",
+    "lastDeployedAt": "2026-11-08T14:13:34.635Z"
   }
 ]
