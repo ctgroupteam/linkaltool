@@ -19,6 +19,7 @@ export function generateCreativePortfolioHtml(site: SiteData): string {
   const role = escapeHtml(site.portfolioRoleTitle || 'Full-Stack Developer & UI/UX Designer');
   const about = escapeHtml(site.portfolioAbout || 'I build high-converting digital products, scalable web applications, and intuitive user experiences for modern brands.');
   const themeColor = site.themeColor || '#6366f1';
+  const fontFamily = site.fontFamily || 'Plus Jakarta Sans';
 
   // Limit project gallery to max 5 images
   const allProjects = (site.portfolioProjects && site.portfolioProjects.length > 0)
@@ -61,7 +62,7 @@ export function generateCreativePortfolioHtml(site: SiteData): string {
       --border-accent: rgba(99, 102, 241, 0.3);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; overflow-x: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; overflow-x: hidden; }
 
     /* Hero */
     .hero-section { text-align: center; padding: 5rem 1.5rem 3.5rem; background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, var(--bg) 75%); border-bottom: 1px solid var(--border); }
@@ -108,6 +109,13 @@ export function generateCreativePortfolioHtml(site: SiteData): string {
   </style>
 </head>
 <body>
+
+  <!-- Announcement Bar -->
+  ${site.announcementBarEnabled !== false && site.announcementText ? `
+    <div style="background: ${escapeHtml(site.announcementBgColor || themeColor)}; color: ${escapeHtml(site.announcementTextColor || '#ffffff')}; padding: 0.65rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; position: sticky; top: 0; z-index: 1000; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+      ${escapeHtml(site.announcementText)}
+    </div>
+  ` : ''}
 
   <header class="hero-section">
     <div class="hero-badge">

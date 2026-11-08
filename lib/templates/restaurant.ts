@@ -17,6 +17,7 @@ export function generateRestaurantHtml(site: SiteData): string {
   const phone = cleanPhone(site.whatsappNumber);
   const siteTitle = escapeHtml(site.name || 'Gourmet Restaurant & Cafe');
   const themeColor = site.themeColor || '#e11d48';
+  const fontFamily = site.fontFamily || 'Plus Jakarta Sans';
   const logoUrl = site.logoUrl || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&auto=format&fit=crop&q=80';
 
   const menuItems = (site.restaurantMenu && site.restaurantMenu.length > 0)
@@ -66,7 +67,7 @@ export function generateRestaurantHtml(site: SiteData): string {
       --gold: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-body); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    body { background-color: var(--bg-body); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
     /* --- TURKISH ZAIKA SIGNATURE ENTRANCE LOADING BAR --- */
     #loading-overlay {
@@ -76,25 +77,25 @@ export function generateRestaurantHtml(site: SiteData): string {
     }
     #loading-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
     .loader-box { text-align: center; max-width: 340px; width: 100%; }
-    .loader-logo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 18px; border: 3px solid var(--gold); box-shadow: 0 8px 24px rgba(15,29,56,0.15); animation: pulseLogo 2s infinite ease-in-out; }
+    .loader-logo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 18px; border: 3px solid ${themeColor}; box-shadow: 0 8px 24px rgba(15,29,56,0.15); animation: pulseLogo 2s infinite ease-in-out; }
     @keyframes pulseLogo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
     .loader-title { font-family: 'Cinzel', serif; font-size: 1.4rem; color: var(--navy); margin-bottom: 6px; font-weight: 700; }
-    .loader-subtitle { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin-bottom: 20px; font-weight: 700; }
+    .loader-subtitle { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: ${themeColor}; margin-bottom: 20px; font-weight: 700; }
     .progress-track { width: 100%; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
     .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), var(--primary)); border-radius: 99px; transition: width 0.15s ease-out; }
     .progress-text { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
 
     /* Header */
-    .rest-header { background: var(--navy); color: #fff; padding: 2.5rem 1.5rem 2rem; text-align: center; border-bottom: 3px solid var(--gold); }
-    .rest-badge { display: inline-block; background: rgba(217,119,6,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 0.25rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; }
+    .rest-header { background: linear-gradient(135deg, ${themeColor} 0%, #0f1d38 100%); color: #fff; padding: 2.5rem 1.5rem 2rem; text-align: center; border-bottom: 3px solid ${themeColor}; }
+    .rest-badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 0.25rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; }
     .rest-title { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
-    .rest-desc { color: #cbd5e1; font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5; }
+    .rest-desc { color: #f1f5f9; font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5; }
 
     /* Category Nav */
     .cat-nav-wrapper { position: sticky; top: 0; background: rgba(250,247,242,0.96); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .cat-nav { display: flex; gap: 0.6rem; max-width: 900px; margin: 0 auto; }
     .cat-pill { background: #fff; border: 1px solid var(--border); color: var(--navy); padding: 0.5rem 1.1rem; border-radius: 99px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; }
-    .cat-pill:hover, .cat-pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .cat-pill:hover, .cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     /* Menu Grid */
     .menu-container { max-width: 960px; margin: 2rem auto; padding: 0 1rem 6rem; }
@@ -146,7 +147,17 @@ export function generateRestaurantHtml(site: SiteData): string {
     </div>
   </div>
 
+  <!-- Announcement Bar -->
+  ${site.announcementBarEnabled !== false && site.announcementText ? `
+    <div style="background: ${escapeHtml(site.announcementBgColor || themeColor)}; color: ${escapeHtml(site.announcementTextColor || '#ffffff')}; padding: 0.65rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; position: sticky; top: 0; z-index: 1000; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+      ${escapeHtml(site.announcementText)}
+    </div>
+  ` : ''}
+
   <header class="rest-header">
+    ${site.logoUrl ? `
+      <img src="${escapeHtml(site.logoUrl)}" alt="${siteTitle}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.85rem; border: 2.5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: block;" onerror="this.style.display='none'" />
+    ` : ''}
     <span class="rest-badge">Fresh &bull; Authentic &bull; Live Orders</span>
     <h1 class="rest-title">${siteTitle}</h1>
     <p class="rest-desc">Explore our authentic chef-crafted dishes and order directly to our live kitchen via WhatsApp.</p>
@@ -154,9 +165,10 @@ export function generateRestaurantHtml(site: SiteData): string {
 
   <nav class="cat-nav-wrapper">
     <div class="cat-nav">
-      ${categories.map(c => `
-        <a href="#cat-${escapeHtml(c.toLowerCase().replace(/[^a-z0-9]/g, '-'))}" class="cat-pill">${escapeHtml(c)}</a>
-      `).join('')}
+      ${categories.map(c => {
+        const cSlug = escapeHtml(c.toLowerCase().replace(/[^a-z0-9]/g, '-'));
+        return `<a href="#cat-${cSlug}" onclick="event.preventDefault(); var target = document.getElementById('cat-${cSlug}'); if(target) target.scrollIntoView({ behavior: 'smooth' });" class="cat-pill">${escapeHtml(c)}</a>`;
+      }).join('')}
     </div>
   </nav>
 

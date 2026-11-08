@@ -17,6 +17,7 @@ export function generateBoutiqueHtml(site: SiteData): string {
   const phone = cleanPhone(site.whatsappNumber);
   const siteTitle = escapeHtml(site.name || 'Aura Couture & Designer Boutique');
   const themeColor = site.themeColor || '#be123c';
+  const fontFamily = site.fontFamily || 'Plus Jakarta Sans';
 
   const items = (site.products && site.products.length > 0)
     ? site.products
@@ -47,7 +48,7 @@ export function generateBoutiqueHtml(site: SiteData): string {
       --gold: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; }
+    body { background: var(--bg); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; }
 
     .bt-hero { text-align: center; padding: 4rem 1.5rem 3rem; background: #fff5f2; border-bottom: 1px solid var(--border); }
     .bt-badge { display: inline-block; background: #ffe4e6; color: var(--primary); padding: 0.3rem 0.9rem; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1rem; }
@@ -87,7 +88,17 @@ export function generateBoutiqueHtml(site: SiteData): string {
 </head>
 <body>
 
+  <!-- Announcement Bar -->
+  ${site.announcementBarEnabled !== false && site.announcementText ? `
+    <div style="background: ${escapeHtml(site.announcementBgColor || themeColor)}; color: ${escapeHtml(site.announcementTextColor || '#ffffff')}; padding: 0.65rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; position: sticky; top: 0; z-index: 1000; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+      ${escapeHtml(site.announcementText)}
+    </div>
+  ` : ''}
+
   <header class="bt-hero">
+    ${site.logoUrl ? `
+      <img src="${escapeHtml(site.logoUrl)}" alt="${siteTitle}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.85rem; border: 2px solid ${themeColor}; box-shadow: 0 4px 15px rgba(0,0,0,0.12); display: block;" onerror="this.style.display='none'" />
+    ` : ''}
     <span class="bt-badge">Curated Handloom &bull; Bespoke Tailoring</span>
     <h1 class="bt-title">${siteTitle}</h1>
     <p class="bt-tagline">Explore handcrafted ethnic silhouettes, pure heritage silks, and contemporary luxury festive wear. Custom sizing available via WhatsApp.</p>

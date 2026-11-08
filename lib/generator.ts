@@ -275,7 +275,7 @@ export function generateAtsCvHtml(site: SiteData): string {
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --primary: #1E40AF;
+      --primary: ${site.themeColor || '#1E40AF'};
       --text: #0F172A;
       --text-muted: #475569;
       --border: #CBD5E1;
@@ -284,7 +284,7 @@ export function generateAtsCvHtml(site: SiteData): string {
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: '${site.fontFamily || 'Plus Jakarta Sans'}', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.6;

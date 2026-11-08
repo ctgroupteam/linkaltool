@@ -17,6 +17,7 @@ export function generateTuitionHtml(site: SiteData): string {
   const phone = cleanPhone(site.whatsappNumber);
   const siteTitle = escapeHtml(site.name || 'Apex Coaching Academy');
   const themeColor = site.themeColor || '#2563eb';
+  const fontFamily = site.fontFamily || 'Plus Jakarta Sans';
 
   const tuition = site.tuition || {
     academyName: siteTitle,
@@ -53,9 +54,9 @@ export function generateTuitionHtml(site: SiteData): string {
       --green: #10b981;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; }
+    body { background: var(--bg); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; padding-bottom: 6rem; }
 
-    .tui-header { background: linear-gradient(135deg, var(--navy), #1e3a8a); color: #fff; padding: 3.5rem 1.5rem 2.5rem; text-align: center; }
+    .tui-header { background: linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%); color: #fff; padding: 3.5rem 1.5rem 2.5rem; text-align: center; }
     .tui-badge { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #93c5fd; padding: 0.3rem 0.9rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }
     .tui-title { font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 0.5rem; }
     .tui-tagline { color: #cbd5e1; font-size: 1rem; max-width: 580px; margin: 0 auto; line-height: 1.5; }
@@ -105,7 +106,17 @@ export function generateTuitionHtml(site: SiteData): string {
 </head>
 <body>
 
+  <!-- Announcement Bar -->
+  ${site.announcementBarEnabled !== false && site.announcementText ? `
+    <div style="background: ${escapeHtml(site.announcementBgColor || themeColor)}; color: ${escapeHtml(site.announcementTextColor || '#ffffff')}; padding: 0.65rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; position: sticky; top: 0; z-index: 1000; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+      ${escapeHtml(site.announcementText)}
+    </div>
+  ` : ''}
+
   <header class="tui-header">
+    ${site.logoUrl ? `
+      <img src="${escapeHtml(site.logoUrl)}" alt="${siteTitle}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.85rem; border: 2.5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: block;" onerror="this.style.display='none'" />
+    ` : ''}
     <span class="tui-badge">Admissions Open 2026-27</span>
     <h1 class="tui-title">${siteTitle}</h1>
     <p class="tui-tagline">${escapeHtml(tuition.tagline || 'Empowering Students for Academic Brilliance')}</p>

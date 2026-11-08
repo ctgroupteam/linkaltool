@@ -253,6 +253,14 @@ export default function BuilderPage() {
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // Anti-Frame Nesting Guard: Builder UI must NEVER render inside an iframe
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      console.warn('Builder UI detected inside an iframe, redirecting to standalone preview...');
+      window.location.replace(`/api/sites/${siteId}/preview`);
+    }
+  }, [siteId]);
+
   // Load site data
   useEffect(() => {
     async function loadSite() {
@@ -5024,7 +5032,9 @@ export default function BuilderPage() {
           <div className="w-full max-w-6xl h-full flex flex-col items-center justify-center">
             <iframe
               ref={iframeRef}
+              src={`/api/sites/${site.id}/preview`}
               srcDoc={previewHtml}
+              sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
               className={`transition-all duration-300 bg-white ${getDeviceClass()}`}
               title="Live Website Sandbox Preview"
             />

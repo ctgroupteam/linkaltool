@@ -17,6 +17,7 @@ export function generateWatchStoreHtml(site: SiteData): string {
   const phone = cleanPhone(site.whatsappNumber);
   const siteTitle = escapeHtml(site.name || 'Chronos Luxury Timepieces');
   const themeColor = site.themeColor || '#d97706';
+  const fontFamily = site.fontFamily || 'Plus Jakarta Sans';
 
   const watches = (site.watchItems && site.watchItems.length > 0)
     ? site.watchItems
@@ -116,7 +117,7 @@ export function generateWatchStoreHtml(site: SiteData): string {
       --border-gold: rgba(217, 119, 6, 0.3);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-dark); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    body { background-color: var(--bg-dark); color: var(--text); font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
     /* Loading Entrance */
     #watch-loader { position: fixed; inset: 0; background: var(--bg-dark); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.6s ease, visibility 0.6s; }
@@ -182,6 +183,13 @@ export function generateWatchStoreHtml(site: SiteData): string {
 </head>
 <body>
 
+  <!-- Announcement Bar -->
+  ${site.announcementBarEnabled !== false && site.announcementText ? `
+    <div style="background: ${escapeHtml(site.announcementBgColor || themeColor)}; color: ${escapeHtml(site.announcementTextColor || '#ffffff')}; padding: 0.65rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; position: sticky; top: 0; z-index: 1000; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.4);">
+      ${escapeHtml(site.announcementText)}
+    </div>
+  ` : ''}
+
   <!-- Loading Screen -->
   <div id="watch-loader">
     <div class="loader-crown">👑</div>
@@ -194,6 +202,9 @@ export function generateWatchStoreHtml(site: SiteData): string {
   </div>
 
   <header class="watch-hero">
+    ${site.logoUrl ? `
+      <img src="${escapeHtml(site.logoUrl)}" alt="${siteTitle}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; border: 2.5px solid ${themeColor}; box-shadow: 0 4px 18px rgba(0,0,0,0.5); display: block;" onerror="this.style.display='none'" />
+    ` : ''}
     <span class="watch-badge-hero">100% Certified Authentic &bull; Doorstep Insured Delivery</span>
     <h1 class="watch-hero-title">${siteTitle}</h1>
     <p class="watch-hero-sub">Explore our curated catalog of prestigious luxury chronographs, automatic movements, and heritage timepieces. Direct purchase via WhatsApp.</p>

@@ -233,6 +233,7 @@ export interface SiteData {
 
   // Announcement Ticker
   announcementEnabled?: boolean;
+  announcementBarEnabled?: boolean;
   announcementText?: string;
   announcementBgColor?: string;
   announcementTextColor?: string;

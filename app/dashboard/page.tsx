@@ -273,7 +273,7 @@ const SETTINGS_I18N = {
     trialPoint1: 'Start with ₹0 Payment: No credit card or upfront fee required. Launch your live website in 2 minutes.',
     trialPoint2: '15 Days Full Access: Test all features, add products or dishes, and receive direct WhatsApp customer orders.',
     trialPoint3: 'Simple Renewal After 15 Days: Keep your domain active with simple renewal (just ₹99 for restaurants).',
-    trialPoint4: '100% Free Forever for CV & Wedding: Executive ATS CVs and Royal Wedding Invitations are completely free for life with zero renewal fees.',
+    trialPoint4: '100% Free Forever for CV & Wedding: CV Websites & Wedding Websites are 100% Completely Free Lifetime!',
     supportTitle: 'Founder Direct Support',
     supportDesc: 'Need help setting up your website? Chat with the founder team on WhatsApp.',
     supportBtn: 'Chat on WhatsApp Support',
@@ -715,7 +715,7 @@ function DashboardContent() {
             </div>
             <div>
               <span className="font-extrabold text-sm sm:text-base block">
-                Executive ATS CV &amp; Royal Wedding Websites are 100% Completely Free Lifetime!
+                CV Websites &amp; Wedding Websites are 100% Completely Free Lifetime!
               </span>
               <span className="text-xs text-emerald-100 font-medium block">
                 Start with ₹0 &bull; No renewal fees &bull; Restaurant digital menus start at just ₹99/month.

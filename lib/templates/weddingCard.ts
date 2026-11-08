@@ -49,7 +49,9 @@ export function generateWeddingCardHtml(site: SiteData): string {
   };
 
   const themeKey = String(w.themeId || '1');
-  const t = THEMES[themeKey] || THEMES['1'];
+  const baseT = THEMES[themeKey] || THEMES['1'];
+  const t = site.themeColor ? { ...baseT, primary: site.themeColor } : baseT;
+  const fontFamily = site.fontFamily || 'Plus Jakarta Sans';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -62,7 +64,7 @@ export function generateWeddingCardHtml(site: SiteData): string {
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: ${t.bg}; color: ${t.text}; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 2rem 1rem 6rem; }
+    body { background: ${t.bg}; color: ${t.text}; font-family: '${fontFamily}', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 2rem 1rem 6rem; }
 
     .invitation-wrapper { max-width: 680px; width: 100%; background: ${t.card}; border: 2px solid ${t.border}; border-radius: 28px; padding: 3.5rem 2rem; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.45); position: relative; overflow: hidden; }
 
@@ -110,6 +112,13 @@ export function generateWeddingCardHtml(site: SiteData): string {
   </style>
 </head>
 <body>
+
+  <!-- Announcement Bar -->
+  ${site.announcementBarEnabled !== false && site.announcementText ? `
+    <div style="width: 100%; max-width: 680px; background: ${escapeHtml(site.announcementBgColor || t.border)}; color: ${escapeHtml(site.announcementTextColor || '#ffffff')}; padding: 0.65rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; border-radius: 12px; margin-bottom: 1.5rem; letter-spacing: 0.5px;">
+      ${escapeHtml(site.announcementText)}
+    </div>
+  ` : ''}
 
   <article class="invitation-wrapper">
     <div class="ornate-border"></div>
