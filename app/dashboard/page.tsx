@@ -423,15 +423,64 @@ function DashboardContent() {
   const [dashboardTab, setDashboardTab] = useState<'sites' | 'templates' | 'settings' | 'profile'>('sites');
   const [settingsLang, setSettingsLang] = useState<'en' | 'hi' | 'mr'>('en');
   const [pwaInstalled, setPwaInstalled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notifPermission, setNotifPermission] = useState<string>('default');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-      setPwaInstalled(!!isStandalone);
+      const checkPwaStatus = async () => {
+        // 1. Standalone display mode check
+        const isStandalone =
+          window.matchMedia('(display-mode: standalone)').matches ||
+          (window.navigator as any).standalone === true;
+
+        if (isStandalone) {
+          setPwaInstalled(true);
+          localStorage.setItem('linkal_pwa_installed', 'true');
+          return;
+        }
+
+        // 2. Query Chromium getInstalledRelatedApps API
+        if ('getInstalledRelatedApps' in navigator) {
+          try {
+            const apps = await (navigator as any).getInstalledRelatedApps();
+            if (apps && apps.length > 0) {
+              setPwaInstalled(true);
+              localStorage.setItem('linkal_pwa_installed', 'true');
+              return;
+            } else {
+              setPwaInstalled(false);
+              localStorage.removeItem('linkal_pwa_installed');
+            }
+          } catch {}
+        } else if (localStorage.getItem('linkal_pwa_installed') === 'true') {
+          setPwaInstalled(true);
+        }
+      };
+
+      checkPwaStatus();
+
+      const handleAppInstalled = () => {
+        setPwaInstalled(true);
+        localStorage.setItem('linkal_pwa_installed', 'true');
+      };
+      window.addEventListener('appinstalled', handleAppInstalled);
+
+      const handleBeforeInstall = (e: any) => {
+        (window as any).deferredPrompt = e;
+        // When beforeinstallprompt fires, the browser confirms app is NOT installed
+        setPwaInstalled(false);
+      };
+      window.addEventListener('beforeinstallprompt', handleBeforeInstall as any);
+
       if ('Notification' in window) {
         setNotifPermission(Notification.permission);
       }
+
+      return () => {
+        window.removeEventListener('appinstalled', handleAppInstalled);
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstall as any);
+      };
     }
   }, []);
 
@@ -646,64 +695,231 @@ function DashboardContent() {
             </a>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            {user ? (
-              <div className="flex items-center gap-2.5 bg-zinc-50 hover:bg-zinc-100/80 px-3 py-1.5 rounded-2xl border border-zinc-200 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs overflow-hidden shrink-0">
-                  {(user as any).avatarUrl ? (
-                    <img src={(user as any).avatarUrl} alt={user.fullName || 'User'} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{user.fullName ? user.fullName[0].toUpperCase() : 'U'}</span>
-                  )}
-                </div>
-                <div className="text-left hidden sm:block">
-                  <div className="text-xs font-bold text-zinc-950 flex items-center gap-1.5 leading-tight">
-                    <span>{user.fullName || 'Executive User'}</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  </div>
-                  <span className="text-[10px] text-zinc-500 font-mono block leading-tight">
-                    {user.email}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleModal(true)}
-                  className="px-2 py-1 rounded-lg text-[10px] font-bold text-blue-600 hover:bg-blue-50 border border-blue-200 transition-colors ml-1"
-                  title="Switch to another Google Account"
-                >
-                  Switch
-                </button>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('linkal_user');
-                    setUser(null);
-                  }}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  title="Sign out of Google"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowGoogleModal(true)}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-bold shadow-xs transition-all active:scale-[0.98]"
-              >
-                <GoogleIcon className="w-4 h-4" />
-                <span>1-Click Google Login</span>
-              </button>
-            )}
-
-            <a
-              href="#builder-box"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 active:scale-[0.98]"
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* New Site Button (In place of old 1-Click Google Login) */}
+            <button
+              type="button"
+              onClick={() => {
+                setDashboardTab('templates');
+                setTimeout(() => {
+                  document.getElementById('builder-box')?.scrollIntoView({ behavior: 'smooth' });
+                }, 60);
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4 text-white" />
               <span>New Site</span>
-            </a>
+            </button>
+
+            {/* Menu Button (In place of old New Site button) */}
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900 text-xs font-bold shadow-xs transition-all active:scale-[0.98]"
+              title="Open Linkal Studio Menu"
+            >
+              <Menu className="w-4 h-4 text-zinc-800" />
+              <span className="hidden sm:inline">Menu</span>
+            </button>
           </div>
         </div>
       </header>
+
+      {/* ─── STUDIO SLIDE-OVER MENU DRAWER (EXPANDABLE FOR FUTURE PAGES) ─── */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsMenuOpen(false)}
+          />
+
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-sm bg-white shadow-2xl border-l border-zinc-200 flex flex-col justify-between animate-in slide-in-from-right duration-250">
+              {/* Drawer Header */}
+              <div className="p-5 border-b border-zinc-200 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <img src="/linkal.jpeg" alt="Linkal" className="w-8 h-8 rounded-xl object-cover border border-zinc-200" />
+                  <div>
+                    <h2 className="font-extrabold text-sm text-zinc-950">Linkal Studio</h2>
+                    <p className="text-[10px] text-zinc-500 font-semibold">Website Management</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-1.5 rounded-xl hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                {/* User Account Card */}
+                {user ? (
+                  <div className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+                        {(user as any).avatarUrl ? (
+                          <img src={(user as any).avatarUrl} alt={user.fullName || 'User'} className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{user.fullName ? user.fullName[0].toUpperCase() : 'U'}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-zinc-950 truncate">{user.fullName || 'User'}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 pt-1 border-t border-zinc-200/60">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setShowGoogleModal(true);
+                        }}
+                        className="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold text-blue-600 hover:bg-blue-50 border border-blue-200 transition-colors"
+                      >
+                        Switch Account
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          localStorage.removeItem('linkal_user');
+                          setUser(null);
+                          setSites([]);
+                          setIsMenuOpen(false);
+                        }}
+                        className="py-1.5 px-2.5 rounded-lg text-[10px] font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-2xl border border-blue-200/70 space-y-2.5 text-center">
+                    <p className="text-xs text-zinc-600 font-medium">Sign in to save and manage your websites across devices.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setShowGoogleModal(true);
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900 text-xs font-bold shadow-xs transition-all"
+                    >
+                      <GoogleIcon className="w-4 h-4" />
+                      <span>1-Click Google Sign In</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Studio Pages Navigation */}
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Studio Pages</p>
+                  <nav className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDashboardTab('sites');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dashboardTab === 'sites' ? 'bg-blue-50 text-blue-700' : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Globe className="w-4 h-4 text-blue-600" />
+                        <span>My Websites</span>
+                      </div>
+                      {user && <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-mono">{sites.length}</span>}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDashboardTab('templates');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dashboardTab === 'templates' ? 'bg-amber-50 text-amber-700' : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span>Templates Blueprint</span>
+                      </div>
+                      <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">11</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDashboardTab('settings');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dashboardTab === 'settings' ? 'bg-indigo-50 text-indigo-700' : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <SettingsIcon className="w-4 h-4 text-indigo-600" />
+                        <span>Settings &amp; PWA</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDashboardTab('profile');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dashboardTab === 'profile' ? 'bg-emerald-50 text-emerald-700' : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <User className="w-4 h-4 text-emerald-600" />
+                        <span>User Profile</span>
+                      </div>
+                    </button>
+                  </nav>
+                </div>
+
+                {/* Platform Quick Links */}
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Platform</p>
+                  <nav className="space-y-1">
+                    <a
+                      href="https://linkal.in"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-all"
+                    >
+                      <Globe className="w-4 h-4 text-zinc-500" />
+                      <span>Linkal AI Home</span>
+                    </a>
+                    <a
+                      href="https://wa.me/918766882442?text=Hello%20Linkal%20Team%2C%20I%20need%20help%20with%20Linkal%20Studio"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-emerald-700 hover:bg-emerald-50 transition-all"
+                    >
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                      <span>WhatsApp Support</span>
+                    </a>
+                  </nav>
+                </div>
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="p-4 border-t border-zinc-200 text-center bg-zinc-50">
+                <p className="text-[10px] text-zinc-500 font-medium">Linkal Studio v2.4 &bull; Empowering Businesses</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── MAIN CUSTOMER CONTENT ─── */}
       <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 overflow-hidden">
@@ -731,58 +947,6 @@ function DashboardContent() {
             className="px-4 py-2 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-extrabold shadow-sm transition-all shrink-0 active:scale-95"
           >
             Create Free Now &rarr;
-          </button>
-        </div>
-
-        {/* Navigation Tabs (Desktop & Mobile) */}
-        <div className="flex items-center gap-1.5 p-1 bg-zinc-200/80 rounded-2xl max-w-xl mx-auto">
-          <button
-            type="button"
-            onClick={() => setDashboardTab('sites')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              dashboardTab === 'sites'
-                ? 'bg-white text-zinc-950 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5 text-blue-600" />
-            <span>My Websites {user ? `(${sites.length})` : ''}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDashboardTab('templates')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              dashboardTab === 'templates'
-                ? 'bg-white text-zinc-950 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Templates</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDashboardTab('settings')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              dashboardTab === 'settings'
-                ? 'bg-white text-zinc-950 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <SettingsIcon className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Settings</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDashboardTab('profile')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              dashboardTab === 'profile'
-                ? 'bg-white text-zinc-950 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <User className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Profile</span>
           </button>
         </div>
 

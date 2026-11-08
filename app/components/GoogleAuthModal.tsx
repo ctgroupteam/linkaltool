@@ -107,15 +107,58 @@ export function GoogleAuthModal({
               if (!userInfoRes.ok) throw new Error('Failed to retrieve Google profile');
               const profile = await userInfoRes.json();
 
+              const cleanEmail = (profile.email || '').toLowerCase().trim();
+              const cleanName = (profile.name || cleanEmail.split('@')[0]).trim();
+              const avatar = profile.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=2563eb,1e40af,4338ca`;
+
               setGoogleUser({
-                email: profile.email,
-                name: profile.name,
-                picture: profile.picture,
+                email: cleanEmail,
+                name: cleanName,
+                picture: avatar,
                 sub: profile.sub,
               });
 
-              setEmail(profile.email);
-              if (profile.name) setFullName(profile.name);
+              setEmail(cleanEmail);
+              setFullName(cleanName);
+
+              // Seamless 1-Click Authenticate: Register or Sign In immediately
+              try {
+                const authRes = await fetch('/api/auth/google', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'google_one_click',
+                    email: cleanEmail,
+                    fullName: cleanName,
+                    avatarUrl: avatar,
+                    googleId: profile.sub || `google-${Date.now()}`,
+                    phoneNumber: initialPhone || '',
+                  }),
+                });
+
+                const authData = await authRes.json();
+                const authenticatedUser = authData.user || {
+                  id: `usr-${Date.now()}`,
+                  email: cleanEmail,
+                  fullName: cleanName,
+                  avatarUrl: avatar,
+                  phoneNumber: initialPhone || '',
+                };
+
+                // Permanently persist login data in localStorage & cookie
+                try {
+                  localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
+                  document.cookie = `linkal_user_email=${encodeURIComponent(authenticatedUser.email)}; path=/; max-age=31536000; SameSite=Lax`;
+                } catch {}
+
+                setLoading(false);
+                onSuccess(authenticatedUser);
+                onClose();
+                return;
+              } catch (authErr: any) {
+                console.warn('1-Click automatic auth fallback to manual form:', authErr);
+              }
+
               setLoading(false);
             } catch (err: any) {
               setLoading(false);

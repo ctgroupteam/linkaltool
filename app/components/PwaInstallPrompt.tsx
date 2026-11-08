@@ -34,11 +34,12 @@ export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [notifGranted, setNotifGranted] = useState<boolean>(false);
   const [isIOS, setIsIOS] = useState<boolean>(false);
+  const [isInstalled, setIsInstalled] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Detect iOS
+    // Detect Apple iOS Safari
     const iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(iosDevice);
 
@@ -47,37 +48,79 @@ export function PwaInstallPrompt() {
       navigator.serviceWorker
         .register('/sw.js')
         .catch((err) => {
-          console.warn('[PWA] Service Worker registration issue:', err);
+          console.warn('[PWA] Service Worker registration note:', err);
         });
     }
 
-    // 2. Check if already installed in standalone mode
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
+    // 2. Strict Check whether PWA is currently installed
+    const checkInstallation = async () => {
+      // A. Running in standalone window
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
 
-    // Show Install Prompt if not installed
-    if (!isStandalone) {
+      if (isStandalone) {
+        setIsInstalled(true);
+        localStorage.setItem('linkal_pwa_installed', 'true');
+        setShowInstallPrompt(false);
+        return true;
+      }
+
+      // B. Query getInstalledRelatedApps API (supported on Chrome/Edge on Desktop & Android)
+      if ('getInstalledRelatedApps' in navigator) {
+        try {
+          const relatedApps = await (navigator as any).getInstalledRelatedApps();
+          if (relatedApps && relatedApps.length > 0) {
+            setIsInstalled(true);
+            localStorage.setItem('linkal_pwa_installed', 'true');
+            setShowInstallPrompt(false);
+            return true;
+          } else {
+            // Uninstalled or not installed yet
+            setIsInstalled(false);
+            localStorage.removeItem('linkal_pwa_installed');
+          }
+        } catch {}
+      }
+
+      return false;
+    };
+
+    checkInstallation().then((alreadyInstalled) => {
+      if (alreadyInstalled) return;
+
+      // Listen for browser beforeinstallprompt (Fired ONLY if NOT installed and installable)
       const handleBeforeInstall = (e: any) => {
         e.preventDefault();
         setDeferredPrompt(e);
-        setShowInstallPrompt(true);
+        (window as any).deferredPrompt = e;
+        setIsInstalled(false);
+        localStorage.removeItem('linkal_pwa_installed');
+
+        // Show prompt only if not dismissed in this session
+        if (!sessionStorage.getItem('linkal_pwa_dismissed')) {
+          setShowInstallPrompt(true);
+        }
       };
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstall as any);
 
-      // If on mobile browser, show prompt after 1.5s
-      const timer = setTimeout(() => {
-        if (!sessionStorage.getItem('linkal_pwa_dismissed')) {
-          setShowInstallPrompt(true);
-        }
-      }, 1500);
+      // Listen for appinstalled event (Fired when user installs the PWA)
+      const handleAppInstalled = () => {
+        setIsInstalled(true);
+        localStorage.setItem('linkal_pwa_installed', 'true');
+        setShowInstallPrompt(false);
+        setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
+      };
+
+      window.addEventListener('appinstalled', handleAppInstalled);
 
       return () => {
-        clearTimeout(timer);
         window.removeEventListener('beforeinstallprompt', handleBeforeInstall as any);
+        window.removeEventListener('appinstalled', handleAppInstalled);
       };
-    }
+    });
 
     // 3. Persistent Notification Prompt until allowed
     if ('Notification' in window) {
@@ -85,10 +128,10 @@ export function PwaInstallPrompt() {
         localStorage.setItem('linkal_notification_granted', 'true');
         setNotifGranted(true);
       } else {
-        // Not granted yet: prompt user until allowed
+        // Not granted yet: prompt user
         const timer = setTimeout(() => {
           setShowNotificationPrompt(true);
-        }, 2000);
+        }, 3000);
         return () => clearTimeout(timer);
       }
     }
@@ -105,17 +148,22 @@ export function PwaInstallPrompt() {
       return;
     }
 
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+    const promptEvent = deferredPrompt || (typeof window !== 'undefined' && (window as any).deferredPrompt);
+
+    if (promptEvent) {
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
       if (outcome === 'accepted') {
         setShowInstallPrompt(false);
-        // After install, prompt notifications
+        setIsInstalled(true);
+        localStorage.setItem('linkal_pwa_installed', 'true');
+        // After install, prompt notifications if not yet granted
         if ('Notification' in window && Notification.permission !== 'granted') {
           setTimeout(() => setShowNotificationPrompt(true), 1500);
         }
       }
       setDeferredPrompt(null);
+      if (typeof window !== 'undefined') (window as any).deferredPrompt = null;
     } else {
       setShowIosGuide(true);
     }
@@ -139,38 +187,41 @@ export function PwaInstallPrompt() {
               await fetch('/api/push/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subscription: sub }),
+                body: JSON.stringify({
+                  subscription: sub,
+                  userEmail: localStorage.getItem('linkal_user_email') || 'registered_user',
+                  role: 'customer',
+                }),
               });
-            } catch (subErr) {
-              console.warn('[Push] Subscription failed:', subErr);
+            } catch (err) {
+              console.warn('Push subscription issue:', err);
             }
           }
-          setTimeout(() => setShowNotificationPrompt(false), 1200);
-          return;
+
+          setTimeout(() => setShowNotificationPrompt(false), 800);
+        } else {
+          setShowNotificationPrompt(false);
         }
       }
-      setShowNotificationPrompt(false);
-    } catch (e) {
+    } catch {
       setShowNotificationPrompt(false);
     }
   };
 
   return (
     <>
-      {/* 1. Install PWA Prompt */}
-      {showInstallPrompt && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm z-50 animate-in slide-in-from-bottom duration-300">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl p-4.5 space-y-3.5 backdrop-blur-md bg-white/95">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <img
-                  src="/linkal.jpeg"
-                  alt="Linkal Studio"
-                  className="w-10 h-10 rounded-xl object-cover shadow-md shrink-0 border border-zinc-200"
-                />
+      {/* 1. Install PWA Banner (Strictly shown ONLY if not installed) */}
+      {showInstallPrompt && !isInstalled && (
+        <div className="fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in slide-in-from-bottom duration-300">
+          <div className="bg-white rounded-2xl border-2 border-blue-600/30 shadow-2xl p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                  <Smartphone className="w-5 h-5 text-white" />
+                </div>
                 <div>
                   <h4 className="text-sm font-bold text-zinc-950">Install Linkal Studio</h4>
-                  <p className="text-[11px] text-zinc-500 leading-tight">Fast website &amp; CV builder app</p>
+                  <p className="text-[11px] text-zinc-500 leading-tight">Instant access &amp; notifications</p>
                 </div>
               </div>
               <button
@@ -183,7 +234,7 @@ export function PwaInstallPrompt() {
             </div>
 
             <p className="text-xs text-zinc-600 leading-relaxed">
-              Install to manage your sites, receive instant recruiter messages, and edit offline.
+              Install the official Linkal Studio App for 1-tap website management and instant customer order alerts.
             </p>
 
             <div className="flex items-center gap-2 pt-1">
@@ -192,26 +243,26 @@ export function PwaInstallPrompt() {
                 className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition-all"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{isIOS ? 'How to Install on iOS' : 'Install App'}</span>
+                <span>Install App</span>
               </button>
               <button
                 onClick={dismissInstallPrompt}
-                className="inline-flex items-center justify-center gap-1 px-3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-semibold transition-colors"
+                className="inline-flex items-center justify-center px-3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-semibold transition-colors"
               >
-                <span>Later</span>
+                <span>Not now</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 2. Persistent Notification Prompt (Prompts on open until user allows) */}
-      {showNotificationPrompt && (
-        <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:top-6 sm:max-w-sm z-50 animate-in slide-in-from-top duration-300">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl p-4.5 space-y-3.5 backdrop-blur-md bg-white/95">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+      {/* 2. Persistent Notification Opt-In Banner */}
+      {showNotificationPrompt && !notifGranted && (
+        <div className="fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in slide-in-from-bottom duration-300">
+          <div className="bg-white rounded-2xl border-2 border-emerald-600/40 shadow-2xl p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
                   <BellRingIcon className="w-5 h-5 text-white animate-bounce" />
                 </div>
                 <div>

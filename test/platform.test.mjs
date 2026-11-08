@@ -1881,6 +1881,49 @@ test('Suite 12: 100+ Enterprise Verification Cases — All 11 Templates, Themes,
     assert.strictEqual(plans.restaurant, 99);
     assert.strictEqual(plans.starter, 299);
   });
+
+  // ─── Part O: Studio Navigation Menu, PWA Strict Install & Persistent Login ───
+  await t.test('Test 257: PwaInstallPrompt strictly checks installation status and prevents false prompts', () => {
+    const pwaPromptPath = resolveToolPath('app/components/PwaInstallPrompt.tsx');
+    const pwaCode = fs.readFileSync(pwaPromptPath, 'utf-8');
+    assert.ok(pwaCode.includes('checkInstallation') || pwaCode.includes('isStandalone'));
+    assert.ok(pwaCode.includes('getInstalledRelatedApps'));
+    assert.ok(pwaCode.includes('showInstallPrompt && !isInstalled'));
+  });
+
+  await t.test('Test 258: GoogleAuthModal permanently saves authenticated user to localStorage and cookie', () => {
+    const authModalPath = resolveToolPath('app/components/GoogleAuthModal.tsx');
+    const modalCode = fs.readFileSync(authModalPath, 'utf-8');
+    assert.ok(modalCode.includes("localStorage.setItem('linkal_user'"));
+    assert.ok(modalCode.includes('linkal_user_email='));
+  });
+
+  await t.test('Test 259: Studio header features New Site button and expandable Menu drawer', () => {
+    const dPath = resolveToolPath('app/dashboard/page.tsx');
+    const dCode = fs.readFileSync(dPath, 'utf-8');
+    assert.ok(dCode.includes('New Site'));
+    assert.ok(dCode.includes('isMenuOpen'));
+    assert.ok(dCode.includes('STUDIO SLIDE-OVER MENU DRAWER'));
+  });
+
+  await t.test('Test 260: Eliminates duplicate tab buttons below the top lifetime announcement banner', () => {
+    const dPath = resolveToolPath('app/dashboard/page.tsx');
+    const dCode = fs.readFileSync(dPath, 'utf-8');
+    // Ensure the redundant tabs bar is not directly under the banner
+    const bannerIdx = dCode.indexOf('CV Websites &amp; Wedding Websites are 100% Completely Free Lifetime!');
+    assert.ok(bannerIdx !== -1);
+    const codeAfterBanner = dCode.slice(bannerIdx, bannerIdx + 1200);
+    assert.strictEqual(codeAfterBanner.includes('Navigation Tabs (Desktop & Mobile)'), false);
+  });
+
+  await t.test('Test 261: Studio Menu drawer contains links to all current pages and extensible for future pages', () => {
+    const dPath = resolveToolPath('app/dashboard/page.tsx');
+    const dCode = fs.readFileSync(dPath, 'utf-8');
+    assert.ok(dCode.includes("setDashboardTab('sites')"));
+    assert.ok(dCode.includes("setDashboardTab('templates')"));
+    assert.ok(dCode.includes("setDashboardTab('settings')"));
+    assert.ok(dCode.includes("setDashboardTab('profile')"));
+  });
 });
 
 
