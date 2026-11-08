@@ -39,3 +39,4 @@ export async function provisionSubdomainSSL(slug: string): Promise<boolean> {
     return false;
   }
 }
+

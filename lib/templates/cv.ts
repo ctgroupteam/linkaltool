@@ -86,37 +86,37 @@ export function generateAtsCvHtml(site: SiteData): string {
   const skills = (site.cvSkills && site.cvSkills.length > 0)
     ? site.cvSkills
     : (site.portfolioSkills && site.portfolioSkills.length > 0
-        ? site.portfolioSkills.map(s => s.name)
-        : [
-          'Project Planning',
-          'Team Leadership',
-          'Communication',
-          'Process Optimization',
-          'Strategic Problem Solving',
-          'Quality Assurance'
-        ]
-      );
+      ? site.portfolioSkills.map(s => s.name)
+      : [
+        'Project Planning',
+        'Team Leadership',
+        'Communication',
+        'Process Optimization',
+        'Strategic Problem Solving',
+        'Quality Assurance'
+      ]
+    );
 
   const projects = (site.cvProjects && site.cvProjects.length > 0)
     ? site.cvProjects
     : (site.portfolioProjects && site.portfolioProjects.length > 0
-        ? site.portfolioProjects.map(p => ({
-            id: p.id,
-            title: p.title,
-            description: p.description,
-            link: p.link,
-            techStack: (p.tags || []).join(', ')
-          }))
-        : [
-          {
-            id: 'proj-1',
-            title: 'Core Production Initiative',
-            description: 'Architected and deployed high-performance solutions meeting enterprise standards and measurable business KPIs.',
-            link: `https://${site.slug || 'mysite'}.linkal.in`,
-            techStack: 'Frameworks, Tools & Protocols'
-          }
-        ]
-      );
+      ? site.portfolioProjects.map(p => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        link: p.link,
+        techStack: (p.tags || []).join(', ')
+      }))
+      : [
+        {
+          id: 'proj-1',
+          title: 'Core Production Initiative',
+          description: 'Architected and deployed high-performance solutions meeting enterprise standards and measurable business KPIs.',
+          link: `https://${site.slug || 'mysite'}.linkal.in`,
+          techStack: 'Frameworks, Tools & Protocols'
+        }
+      ]
+    );
 
   const certifications = (site.cvCertifications && site.cvCertifications.length > 0)
     ? site.cvCertifications
@@ -331,9 +331,9 @@ export function generateAtsCvHtml(site: SiteData): string {
                 <div class="cv-item-meta">
                   ${item.period ? `<span class="cv-item-period">${escapeHtml(item.period)}</span>` : ''}
                   ${item.link ? (item.isLinkClickable !== false
-                    ? `<a href="${item.link.startsWith('http') ? item.link : `https://${item.link}`}" target="_blank" rel="noopener noreferrer" class="cv-project-link"><span>Link</span> <span class="cv-ext">${ICONS.external}</span></a>`
-                    : `<span class="cv-item-loc">${escapeHtml(item.link)}</span>`)
-                    : ''}
+        ? `<a href="${item.link.startsWith('http') ? item.link : `https://${item.link}`}" target="_blank" rel="noopener noreferrer" class="cv-project-link"><span>Link</span> <span class="cv-ext">${ICONS.external}</span></a>`
+        : `<span class="cv-item-loc">${escapeHtml(item.link)}</span>`)
+        : ''}
                 </div>
               </div>
               ${item.description ? `<div class="cv-item-desc">${escapeHtml(item.description)}</div>` : ''}
