@@ -18,6 +18,7 @@ interface BillingModalProps {
   siteSlug?: string;
   siteName?: string;
   siteId?: string;
+  siteType?: string;
 }
 
 export function BillingModal({
@@ -26,6 +27,7 @@ export function BillingModal({
   siteSlug,
   siteName,
   siteId,
+  siteType,
 }: BillingModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<'1_month' | '3_months' | '6_months' | '1_year'>('1_month');
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,43 @@ export function BillingModal({
 
   if (!isOpen) return null;
 
-  const PLANS = [
+  const isFreeLifetime = siteType === 'cv' || siteType === 'wedding_card';
+  const isRestaurant = siteType === 'restaurant';
+
+  const PLANS = isRestaurant ? [
+    {
+      id: '1_month' as const,
+      name: '1 Month Renewal (Special)',
+      price: '₹99',
+      duration: '30 Days Access',
+      badge: 'Restaurant Special',
+      savings: null,
+    },
+    {
+      id: '3_months' as const,
+      name: '3 Months (Quarterly)',
+      price: '₹249',
+      duration: '90 Days Access',
+      badge: 'Most Popular',
+      savings: 'Save 16%',
+    },
+    {
+      id: '6_months' as const,
+      name: '6 Months (Half-Yearly)',
+      price: '₹499',
+      duration: '180 Days Access',
+      badge: 'High Value',
+      savings: 'Save 16%',
+    },
+    {
+      id: '1_year' as const,
+      name: '1 Full Year (Annual)',
+      price: '₹899',
+      duration: '365 Days Access',
+      badge: 'Best Value',
+      savings: 'Save 24%',
+    },
+  ] : [
     {
       id: '1_month' as const,
       name: '1 Month Renewal',
@@ -145,7 +183,26 @@ export function BillingModal({
           </button>
         </div>
 
-        {activeTab === 'plans' ? (
+        {isFreeLifetime ? (
+          <div className="p-6 text-center bg-emerald-50 border border-emerald-200 rounded-3xl space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-sm">
+              <Check className="w-6 h-6 text-white" />
+            </div>
+            <h4 className="text-lg font-extrabold text-emerald-950">100% Free Lifetime Website</h4>
+            <p className="text-xs text-emerald-800 max-w-sm mx-auto leading-relaxed">
+              Executive ATS CVs and Royal Wedding Invitations are completely free forever on Linkal. No payment, card, or renewal fee is ever required.
+            </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs"
+              >
+                Close &amp; Return to Dashboard
+              </button>
+            </div>
+          </div>
+        ) : activeTab === 'plans' ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {PLANS.map((plan) => (

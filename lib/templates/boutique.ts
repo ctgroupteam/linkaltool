@@ -138,3 +138,4 @@ export function generateBoutiqueHtml(site: SiteData): string {
 </body>
 </html>`;
 }
+

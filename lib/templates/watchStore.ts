@@ -295,3 +295,4 @@ export function generateWatchStoreHtml(site: SiteData): string {
 </body>
 </html>`;
 }
+

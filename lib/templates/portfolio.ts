@@ -24,22 +24,22 @@ export function generateCreativePortfolioHtml(site: SiteData): string {
   const allProjects = (site.portfolioProjects && site.portfolioProjects.length > 0)
     ? site.portfolioProjects.slice(0, 5)
     : [
-        { id: 'p-1', title: 'Fintech Dashboard Web App', description: 'Real-time analytics and investment tracking platform with dark mode.', imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&auto=format&fit=crop&q=80', tags: ['React', 'Next.js', 'Tailwind'], link: `https://${site.slug || 'mysite'}.linkal.in` },
-        { id: 'p-2', title: 'E-Commerce Mobile Experience', description: 'Streamlined checkout with 1-tap WhatsApp order integrations.', imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&auto=format&fit=crop&q=80', tags: ['UI/UX', 'Mobile', 'Figma'], link: `https://${site.slug || 'mysite'}.linkal.in` },
-        { id: 'p-3', title: 'SaaS Multi-Tenant Architecture', description: 'High-speed cloud system serving 50k+ instant custom subdomains.', imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=700&auto=format&fit=crop&q=80', tags: ['Node.js', 'PostgreSQL', 'Cloudflare'], link: `https://${site.slug || 'mysite'}.linkal.in` },
-        { id: 'p-4', title: 'Brand Identity & Visual System', description: 'Complete typography, logo design, and component library.', imageUrl: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=700&auto=format&fit=crop&q=80', tags: ['Branding', 'Design System'], link: `https://${site.slug || 'mysite'}.linkal.in` },
-        { id: 'p-5', title: 'AI Assistant Interface Design', description: 'Conversational UI with rich streaming feedback widgets.', imageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=700&auto=format&fit=crop&q=80', tags: ['AI', 'React', 'TypeScript'], link: `https://${site.slug || 'mysite'}.linkal.in` }
-      ];
+      { id: 'p-1', title: 'Fintech Dashboard Web App', description: 'Real-time analytics and investment tracking platform with dark mode.', imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&auto=format&fit=crop&q=80', tags: ['React', 'Next.js', 'Tailwind'], link: `https://${site.slug || 'mysite'}.linkal.in` },
+      { id: 'p-2', title: 'E-Commerce Mobile Experience', description: 'Streamlined checkout with 1-tap WhatsApp order integrations.', imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&auto=format&fit=crop&q=80', tags: ['UI/UX', 'Mobile', 'Figma'], link: `https://${site.slug || 'mysite'}.linkal.in` },
+      { id: 'p-3', title: 'SaaS Multi-Tenant Architecture', description: 'High-speed cloud system serving 50k+ instant custom subdomains.', imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=700&auto=format&fit=crop&q=80', tags: ['Node.js', 'PostgreSQL', 'Cloudflare'], link: `https://${site.slug || 'mysite'}.linkal.in` },
+      { id: 'p-4', title: 'Brand Identity & Visual System', description: 'Complete typography, logo design, and component library.', imageUrl: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=700&auto=format&fit=crop&q=80', tags: ['Branding', 'Design System'], link: `https://${site.slug || 'mysite'}.linkal.in` },
+      { id: 'p-5', title: 'AI Assistant Interface Design', description: 'Conversational UI with rich streaming feedback widgets.', imageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=700&auto=format&fit=crop&q=80', tags: ['AI', 'React', 'TypeScript'], link: `https://${site.slug || 'mysite'}.linkal.in` }
+    ];
 
   const skills = (site.portfolioSkills && site.portfolioSkills.length > 0)
     ? site.portfolioSkills
     : [
-        { id: 's-1', name: 'UI / UX Design', level: 'Expert' },
-        { id: 's-2', name: 'Full-Stack Development', level: 'Advanced' },
-        { id: 's-3', name: 'React & Next.js', level: 'Expert' },
-        { id: 's-4', name: 'TypeScript & Node.js', level: 'Advanced' },
-        { id: 's-5', name: 'Database Architecture', level: 'Proficient' }
-      ];
+      { id: 's-1', name: 'UI / UX Design', level: 'Expert' },
+      { id: 's-2', name: 'Full-Stack Development', level: 'Advanced' },
+      { id: 's-3', name: 'React & Next.js', level: 'Expert' },
+      { id: 's-4', name: 'TypeScript & Node.js', level: 'Advanced' },
+      { id: 's-5', name: 'Database Architecture', level: 'Proficient' }
+    ];
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -165,3 +165,4 @@ export function generateCreativePortfolioHtml(site: SiteData): string {
 </body>
 </html>`;
 }
+

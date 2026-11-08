@@ -22,24 +22,24 @@ export function generateRestaurantHtml(site: SiteData): string {
   const menuItems = (site.restaurantMenu && site.restaurantMenu.length > 0)
     ? site.restaurantMenu
     : (site.products && site.products.length > 0
-        ? site.products.map((p, idx) => ({
-            id: p.id,
-            name: p.name,
-            category: idx % 2 === 0 ? 'Starters & Grills' : 'Main Course',
-            price: p.price,
-            description: p.description,
-            imageUrl: p.imageUrl,
-            isVeg: idx % 3 === 0,
-            badge: p.badge || (idx === 0 ? 'Chef Special' : undefined)
-          }))
-        : [
-            { id: 'm-1', name: 'Turkish Chicken Shish Kebab', category: 'Starters & Grills', price: '340', description: 'Tender marinated chicken cubes flame-grilled with Turkish spices and served with garlic toum.', isVeg: false, badge: 'Chef Special', imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&auto=format&fit=crop&q=80' },
-            { id: 'm-2', name: 'Paneer Tikka Angara', category: 'Starters & Grills', price: '280', description: 'Charcoal-smoked fresh cottage cheese infused with Kashmiri chili and roasted spices.', isVeg: true, badge: 'Bestseller', imageUrl: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&auto=format&fit=crop&q=80' },
-            { id: 'm-3', name: 'Arabian Mandi Special', category: 'Main Course', price: '480', description: 'Fragrant smoked long-grain basmati rice topped with slow-cooked spiced meat and fried almonds.', isVeg: false, badge: 'Must Try', imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80' },
-            { id: 'm-4', name: 'Dal Bukhara Royale', category: 'Main Course', price: '260', description: 'Black lentils slow-cooked overnight with churned butter and rich cream.', isVeg: true, imageUrl: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80' },
-            { id: 'm-5', name: 'Pistachio Turkish Kunafa', category: 'Desserts', price: '220', description: 'Crispy shredded filo pastry filled with melted cheese, soaked in orange blossom syrup and topped with crushed pistachios.', isVeg: true, badge: 'House Special', imageUrl: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=600&auto=format&fit=crop&q=80' }
-          ]
-      );
+      ? site.products.map((p, idx) => ({
+        id: p.id,
+        name: p.name,
+        category: idx % 2 === 0 ? 'Starters & Grills' : 'Main Course',
+        price: p.price,
+        description: p.description,
+        imageUrl: p.imageUrl,
+        isVeg: idx % 3 === 0,
+        badge: p.badge || (idx === 0 ? 'Chef Special' : undefined)
+      }))
+      : [
+        { id: 'm-1', name: 'Turkish Chicken Shish Kebab', category: 'Starters & Grills', price: '340', description: 'Tender marinated chicken cubes flame-grilled with Turkish spices and served with garlic toum.', isVeg: false, badge: 'Chef Special', imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&auto=format&fit=crop&q=80' },
+        { id: 'm-2', name: 'Paneer Tikka Angara', category: 'Starters & Grills', price: '280', description: 'Charcoal-smoked fresh cottage cheese infused with Kashmiri chili and roasted spices.', isVeg: true, badge: 'Bestseller', imageUrl: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&auto=format&fit=crop&q=80' },
+        { id: 'm-3', name: 'Arabian Mandi Special', category: 'Main Course', price: '480', description: 'Fragrant smoked long-grain basmati rice topped with slow-cooked spiced meat and fried almonds.', isVeg: false, badge: 'Must Try', imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80' },
+        { id: 'm-4', name: 'Dal Bukhara Royale', category: 'Main Course', price: '260', description: 'Black lentils slow-cooked overnight with churned butter and rich cream.', isVeg: true, imageUrl: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80' },
+        { id: 'm-5', name: 'Pistachio Turkish Kunafa', category: 'Desserts', price: '220', description: 'Crispy shredded filo pastry filled with melted cheese, soaked in orange blossom syrup and topped with crushed pistachios.', isVeg: true, badge: 'House Special', imageUrl: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=600&auto=format&fit=crop&q=80' }
+      ]
+    );
 
   const categories = Array.from(new Set(menuItems.map(m => m.category || 'Specialties')));
 
@@ -162,9 +162,9 @@ export function generateRestaurantHtml(site: SiteData): string {
 
   <main class="menu-container">
     ${categories.map(cat => {
-      const items = menuItems.filter(m => (m.category || 'Specialties') === cat);
-      const catId = `cat-${cat.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-      return `
+    const items = menuItems.filter(m => (m.category || 'Specialties') === cat);
+    const catId = `cat-${cat.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    return `
         <section id="${catId}">
           <h2 class="cat-heading">
             <span>${escapeHtml(cat)}</span>
@@ -172,9 +172,9 @@ export function generateRestaurantHtml(site: SiteData): string {
           </h2>
           <div class="menu-grid">
             ${items.map(item => {
-              const waMsg = encodeURIComponent(`Hi ${siteTitle}, I would like to order: ${item.name} (₹${item.price}). Please confirm order!`);
-              const waUrl = `https://wa.me/${phone}?text=${waMsg}`;
-              return `
+      const waMsg = encodeURIComponent(`Hi ${siteTitle}, I would like to order: ${item.name} (₹${item.price}). Please confirm order!`);
+      const waUrl = `https://wa.me/${phone}?text=${waMsg}`;
+      return `
                 <article class="menu-card">
                   ${item.imageUrl ? `
                     <div class="menu-card-img-wrap">
@@ -198,11 +198,11 @@ export function generateRestaurantHtml(site: SiteData): string {
                   </div>
                 </article>
               `;
-            }).join('')}
+    }).join('')}
           </div>
         </section>
       `;
-    }).join('')}
+  }).join('')}
   </main>
 
   <footer class="rest-bottom-bar">
@@ -236,3 +236,4 @@ export function generateRestaurantHtml(site: SiteData): string {
 </body>
 </html>`;
 }
+

@@ -173,3 +173,4 @@ export function generateWeddingCardHtml(site: SiteData): string {
 </body>
 </html>`;
 }
+

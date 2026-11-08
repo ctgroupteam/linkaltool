@@ -180,3 +180,4 @@ export function generateTuitionHtml(site: SiteData): string {
 </body>
 </html>`;
 }
+

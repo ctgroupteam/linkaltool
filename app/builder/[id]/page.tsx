@@ -867,18 +867,18 @@ export default function BuilderPage() {
               className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
               title="Change Blueprint Template"
             >
-              <option value="cv">📄 1. Executive ATS CV (100% Free)</option>
-              <option value="portfolio">🎨 2. Creative Portfolio (7-Day Trial)</option>
-              <option value="watch_store">⌚ 3. Watch Business &amp; Horology</option>
-              <option value="restaurant">🍽️ 4. Restaurant Menu (Turkish Zaika)</option>
-              <option value="boutique">👗 5. Fashion &amp; Boutique</option>
-              <option value="wedding_card">💌 6. Royal Wedding Invitation (10 Themes)</option>
-              <option value="tuition">📚 7. Tuition &amp; Coaching Academy</option>
-              <option value="bakery">🎂 8. Bakery &amp; Cake Shop</option>
-              <option value="salon">✂️ 9. Salon &amp; Beauty Lounge</option>
-              <option value="electronics">📱 10. Electronics &amp; Gadgets</option>
-              <option value="ecommerce">🛍️ E-commerce Store</option>
-              <option value="single_product">⚡ Single Product</option>
+              <option value="cv">1. Executive ATS CV (100% Free Lifetime)</option>
+              <option value="ecommerce">2. E-Commerce Website (Multi-Templates)</option>
+              <option value="boutique">3. Fashion &amp; Boutique</option>
+              <option value="watch_store">4. Luxury Watch Business</option>
+              <option value="restaurant">5. Restaurant &amp; Cafe Menu (₹99 Special)</option>
+              <option value="wedding_card">6. Wedding Card Invitation (100% Free Lifetime)</option>
+              <option value="electronics">7. Electronics &amp; Gadgets</option>
+              <option value="portfolio">8. Creative Portfolio (Max 5 WebP)</option>
+              <option value="bakery">9. Bakery &amp; Cake Shop</option>
+              <option value="tuition">10. Tuition &amp; Coaching Academy</option>
+              <option value="salon">11. Salon &amp; Beauty Lounge</option>
+              <option value="single_product">12. Single Product Launchpad</option>
             </select>
           </div>
         </div>
@@ -1462,7 +1462,7 @@ export default function BuilderPage() {
                   {site.type === 'watch_store'
                     ? '⌚ Watch Catalog'
                     : site.type === 'restaurant'
-                    ? '🍽️ Menu & Zaika Bar'
+                    ? 'Digital Menu & Dishes'
                     : site.type === 'wedding_card'
                     ? '💌 10 Themes & Details'
                     : site.type === 'tuition'
@@ -2620,18 +2620,18 @@ export default function BuilderPage() {
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { type: 'cv', label: '1. Executive ATS CV', icon: '📄' },
-                      { type: 'portfolio', label: '2. Creative Portfolio', icon: '🎨' },
-                      { type: 'watch_store', label: '3. Watch Business', icon: '⌚' },
-                      { type: 'restaurant', label: '4. Restaurant Menu', icon: '🍽️' },
-                      { type: 'boutique', label: '5. Fashion Boutique', icon: '👗' },
-                      { type: 'wedding_card', label: '6. Wedding Card', icon: '💌' },
-                      { type: 'tuition', label: '7. Tuition Academy', icon: '📚' },
-                      { type: 'bakery', label: '8. Bakery & Cake', icon: '🎂' },
-                      { type: 'salon', label: '9. Salon & Spa', icon: '✂️' },
-                      { type: 'electronics', label: '10. Electronics', icon: '📱' },
-                      { type: 'ecommerce', label: 'E-commerce Store', icon: '🛍️' },
-                      { type: 'single_product', label: 'Single Product', icon: '⚡' },
+                      { type: 'cv', label: '1. Executive ATS CV (Free)', icon: '📄' },
+                      { type: 'ecommerce', label: '2. E-Commerce Store', icon: '🛍️' },
+                      { type: 'boutique', label: '3. Fashion Boutique', icon: '👗' },
+                      { type: 'watch_store', label: '4. Luxury Watch', icon: '⌚' },
+                      { type: 'restaurant', label: '5. Restaurant Menu (₹99)', icon: '🍽️' },
+                      { type: 'wedding_card', label: '6. Wedding Card (Free)', icon: '💌' },
+                      { type: 'electronics', label: '7. Electronics & Tech', icon: '📱' },
+                      { type: 'portfolio', label: '8. Creative Portfolio', icon: '🎨' },
+                      { type: 'bakery', label: '9. Bakery & Cake Shop', icon: '🎂' },
+                      { type: 'tuition', label: '10. Tuition Academy', icon: '📚' },
+                      { type: 'salon', label: '11. Salon & Spa', icon: '✂️' },
+                      { type: 'single_product', label: '12. Single Product', icon: '⚡' },
                     ].map((m) => (
                       <button
                         key={m.type}
@@ -2653,7 +2653,7 @@ export default function BuilderPage() {
                     ))}
                   </div>
                   <p className="text-[10px] text-zinc-500 mt-1">
-                    Select your website blueprint. Watch Business is positioned 3rd, Restaurant features the Turkish Zaika standard, and Wedding Card features 10 luxury themes.
+                    Select your website blueprint. CV and Wedding cards are 100% Free Lifetime, Restaurant digital menu is ₹99/mo, and all other blueprints include a 7-day free trial.
                   </p>
                 </div>
 
@@ -3267,13 +3267,13 @@ export default function BuilderPage() {
                   </div>
                 )}
 
-                {/* 4. Restaurant & Cafe Menu (Turkish Zaika Standard) */}
+                {/* 5. Restaurant & Cafe Digital Menu */}
                 {site.type === 'restaurant' && (
                   <div className="space-y-4">
-                    {/* Entrance Loading Overlay Toggle (Turkish Zaika standard) */}
+                    {/* Entrance Loading Overlay Toggle */}
                     <div className="p-3.5 bg-orange-50 border border-orange-200 rounded-2xl flex items-center justify-between">
                       <div>
-                        <span className="text-xs font-bold text-orange-950 block">Turkish Zaika Entrance Loading Bar</span>
+                        <span className="text-xs font-bold text-orange-950 block">Signature Entrance Loading Bar</span>
                         <span className="text-[11px] text-orange-700">Display luxury 0%–100% progress bar animation with restaurant logo pulse on site load.</span>
                       </div>
                       <input

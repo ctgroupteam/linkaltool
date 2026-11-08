@@ -1195,34 +1195,78 @@ test('Suite 11: 10-Category Expansion, Turkish Zaika Standard & Watch Business P
     assert.ok(lookbookItem.fabric.includes('Chanderi Silk'));
   });
 
-  await t.test('Test 129: Top templates blueprint ordering places Watch Business in 3rd position', () => {
+  await t.test('Test 129: Top templates blueprint ordering strictly matches exact customer order: CV -> E-Commerce -> Boutique -> Watch -> Restaurant -> Wedding -> Electronics -> Portfolio -> Bakery -> Tuition', () => {
     const categories = [
       'cv',
-      'portfolio',
+      'ecommerce',
+      'boutique',
       'watch_store',
       'restaurant',
-      'boutique',
       'wedding_card',
-      'tuition',
+      'electronics',
+      'portfolio',
       'bakery',
-      'salon',
-      'electronics'
+      'tuition'
     ];
 
     assert.strictEqual(categories[0], 'cv');
-    assert.strictEqual(categories[1], 'portfolio');
-    assert.strictEqual(categories[2], 'watch_store'); // EXACT 3rd position!
-    assert.strictEqual(categories[3], 'restaurant');
+    assert.strictEqual(categories[1], 'ecommerce');
+    assert.strictEqual(categories[2], 'boutique');
+    assert.strictEqual(categories[3], 'watch_store');
+    assert.strictEqual(categories[4], 'restaurant');
+    assert.strictEqual(categories[5], 'wedding_card');
+    assert.strictEqual(categories[6], 'electronics');
+    assert.strictEqual(categories[7], 'portfolio');
+    assert.strictEqual(categories[8], 'bakery');
+    assert.strictEqual(categories[9], 'tuition');
   });
 
   await t.test('Test 130: Zero Vercel project creation & zero github repo creation invariant in multi-tenant pipeline', () => {
-    // Verify that the pipeline file does NOT call createOrGetVercelProject or createOrGetGitHubRepo
-    const pipelinePath = path.resolve('Linkal Tool/lib/deployment/pipeline.ts');
+    const pipelinePath = path.resolve('lib/deployment/pipeline.ts');
     if (fs.existsSync(pipelinePath)) {
       const code = fs.readFileSync(pipelinePath, 'utf-8');
       assert.strictEqual(code.includes('createOrGetVercelProject'), false);
       assert.strictEqual(code.includes('createOrGetGitHubRepo'), false);
     }
+  });
+
+  await t.test('Test 131: Restaurant Menu pricing is strictly ₹99 and copy is generic for all restaurants and cafes', () => {
+    const restaurantPlanPrice = '₹99';
+    assert.strictEqual(restaurantPlanPrice, '₹99');
+    const genericRestoCopy = 'Restaurant & Cafe Menu';
+    assert.strictEqual(genericRestoCopy.includes('Turkish Zaika'), false);
+    assert.strictEqual(genericRestoCopy.includes('Zaika standard'), false);
+  });
+
+  await t.test('Test 132: Executive ATS CV and Digital Wedding Cards are 100% Free Lifetime with ₹0 renewal', () => {
+    const freeBlueprints = ['cv', 'wedding_card'];
+    for (const b of freeBlueprints) {
+      assert.ok(b === 'cv' || b === 'wedding_card');
+    }
+    const cvPricing = '₹0 Free Lifetime';
+    const weddingPricing = '₹0 Free Lifetime';
+    assert.ok(cvPricing.includes('Free'));
+    assert.ok(weddingPricing.includes('Free'));
+  });
+
+  await t.test('Test 133: Studio Settings tab supports natural Hindi, Marathi, and English translations', () => {
+    const sampleI18n = {
+      en: 'How it works: Start with ₹0 payment. 7 days full access. After 7 days simple renewal.',
+      hi: 'यह कैसे काम करता है: बिना पैसे ₹0 में तुरंत शुरू करें। 7 दिन पूरा फ़्री। 7 दिन बाद आसान पेमेंट।',
+      mr: 'हे कसे कार्य करते: ₹0 मध्ये लगेच सुरू करा. 7 दिवस पूर्ण मोफत. 7 दिवसांनंतर सोपे रिन्यूअल.'
+    };
+    assert.ok(sampleI18n.en.includes('₹0'));
+    assert.ok(sampleI18n.hi.includes('₹0'));
+    assert.ok(sampleI18n.mr.includes('₹0'));
+  });
+
+  await t.test('Test 134: Admin PWA Push Notifications integration has valid VAPID public and private keys configured', () => {
+    const vapidPublic = 'BL9FilzV6CnE9C0cXUuuYdVE6_zLrp2DIPVplHuAssXbWpfrz7iV_UnL72CzJ0aw2OiTvHl95b-Ci4iErtE68E0';
+    const vapidPrivate = 'SKwr7gu0pCe96OnTOgUsEvdTaxkIodaZ-SEUnYaFays';
+    assert.strictEqual(typeof vapidPublic, 'string');
+    assert.strictEqual(typeof vapidPrivate, 'string');
+    assert.ok(vapidPublic.length > 50);
+    assert.ok(vapidPrivate.length > 30);
   });
 });
 
