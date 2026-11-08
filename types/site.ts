@@ -283,14 +283,14 @@ export interface SiteData {
   restaurantLoadingAnimation?: boolean;
   boutiqueLookbook?: ProductItem[];
 
-  // CV Section Display Toggles & Layout Formats
+  // CV Section Display Toggles & Layout Formats (5 ATS Templates)
   cvShowSummary?: boolean;
   cvShowExperience?: boolean;
   cvShowEducation?: boolean;
   cvShowSkills?: boolean;
   cvShowProjects?: boolean;
   cvShowCertifications?: boolean;
-  cvFormat?: 'classic' | 'modern' | 'compact';
+  cvFormat?: 'classic' | 'modern' | 'tech' | 'elegant' | 'compact';
 
   // Trust Badges
   trustBadgesEnabled?: boolean;

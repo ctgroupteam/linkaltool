@@ -190,7 +190,7 @@ export function BillingModal({
             </div>
             <h4 className="text-lg font-extrabold text-emerald-950">100% Free Lifetime Website</h4>
             <p className="text-xs text-emerald-800 max-w-sm mx-auto leading-relaxed">
-              Executive ATS CVs and Royal Wedding Invitations are completely free forever on Linkal. No payment, card, or renewal fee is ever required.
+              Free CV Websites and Royal Wedding Invitations are completely free forever on Linkal. No payment, card, or renewal fee is ever required.
             </p>
             <div className="pt-2">
               <button

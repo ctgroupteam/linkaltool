@@ -298,7 +298,7 @@ const SETTINGS_I18N = {
     trialPoint1: 'बिना पैसे तुरंत शुरू करें: ₹0 में अपनी वेबसाइट आज ही लाइव करें, कोई एडवांस पेमेंट नहीं।',
     trialPoint2: '15 दिन पूरा फ़्री: अपने प्रोडक्ट, मेन्यू जोड़ें और सीधे व्हाट्सएप पर कस्टमर ऑर्डर लें।',
     trialPoint3: '15 दिन बाद आसान पेमेंट: रेस्टोरेंट के लिए केवल ₹99 में अपनी वेबसाइट चालू रखें।',
-    trialPoint4: 'सीवी और शादी के कार्ड हमेशा 100% मुफ़्त: Executive CV और शादी के डिजिटल कार्ड पूरी ज़िंदगी बिल्कुल मुफ़्त रहेंगे।',
+    trialPoint4: 'सीवी और शादी के कार्ड हमेशा 100% मुफ़्त: Free CV Website और शादी के डिजिटल कार्ड पूरी ज़िंदगी बिल्कुल मुफ़्त रहेंगे।',
     supportTitle: 'डायरेक्ट सपोर्ट हेल्पलाइन',
     supportDesc: 'वेबसाइट बनाने में कोई परेशानी? सीधे फ़ाउंडर टीम से व्हाट्सएप पर बात करें।',
     supportBtn: 'व्हाट्सएप सपोर्ट पर बात करें',
@@ -323,7 +323,7 @@ const SETTINGS_I18N = {
     trialPoint1: '₹0 मध्ये लगेच सुरू करा: कोणतीही आगाऊ फी न भरता 2 मिनिटांत तुमची वेबसाइट लाइव्ह करा.',
     trialPoint2: '15 दिवस पूर्ण मोफत: सर्व फिचर्स वापरा, उत्पादने जोडा आणि थेट व्हॉट्सॲपवर ऑर्डर्स मिळवा.',
     trialPoint3: '15 दिवसांनंतर सोपे रिन्यूअल: रेस्टॉरंट्ससाठी फक्त ₹99 मध्ये वेबसाइट सुरू ठेवा.',
-    trialPoint4: 'सीव्ही आणि लग्नपत्रिका कायमस्वरूपी 100% मोफत: Executive CV आणि डिजिटल लग्नपत्रिका आयुष्यभरासाठी पूर्णपणे मोफत राहतील.',
+    trialPoint4: 'सीव्ही आणि लग्नपत्रिका कायमस्वरूपी 100% मोफत: Free CV Website आणि डिजिटल लग्नपत्रिका आयुष्यभरासाठी पूर्णपणे मोफत राहतील.',
     supportTitle: 'थेट संस्थापक मदत',
     supportDesc: 'वेबसाइट तयार करण्यात काही मदत हवी असल्यास थेट व्हॉट्सॲपवर संपर्क करा.',
     supportBtn: 'व्हॉट्सॲपवर मदत मिळवा',
@@ -344,7 +344,7 @@ function DashboardContent() {
   const [user, setUser] = useState<{ id: string; email: string; fullName: string; phoneNumber?: string } | null>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
 
-  // Active category selection - default to executive CV
+  // Active category selection - default to Free CV Website
   const [category, setCategory] = useState<SiteType>('cv');
 
   // Creation form state
@@ -696,6 +696,61 @@ function DashboardContent() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Desktop Section Navigation Tabs (Only for Desktop Mode, on same line as menu) */}
+            <div className="hidden md:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200 mr-1">
+              <button
+                type="button"
+                onClick={() => setDashboardTab('sites')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  dashboardTab === 'sites'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-950'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5 text-blue-600" />
+                <span>My Websites {user ? `(${sites.length})` : ''}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDashboardTab('templates')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  dashboardTab === 'templates'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-950'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Templates</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDashboardTab('settings')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  dashboardTab === 'settings'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-950'
+                }`}
+              >
+                <SettingsIcon className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Settings</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDashboardTab('profile')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  dashboardTab === 'profile'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-950'
+                }`}
+              >
+                <User className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Profile</span>
+              </button>
+            </div>
+
             {/* New Site Button (In place of old 1-Click Google Login) */}
             <button
               type="button"
@@ -972,7 +1027,7 @@ function DashboardContent() {
                 1. Select Website Blueprint *
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                {/* 1. Executive ATS CV */}
+                {/* 1. Free CV Website */}
                 <div
                   onClick={() => setCategory('cv')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
@@ -990,9 +1045,9 @@ function DashboardContent() {
                         100% Free
                       </span>
                     </div>
-                    <h3 className="font-extrabold text-xs text-zinc-950">1. Executive ATS CV</h3>
+                    <h3 className="font-extrabold text-xs text-zinc-950">1. Free CV Website</h3>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
-                      ATS-optimized typography, 0 image uploads, clickable link toggles &amp; custom career categories.
+                      ATS-optimized typography, 0 image uploads, clickable link toggles &amp; 5 professional CV template layouts.
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-emerald-700">
@@ -1286,7 +1341,7 @@ function DashboardContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-zinc-900 mb-1">
-                  {category === 'portfolio' ? 'Full Name (Add in your CV) *' : 'Business / Store Name *'}
+                  {category === 'cv' ? 'Full Name (Add in your CV) *' : category === 'portfolio' ? 'Full Name / Studio Name *' : 'Business / Store Name *'}
                 </label>
                 <input
                   type="text"
@@ -1304,17 +1359,17 @@ function DashboardContent() {
                       );
                     }
                   }}
-                  placeholder={category === 'portfolio' ? 'e.g. Yahya Mundewadi' : 'e.g. Royal Cakes Mumbai'}
+                  placeholder={category === 'cv' ? 'e.g. Yahya Mundewadi' : 'e.g. Royal Cakes Mumbai'}
                   className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs sm:text-sm font-semibold text-zinc-950 placeholder-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <span className="text-[11px] text-zinc-500 font-medium mt-1 block">
-                  {category === 'portfolio' ? 'Your executive name as displayed on your CV.' : 'Your brand or store name for customer orders.'}
+                  {category === 'cv' ? 'Your name as displayed on your CV.' : 'Your brand or store name for customer orders.'}
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-zinc-900 mb-1">
-                  {category === 'portfolio' ? 'WhatsApp Phone (Add in your CV) *' : 'WhatsApp Orders Phone (Add to your store) *'}
+                  {category === 'cv' ? 'WhatsApp Phone (Add in your CV) *' : 'WhatsApp Orders Phone (Add to your store) *'}
                 </label>
                 <div className="relative">
                   <MessageCircle className="w-4 h-4 text-emerald-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -1323,12 +1378,12 @@ function DashboardContent() {
                     required
                     value={whatsappPhone}
                     onChange={(e) => setWhatsappPhone(e.target.value)}
-                    placeholder={category === 'portfolio' ? '919307426215' : '919876543210'}
+                    placeholder={category === 'cv' ? '919307426215' : '919876543210'}
                     className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs sm:text-sm font-mono font-bold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
                 <span className="text-[11px] text-zinc-500 font-medium mt-1 block">
-                  {category === 'portfolio' ? 'Direct WhatsApp line for recruiters & executive hiring.' : 'Customer orders will be dispatched directly to this WhatsApp.'}
+                  {category === 'cv' ? 'Direct WhatsApp line for recruiters & hiring managers.' : 'Customer orders will be dispatched directly to this WhatsApp.'}
                 </span>
               </div>
             </div>
@@ -1385,18 +1440,18 @@ function DashboardContent() {
             </div>
 
             {/* 4. Promo Code & Trial Notices */}
-            {category === 'portfolio' ? (
+            {category === 'cv' ? (
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-emerald-950 flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-emerald-600" /> Executive CV Tier: 100% Free with LINKAL
+                    <Sparkles className="w-4 h-4 text-emerald-600" /> Free CV Website: 100% Free Lifetime
                   </span>
                   <span className="text-[10px] font-bold bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">
-                    Free for First 100 CVs
+                    100% Free Forever
                   </span>
                 </div>
                 <p className="text-xs text-emerald-900 leading-relaxed">
-                  Every user can create <strong>1 free executive CV website</strong> for life. Designed strictly without images for maximum readability and PDF printing.
+                  Every user can create <strong>1 free CV website</strong> for life. Clean ATS format with zero clutter, maximum readability, fast recruiter screening, and instant PDF printing.
                 </p>
                 <div className="pt-2">
                   <input
@@ -1440,12 +1495,12 @@ function DashboardContent() {
                 {creating ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                    <span>{category === 'portfolio' ? 'Initializing Executive CV...' : 'Initializing Website...'}</span>
+                    <span>{category === 'cv' ? 'Initializing Free CV...' : 'Initializing Website...'}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4 text-white" />
-                    <span>{category === 'portfolio' ? 'Build My Executive CV (100% Free) →' : 'Open Visual Builder Now →'}</span>
+                    <span>{category === 'cv' ? 'Build My Free CV Website (100% Free) →' : 'Open Visual Builder Now →'}</span>
                   </>
                 )}
               </button>
@@ -1550,10 +1605,16 @@ function DashboardContent() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold mb-1.5 bg-blue-50 text-blue-700 border border-blue-200/60">
-                          {site.type === 'portfolio'
-                            ? 'Executive CV'
+                          {site.type === 'cv'
+                            ? 'Free CV Website'
+                            : site.type === 'portfolio'
+                            ? 'Portfolio'
                             : site.type === 'single_product'
                             ? 'Single Product'
+                            : site.type === 'wedding_card'
+                            ? 'Wedding Card'
+                            : site.type === 'restaurant'
+                            ? 'Restaurant Menu'
                             : 'E-commerce'}
                         </span>
                         <a

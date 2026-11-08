@@ -1305,7 +1305,8 @@ test('Suite 12: 100+ Enterprise Verification Cases — All 11 Templates, Themes,
   const tuitionCode = fs.readFileSync(resolveToolPath('lib/templates/tuition.ts'), 'utf-8');
   const boutiqueCode = fs.readFileSync(resolveToolPath('lib/templates/boutique.ts'), 'utf-8');
   const portfolioCode = fs.readFileSync(resolveToolPath('lib/templates/portfolio.ts'), 'utf-8');
-  const generatorCode = fs.readFileSync(resolveToolPath('lib/generator.ts'), 'utf-8');
+  const cvCode = fs.readFileSync(resolveToolPath('lib/templates/cv.ts'), 'utf-8');
+  const generatorCode = fs.readFileSync(resolveToolPath('lib/generator.ts'), 'utf-8') + '\n' + cvCode;
 
   // ─── Part A: Free Lifetime Headline Copy ───
   await t.test('Test 136: Dashboard top announcement banner strictly renders "CV Websites & Wedding Websites are 100% Completely Free Lifetime!"', () => {

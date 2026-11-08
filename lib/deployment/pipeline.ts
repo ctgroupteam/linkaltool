@@ -1,6 +1,7 @@
 import { SiteData, DeploymentLogEntry } from '@/types/site';
 import { generateStaticHtml } from '@/lib/generator';
 import { saveSite } from '@/lib/storage';
+import { provisionSubdomainSSL } from '@/lib/deployment/domainProvisioner';
 
 export interface PipelineResult {
   success: boolean;
@@ -52,8 +53,9 @@ export async function executeDeploymentPipeline(site: SiteData): Promise<Pipelin
     log('github', 'success', `Saved site to Linkal High-Speed Database.`);
 
     // Step 2: Route through Linkal Multi-Tenant Edge Network (0 Vercel project limit, 0 new builds)
-    log('vercel', 'in_progress', `Routing ${customDomain} through Linkal Multi-Tenant Edge Engine...`);
-    log('vercel', 'success', `Routed to Linkal Multi-Tenant Edge Engine.`);
+    log('vercel', 'in_progress', `Routing ${customDomain} and provisioning verified SSL certificate...`);
+    await provisionSubdomainSSL(site.slug);
+    log('vercel', 'success', `Routed ${customDomain} with verified SSL certificate.`);
 
     // Step 3: Cloudflare CDN & Wildcard DNS Shield
     log('cloudflare', 'in_progress', `Configuring Cloudflare CDN caching and SSL routing for ${customDomain}...`);

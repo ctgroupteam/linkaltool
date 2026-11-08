@@ -875,7 +875,7 @@ export default function BuilderPage() {
               className="text-[11px] font-extrabold px-2 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs max-w-[130px] sm:max-w-[180px] md:max-w-[240px] truncate shrink"
               title="Change Blueprint Template"
             >
-              <option value="cv">1. Executive ATS CV (100% Free Lifetime)</option>
+              <option value="cv">1. Free CV Website (100% Free Lifetime)</option>
               <option value="ecommerce">2. E-Commerce Website (Multi-Templates)</option>
               <option value="boutique">3. Fashion &amp; Boutique</option>
               <option value="watch_store">4. Luxury Watch Business</option>
@@ -1582,60 +1582,94 @@ export default function BuilderPage() {
             {activeTab === 'cv_format' && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-sm font-extrabold text-zinc-950">CV Layout Formats</h3>
-                  <p className="text-xs text-zinc-500 mt-0.5">Select your preferred ATS-optimized presentation layout.</p>
+                  <h3 className="text-sm font-extrabold text-zinc-950">CV Template Formats (5 ATS Designs)</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">Select your preferred ATS-optimized layout format. All 5 are 100% free lifetime.</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {/* Format 1: Classic ATS */}
                   <button
                     type="button"
                     onClick={() => updateSiteField('cvFormat', 'classic')}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
                       (site.cvFormat || 'classic') === 'classic'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
                         : 'border-zinc-200 bg-white hover:border-zinc-300'
                     }`}
                   >
                     <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>Classic ATS</span>
+                      <span>1. Classic ATS</span>
                       {(site.cvFormat || 'classic') === 'classic' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                     </div>
                     <p className="text-[11px] text-zinc-500 mt-1">Single-column reverse chronological. Highest ATS scanner score.</p>
                   </button>
 
-                  {/* Format 2: Modern Split */}
+                  {/* Format 2: Modern Two-Column */}
                   <button
                     type="button"
                     onClick={() => updateSiteField('cvFormat', 'modern')}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
                       site.cvFormat === 'modern'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
                         : 'border-zinc-200 bg-white hover:border-zinc-300'
                     }`}
                   >
                     <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>Modern Split</span>
+                      <span>2. Modern Two-Column</span>
                       {site.cvFormat === 'modern' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                     </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Two-column layout with sidebar for contact &amp; skills. Modern executive look.</p>
+                    <p className="text-[11px] text-zinc-500 mt-1">Dual-column with sidebar for skills, contact &amp; education. Modern crisp look.</p>
                   </button>
 
-                  {/* Format 3: Compact 1-Page */}
+                  {/* Format 3: Tech & Developer */}
+                  <button
+                    type="button"
+                    onClick={() => updateSiteField('cvFormat', 'tech')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      site.cvFormat === 'tech'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
+                        : 'border-zinc-200 bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
+                      <span>3. Tech &amp; Developer</span>
+                      {site.cvFormat === 'tech' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-1">Projects &amp; code showcase, tech stack pills, GitHub emphasis &amp; clean monospace tags.</p>
+                  </button>
+
+                  {/* Format 4: Editorial & Elegant */}
+                  <button
+                    type="button"
+                    onClick={() => updateSiteField('cvFormat', 'elegant')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      site.cvFormat === 'elegant'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
+                        : 'border-zinc-200 bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
+                      <span>4. Editorial &amp; Elegant</span>
+                      {site.cvFormat === 'elegant' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-1">Classic serif typography, centered masthead, refined dividers for leaders &amp; consultants.</p>
+                  </button>
+
+                  {/* Format 5: Compact 1-Page ATS */}
                   <button
                     type="button"
                     onClick={() => updateSiteField('cvFormat', 'compact')}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
                       site.cvFormat === 'compact'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20'
+                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
                         : 'border-zinc-200 bg-white hover:border-zinc-300'
                     }`}
                   >
                     <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>Compact 1-Page</span>
+                      <span>5. Compact 1-Page ATS</span>
                       {site.cvFormat === 'compact' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                     </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Dense, concise layout for fast scanning and 1-page printing.</p>
+                    <p className="text-[11px] text-zinc-500 mt-1">Dense, concise layout engineered to fit exactly on 1 printed page for rapid screening.</p>
                   </button>
                 </div>
 
@@ -1675,7 +1709,7 @@ export default function BuilderPage() {
                 <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 flex items-start gap-2.5">
                   <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-bold">Executive ATS Resume Profile</p>
+                    <p className="font-bold">Free ATS Resume Profile</p>
                     <p className="text-[11px] text-blue-700 mt-0.5">Fill in your contact details below. All links are automatically clickable in the ATS layout and PDF export.</p>
                   </div>
                 </div>
@@ -1698,7 +1732,7 @@ export default function BuilderPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 mb-1">
-                    Executive Headline / Professional Role *
+                    Professional Headline / Target Role *
                   </label>
                   <input
                     type="text"
@@ -2193,10 +2227,10 @@ export default function BuilderPage() {
                 </div>
 
                 <div>
-                  <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Quick Add Popular Executive Skills:</span>
+                  <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Quick Add Popular Professional Skills:</span>
                   <div className="flex flex-wrap gap-1.5">
                     {[
-                      'Executive Leadership',
+                      'Team Leadership',
                       'P&L Management',
                       'Strategic Planning',
                       'Cloud Architecture',
@@ -2629,7 +2663,7 @@ export default function BuilderPage() {
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { type: 'cv', label: '1. Executive ATS CV (Free)', icon: '📄' },
+                      { type: 'cv', label: '1. Free CV Website (Free)', icon: '📄' },
                       { type: 'ecommerce', label: '2. E-Commerce Store', icon: '🛍️' },
                       { type: 'boutique', label: '3. Fashion Boutique', icon: '👗' },
                       { type: 'watch_store', label: '4. Luxury Watch', icon: '⌚' },

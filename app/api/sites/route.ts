@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAllSites, saveSite } from '@/lib/storage';
 import { SiteData, SiteType } from '@/types/site';
+import { provisionSubdomainSSL } from '@/lib/deployment/domainProvisioner';
 
 function generateSlug(name: string): string {
   return name
@@ -356,15 +357,18 @@ export async function POST(request: Request) {
 
     const saved = await saveSite(newSite);
 
+    // Automatically provision live Vercel domain routing & SSL certificate
+    provisionSubdomainSSL(saved.slug).catch(() => {});
+
     // Notify Founder Admin of new site or CV initialized
     try {
-      const isCv = newSite.type === 'portfolio';
+      const isCv = newSite.type === 'portfolio' || newSite.type === 'cv';
       await fetch('https://admin.linkal.in/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventType: isCv ? 'new_cv' : 'new_site',
-          title: isCv ? '📄 New Executive CV Started' : '🛍️ New Website Started',
+          title: isCv ? '📄 New Free CV Website Started' : '🛍️ New Website Started',
           body: `${userName || saved.cvTitle || saved.name} started https://${saved.slug}.linkal.in | WhatsApp: ${whatsappNumber}`,
           userName: userName || saved.cvTitle || saved.name,
           siteSlug: saved.slug,

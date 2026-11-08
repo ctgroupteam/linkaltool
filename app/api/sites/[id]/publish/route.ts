@@ -31,13 +31,13 @@ export async function POST(request: Request, context: RouteContext) {
 
     // Notify Founder Admin of new live published site / CV
     try {
-      const isCv = site.type === 'portfolio';
+      const isCv = site.type === 'portfolio' || site.type === 'cv';
       await fetch('https://admin.linkal.in/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventType: isCv ? 'new_cv' : 'new_site',
-          title: isCv ? '📄 New Executive CV Published' : '🛍️ New Website Created',
+          title: isCv ? '📄 New Free CV Website Published' : '🛍️ New Website Created',
           body: `${site.userName || site.cvTitle || site.name} published https://${site.slug}.linkal.in | Phone: ${site.whatsappNumber || '—'}`,
           userName: site.userName || site.cvTitle || site.name,
           siteSlug: site.slug,

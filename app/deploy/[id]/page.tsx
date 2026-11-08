@@ -357,113 +357,117 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
       </header>
 
       {/* Main Centered Minimal Workspace */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+      <main className="flex-1 w-full max-w-3xl sm:max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
         {/* Header Title Section */}
         <div className="text-center space-y-2">
+          {isLive ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold mb-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Live on the Internet</span>
+            </div>
+          ) : null}
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
             {isLive ? 'Your website is live' : 'Publishing your website'}
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500 font-normal">
             {isLive
-              ? 'Your website is published, connected to your domain, and ready to share.'
-              : 'Please wait while we prepare and deploy your site to the cloud.'}
+              ? 'Your website is published, connected to your custom subdomain, and secured with SSL.'
+              : 'Please wait while we prepare and deploy your site to the cloud edge network.'}
           </p>
         </div>
 
-        {/* Process Card (White Background, Black Text, Clean Border) */}
-        <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6 sm:p-8 space-y-6">
-          {/* Progress Header / Percentage */}
-          <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-            <span className="text-xs font-semibold text-zinc-700">
-              {isLive ? 'Status: Complete' : 'Process'}
-            </span>
-            <span className="text-xs font-mono font-bold text-zinc-950">
-              {isLive ? '100%' : `${Math.min(95, Math.round(((activeStepIndex + 1) / STEPS.length) * 100))}%`}
-            </span>
-          </div>
-
-          {/* Clean Progress Bar */}
-          <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="h-full bg-zinc-950 rounded-full transition-all duration-500 ease-out"
-              style={{
-                width: isLive
-                  ? '100%'
-                  : `${Math.min(95, Math.round(((activeStepIndex + 1) / STEPS.length) * 100))}%`,
-              }}
-            />
-          </div>
-
-          {/* 5 Process Steps in Order */}
-          <div className="space-y-4 pt-2">
-            {STEPS.map((step, index) => {
-              const isCompleted = isLive || index < activeStepIndex;
-              const isCurrent = !isLive && index === activeStepIndex;
-
-              return (
-                <div
-                  key={step.id}
-                  className={`flex items-start gap-3.5 p-3.5 rounded-xl border transition-all ${
-                    isCurrent
-                      ? 'bg-zinc-50/80 border-zinc-900 shadow-xs'
-                      : isCompleted
-                      ? 'bg-white border-zinc-200'
-                      : 'bg-white border-zinc-100 opacity-60'
-                  }`}
-                >
-                  {/* Step Status Icon */}
-                  <div className="pt-0.5 shrink-0">
-                    {isCompleted ? (
-                      <div className="w-6 h-6 rounded-full bg-zinc-950 text-white flex items-center justify-center">
-                        <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
-                      </div>
-                    ) : isCurrent ? (
-                      <div className="w-6 h-6 rounded-full border-2 border-zinc-950 flex items-center justify-center text-zinc-950">
-                        <SpinnerIcon className="w-3.5 h-3.5" />
-                      </div>
-                    ) : (
-                      <div className="w-6 h-6 rounded-full border border-zinc-300 text-zinc-400 flex items-center justify-center text-xs font-semibold">
-                        {index + 1}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Step Text Information */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className={`text-xs sm:text-sm font-semibold ${isCurrent ? 'text-zinc-950 font-bold' : isCompleted ? 'text-zinc-900' : 'text-zinc-500'}`}>
-                        {step.title}
-                      </h3>
-                      <span className={`text-[11px] font-medium ${isCompleted ? 'text-zinc-600' : isCurrent ? 'text-zinc-950 font-semibold' : 'text-zinc-400'}`}>
-                        {isCompleted ? 'Done' : isCurrent ? 'In progress...' : 'Pending'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-zinc-500 mt-0.5">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {error && (
-            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-800 space-y-1">
-              <p className="font-semibold text-zinc-950">Deployment Notice</p>
-              <p>{error}</p>
-              <button
-                type="button"
-                onClick={() => site && triggerProcess(site)}
-                className="mt-2 text-xs font-semibold text-zinc-950 underline hover:no-underline inline-flex items-center gap-1"
-              >
-                <RefreshIcon className="w-3 h-3" />
-                <span>Retry process</span>
-              </button>
+        {/* ─── IN PROGRESS: 5 PROCESS STEPS (ONLY SHOWN WHILE DEPLOYING) ─── */}
+        {!isLive && (
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6 sm:p-8 space-y-6">
+            {/* Progress Header / Percentage */}
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
+              <span className="text-xs font-semibold text-zinc-700">Process</span>
+              <span className="text-xs font-mono font-bold text-zinc-950">
+                {`${Math.min(95, Math.round(((activeStepIndex + 1) / STEPS.length) * 100))}%`}
+              </span>
             </div>
-          )}
-        </div>
 
-        {/* Completed State: Share Link & QR Code Section */}
+            {/* Clean Progress Bar */}
+            <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="h-full bg-zinc-950 rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${Math.min(95, Math.round(((activeStepIndex + 1) / STEPS.length) * 100))}%`,
+                }}
+              />
+            </div>
+
+            {/* 5 Process Steps in Order */}
+            <div className="space-y-4 pt-2">
+              {STEPS.map((step, index) => {
+                const isCompleted = index < activeStepIndex;
+                const isCurrent = index === activeStepIndex;
+
+                return (
+                  <div
+                    key={step.id}
+                    className={`flex items-start gap-3.5 p-3.5 rounded-xl border transition-all ${
+                      isCurrent
+                        ? 'bg-zinc-50/80 border-zinc-900 shadow-xs'
+                        : isCompleted
+                        ? 'bg-white border-zinc-200'
+                        : 'bg-white border-zinc-100 opacity-60'
+                    }`}
+                  >
+                    {/* Step Status Icon */}
+                    <div className="pt-0.5 shrink-0">
+                      {isCompleted ? (
+                        <div className="w-6 h-6 rounded-full bg-zinc-950 text-white flex items-center justify-center">
+                          <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      ) : isCurrent ? (
+                        <div className="w-6 h-6 rounded-full border-2 border-zinc-950 flex items-center justify-center text-zinc-950">
+                          <SpinnerIcon className="w-3.5 h-3.5" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full border border-zinc-300 text-zinc-400 flex items-center justify-center text-xs font-semibold">
+                          {index + 1}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Step Text Information */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className={`text-xs sm:text-sm font-semibold ${isCurrent ? 'text-zinc-950 font-bold' : isCompleted ? 'text-zinc-900' : 'text-zinc-500'}`}>
+                          {step.title}
+                        </h3>
+                        <span className={`text-[11px] font-medium ${isCompleted ? 'text-zinc-600' : isCurrent ? 'text-zinc-950 font-semibold' : 'text-zinc-400'}`}>
+                          {isCompleted ? 'Done' : isCurrent ? 'In progress...' : 'Pending'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {error && (
+              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-800 space-y-1">
+                <p className="font-semibold text-zinc-950">Deployment Notice</p>
+                <p>{error}</p>
+                <button
+                  type="button"
+                  onClick={() => site && triggerProcess(site)}
+                  className="mt-2 text-xs font-semibold text-zinc-950 underline hover:no-underline inline-flex items-center gap-1"
+                >
+                  <RefreshIcon className="w-3 h-3" />
+                  <span>Retry process</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── COMPLETED STATE: REPLACED WITH LINK, QR, SHORT PREVIEW & ACTIONS ─── */}
         {isLive && site && (
           <div className="space-y-6 animate-in fade-in duration-300">
             {/* Share Link Card */}
@@ -473,7 +477,7 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
                   Share your live website link
                 </h2>
                 <p className="text-xs text-zinc-500">
-                  Anyone with this link can now view and interact with your site online.
+                  Anyone with this link can now view your website, place orders on WhatsApp, or view your credentials online.
                 </p>
               </div>
 
@@ -505,9 +509,9 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {/* Quick WhatsApp Share Action */}
-              <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
+              <div className="pt-2 border-t border-zinc-100 flex items-center justify-between flex-wrap gap-2">
                 <span className="text-xs text-zinc-500 font-medium">
-                  Share directly with customers:
+                  Share directly with customers &amp; friends:
                 </span>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(`Check out our website: ${liveDomainUrl}`)}`}
@@ -515,7 +519,7 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-xs font-semibold text-zinc-900 transition-colors"
                 >
-                  <WhatsAppIcon className="w-3.5 h-3.5 text-zinc-900" />
+                  <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Share on WhatsApp</span>
                 </a>
               </div>
@@ -539,7 +543,7 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
                       Website QR Code
                     </h3>
                     <p className="text-xs text-zinc-500 mt-0.5">
-                      Customers can scan this code with their phone camera to instantly open your website. Ideal for print menus, product packaging, and store signs.
+                      Customers can scan this QR code with their mobile camera to instantly open your website. Perfect for print menus, product packaging, store signage, and business cards.
                     </p>
                   </div>
 
@@ -565,32 +569,59 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            {/* Interactive Live Preview Accordion (Optional Clean View) */}
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-4">
-              <button
-                type="button"
-                onClick={() => setShowPreview(!showPreview)}
-                className="w-full flex items-center justify-between text-xs font-semibold text-zinc-900 py-1"
-              >
-                <span>{showPreview ? 'Hide Website Preview' : 'Show Website Preview'}</span>
-                <span className="text-zinc-400 text-[11px]">{showPreview ? 'Close' : 'Click to preview'}</span>
-              </button>
+            {/* ─── SHORT LIVE PREVIEW (RESPONSIVE: MOBILE VS DESKTOP) ─── */}
+            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-4 sm:p-6 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+                <span className="text-xs font-bold text-zinc-900">
+                  Live Website Preview
+                </span>
+                <span className="text-[11px] font-mono text-zinc-500 truncate max-w-[200px]">
+                  {site.slug}.linkal.in
+                </span>
+              </div>
 
-              {showPreview && (
-                <div className="mt-4 pt-4 border-t border-zinc-100 space-y-2">
-                  <div className="w-full h-80 rounded-xl overflow-hidden border border-zinc-200 bg-white shadow-inner">
+              {/* Mobile View Preview (Rendered on Small Screens) */}
+              <div className="block sm:hidden py-2">
+                <div className="w-[300px] max-w-full mx-auto bg-zinc-950 p-2.5 rounded-[2.5rem] shadow-xl border-4 border-zinc-800">
+                  <div className="w-20 h-3.5 bg-zinc-900 rounded-full mx-auto mb-2" />
+                  <div className="w-full h-[460px] rounded-[1.75rem] overflow-hidden bg-white">
                     <iframe
                       src={`/api/sites/${site.id}/preview`}
                       className="w-full h-full border-0"
-                      title="Website Preview"
+                      title="Mobile Website Preview"
                     />
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Desktop Horizontal Preview (Rendered on PC / Tablet Screens) */}
+              <div className="hidden sm:block">
+                <div className="w-full rounded-xl border border-zinc-200 overflow-hidden shadow-inner bg-zinc-100">
+                  {/* Browser Mockup Window Controls */}
+                  <div className="px-3.5 py-2 bg-zinc-100 border-b border-zinc-200 flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    </div>
+                    <div className="flex-1 mx-4 bg-white border border-zinc-200 rounded-md px-3 py-1 text-[11px] font-mono text-zinc-600 truncate text-center">
+                      🔒 {liveDomainUrl}
+                    </div>
+                  </div>
+                  {/* Horizontal Iframe */}
+                  <div className="w-full h-[460px] bg-white">
+                    <iframe
+                      src={`/api/sites/${site.id}/preview`}
+                      className="w-full h-full border-0"
+                      title="Desktop Website Preview"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="flex items-center justify-between pt-2">
+            {/* Bottom Action Buttons: Edit in Builder & Go to Dashboard */}
+            <div className="flex items-center justify-between pt-2 flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => triggerProcess(site)}
@@ -601,18 +632,18 @@ export default function CleanDeployPage({ params }: { params: Promise<{ id: stri
                 <span>Re-publish updates</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => router.push(`/builder/${site.id}`)}
-                  className="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900 text-xs font-semibold transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900 text-xs font-semibold transition-colors shadow-xs"
                 >
                   Edit in Builder
                 </button>
                 <button
                   type="button"
                   onClick={() => router.push('/dashboard')}
-                  className="px-4 py-2 rounded-xl bg-zinc-950 hover:bg-black text-white text-xs font-semibold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-black text-white text-xs font-semibold transition-colors shadow-xs"
                 >
                   Go to Dashboard
                 </button>

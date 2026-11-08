@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSiteById, saveSite, deleteSite, getAllSites } from '@/lib/storage';
+import { provisionSubdomainSSL } from '@/lib/deployment/domainProvisioner';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -59,6 +60,7 @@ export async function PUT(request: Request, context: RouteContext) {
     };
 
     const saved = await saveSite(merged);
+    provisionSubdomainSSL(saved.slug).catch(() => {});
     return NextResponse.json({ site: saved });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
