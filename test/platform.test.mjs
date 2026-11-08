@@ -746,8 +746,8 @@ test('Suite 6: Google Authentication & Free CV Quotas', async (t) => {
   });
 });
 
-// ─── SUITE 7: CASHFREE PRICING & 7-DAY TRIAL (Tests 86–95) ───────────────
-test('Suite 7: Cashfree Pricing & 7-Day Trial', async (t) => {
+// ─── SUITE 7: CASHFREE PRICING & 15-DAY TRIAL (Tests 86–95) ───────────────
+test('Suite 7: Cashfree Pricing & 15-Day Trial', async (t) => {
   const PLANS = {
     monthly: { id: 'monthly', name: '1 Month Starter', price: 299, days: 30 },
     quarterly: { id: 'quarterly', name: '3 Months Growth', price: 799, days: 90 },
@@ -771,19 +771,19 @@ test('Suite 7: Cashfree Pricing & 7-Day Trial', async (t) => {
     assert.strictEqual(PLANS.yearly.price, 2699);
   });
 
-  await t.test('Test 90: Trial duration is exactly 7 days', () => {
+  await t.test('Test 90: Trial duration is exactly 15 days', () => {
     const d1 = new Date('2026-11-07T00:00:00Z');
     const d2 = new Date(d1);
-    d2.setDate(d2.getDate() + 7);
+    d2.setDate(d2.getDate() + 15);
     const diffDays = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
-    assert.strictEqual(diffDays, 7);
+    assert.strictEqual(diffDays, 15);
   });
 
-  await t.test('Test 91: Trial calculation adds 7 days from current date', () => {
+  await t.test('Test 91: Trial calculation adds 15 days from current date', () => {
     const now = new Date();
     const trialEnd = new Date(now);
-    trialEnd.setDate(trialEnd.getDate() + 7);
-    assert.strictEqual(trialEnd.getDate(), (new Date(now.getTime() + 7 * 86400000)).getDate());
+    trialEnd.setDate(trialEnd.getDate() + 15);
+    assert.strictEqual(trialEnd.getDate(), (new Date(now.getTime() + 15 * 86400000)).getDate());
   });
 
   await t.test('Test 92: Cashfree currency is INR', () => {
@@ -1249,15 +1249,15 @@ test('Suite 11: 10-Category Expansion, Turkish Zaika Standard & Watch Business P
     assert.ok(weddingPricing.includes('Free'));
   });
 
-  await t.test('Test 133: Studio Settings tab supports natural Hindi, Marathi, and English translations', () => {
+  await t.test('Test 133: Studio Settings tab supports natural Hindi, Marathi, and English translations with 15-day trial copy', () => {
     const sampleI18n = {
-      en: 'How it works: Start with ₹0 payment. 7 days full access. After 7 days simple renewal.',
-      hi: 'यह कैसे काम करता है: बिना पैसे ₹0 में तुरंत शुरू करें। 7 दिन पूरा फ़्री। 7 दिन बाद आसान पेमेंट।',
-      mr: 'हे कसे कार्य करते: ₹0 मध्ये लगेच सुरू करा. 7 दिवस पूर्ण मोफत. 7 दिवसांनंतर सोपे रिन्यूअल.'
+      en: 'How it works: Start with ₹0 payment. 15 days full access. After 15 days simple renewal.',
+      hi: 'यह कैसे काम करता है: बिना पैसे ₹0 में तुरंत शुरू करें। 15 दिन पूरा फ़्री। 15 दिन बाद आसान पेमेंट।',
+      mr: 'हे कसे कार्य करते: ₹0 मध्ये लगेच सुरू करा. 15 दिवस पूर्ण मोफत. 15 दिवसांनंतर सोपे रिन्यूअल.'
     };
-    assert.ok(sampleI18n.en.includes('₹0'));
-    assert.ok(sampleI18n.hi.includes('₹0'));
-    assert.ok(sampleI18n.mr.includes('₹0'));
+    assert.ok(sampleI18n.en.includes('15 days full access'));
+    assert.ok(sampleI18n.hi.includes('15 दिन पूरा फ़्री'));
+    assert.ok(sampleI18n.mr.includes('15 दिवस पूर्ण मोफत'));
   });
 
   await t.test('Test 134: Admin PWA Push Notifications integration has valid VAPID public and private keys configured', () => {
@@ -1267,6 +1267,17 @@ test('Suite 11: 10-Category Expansion, Turkish Zaika Standard & Watch Business P
     assert.strictEqual(typeof vapidPrivate, 'string');
     assert.ok(vapidPublic.length > 50);
     assert.ok(vapidPrivate.length > 30);
+  });
+
+  await t.test('Test 135: Choose category blueprint cards display relative "Trial ends after 15 days" instead of absolute calendar dates', () => {
+    const dashboardPath = path.resolve('app/dashboard/page.tsx');
+    const dashboardCode = fs.readFileSync(dashboardPath, 'utf-8');
+
+    // Asserts no dynamic calendar formatting or absolute date string on cards
+    assert.strictEqual(dashboardCode.includes('Trial ends {trialEndFormatted}'), false);
+    assert.ok(dashboardCode.includes('Trial ends after 15 days'));
+    assert.ok(dashboardCode.includes('Includes 15-Day Free Trial'));
+    assert.ok(dashboardCode.includes('15-Day Trial'));
   });
 });
 

@@ -266,7 +266,7 @@ export function BillingModal({
               <div className="p-4 space-y-2 bg-white">
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Plan:</span>
-                  <span className="font-bold text-zinc-900">7-Day Free Trial (or Lifetime CV)</span>
+                  <span className="font-bold text-zinc-900">15-Day Free Trial (or Lifetime CV)</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Subdomain:</span>
@@ -274,7 +274,7 @@ export function BillingModal({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Valid Till:</span>
-                  <span className="font-bold text-emerald-600">7 Days From Creation</span>
+                  <span className="font-bold text-emerald-600">15 Days From Creation</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Status:</span>

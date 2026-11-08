@@ -269,10 +269,10 @@ const SETTINGS_I18N = {
     iosStep1: '1. Open Safari and tap the Share icon at the bottom of the screen.',
     iosStep2: '2. Scroll down and tap "Add to Home Screen".',
     iosStep3: '3. Open Linkal Studio from your home screen and allow notifications.',
-    trialTitle: 'How 7-Day Free Trial & Pricing Works',
+    trialTitle: 'How 15-Day Free Trial & Pricing Works',
     trialPoint1: 'Start with ₹0 Payment: No credit card or upfront fee required. Launch your live website in 2 minutes.',
-    trialPoint2: '7 Days Full Access: Test all features, add products or dishes, and receive direct WhatsApp customer orders.',
-    trialPoint3: 'Simple Renewal After 7 Days: Keep your domain active with simple renewal (just ₹99 for restaurants).',
+    trialPoint2: '15 Days Full Access: Test all features, add products or dishes, and receive direct WhatsApp customer orders.',
+    trialPoint3: 'Simple Renewal After 15 Days: Keep your domain active with simple renewal (just ₹99 for restaurants).',
     trialPoint4: '100% Free Forever for CV & Wedding: Executive ATS CVs and Royal Wedding Invitations are completely free for life with zero renewal fees.',
     supportTitle: 'Founder Direct Support',
     supportDesc: 'Need help setting up your website? Chat with the founder team on WhatsApp.',
@@ -294,10 +294,10 @@ const SETTINGS_I18N = {
     iosStep1: '1. सफारी (Safari) ब्राउज़र खोलें और नीचे शेयर (Share) बटन दबाएं।',
     iosStep2: '2. नीचे जाकर "Add to Home Screen" पर टैप करें।',
     iosStep3: '3. होम स्क्रीन से लिंकल स्टूडियो खोलें और नोटिफिकेशन Allow करें।',
-    trialTitle: '7 दिन का फ़्री ट्रायल और कीमत कैसे काम करती है',
+    trialTitle: '15 दिन का फ़्री ट्रायल और कीमत कैसे काम करती है',
     trialPoint1: 'बिना पैसे तुरंत शुरू करें: ₹0 में अपनी वेबसाइट आज ही लाइव करें, कोई एडवांस पेमेंट नहीं।',
-    trialPoint2: '7 दिन पूरा फ़्री: अपने प्रोडक्ट, मेन्यू जोड़ें और सीधे व्हाट्सएप पर कस्टमर ऑर्डर लें।',
-    trialPoint3: '7 दिन बाद आसान पेमेंट: रेस्टोरेंट के लिए केवल ₹99 में अपनी वेबसाइट चालू रखें।',
+    trialPoint2: '15 दिन पूरा फ़्री: अपने प्रोडक्ट, मेन्यू जोड़ें और सीधे व्हाट्सएप पर कस्टमर ऑर्डर लें।',
+    trialPoint3: '15 दिन बाद आसान पेमेंट: रेस्टोरेंट के लिए केवल ₹99 में अपनी वेबसाइट चालू रखें।',
     trialPoint4: 'सीवी और शादी के कार्ड हमेशा 100% मुफ़्त: Executive CV और शादी के डिजिटल कार्ड पूरी ज़िंदगी बिल्कुल मुफ़्त रहेंगे।',
     supportTitle: 'डायरेक्ट सपोर्ट हेल्पलाइन',
     supportDesc: 'वेबसाइट बनाने में कोई परेशानी? सीधे फ़ाउंडर टीम से व्हाट्सएप पर बात करें।',
@@ -319,27 +319,16 @@ const SETTINGS_I18N = {
     iosStep1: '1. सफारी (Safari) ब्राउझर उघडा आणि खालील शेअर (Share) बटण दाबा.',
     iosStep2: '2. खाली स्क्रोल करून "Add to Home Screen" निवडा.',
     iosStep3: '3. होम स्क्रीनवरून लिंकल स्टुडिओ उघडा आणि नोटिफिकेशन्स Allow करा.',
-    trialTitle: '7 दिवसांची मोफत चाचणी आणि किंमत कशी चालते',
+    trialTitle: '15 दिवसांची मोफत चाचणी आणि किंमत कशी चालते',
     trialPoint1: '₹0 मध्ये लगेच सुरू करा: कोणतीही आगाऊ फी न भरता 2 मिनिटांत तुमची वेबसाइट लाइव्ह करा.',
-    trialPoint2: '7 दिवस पूर्ण मोफत: सर्व फिचर्स वापरा, उत्पादने जोडा आणि थेट व्हॉट्सॲपवर ऑर्डर्स मिळवा.',
-    trialPoint3: '7 दिवसांनंतर सोपे रिन्यूअल: रेस्टॉरंट्ससाठी फक्त ₹99 मध्ये वेबसाइट सुरू ठेवा.',
+    trialPoint2: '15 दिवस पूर्ण मोफत: सर्व फिचर्स वापरा, उत्पादने जोडा आणि थेट व्हॉट्सॲपवर ऑर्डर्स मिळवा.',
+    trialPoint3: '15 दिवसांनंतर सोपे रिन्यूअल: रेस्टॉरंट्ससाठी फक्त ₹99 मध्ये वेबसाइट सुरू ठेवा.',
     trialPoint4: 'सीव्ही आणि लग्नपत्रिका कायमस्वरूपी 100% मोफत: Executive CV आणि डिजिटल लग्नपत्रिका आयुष्यभरासाठी पूर्णपणे मोफत राहतील.',
     supportTitle: 'थेट संस्थापक मदत',
     supportDesc: 'वेबसाइट तयार करण्यात काही मदत हवी असल्यास थेट व्हॉट्सॲपवर संपर्क करा.',
     supportBtn: 'व्हॉट्सॲपवर मदत मिळवा',
   }
 };
-
-// ─── 7-DAY TRIAL DATE FORMATTER ──────────────────────────────────────────
-function formatTrialEnd(days = 7): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 function DashboardContent() {
   const router = useRouter();
@@ -379,9 +368,6 @@ function DashboardContent() {
 
   // Auto-fill slug from site name if slug is untouched
   const [slugTouched, setSlugTouched] = useState(false);
-
-  // Trial end date string
-  const trialEndFormatted = useMemo(() => formatTrialEnd(7), []);
 
   // Check saved user in localStorage
   useEffect(() => {
@@ -874,7 +860,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-blue-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -902,7 +888,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-pink-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -930,7 +916,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-amber-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -1005,7 +991,7 @@ function DashboardContent() {
                         <CpuIcon className="w-5 h-5 text-cyan-700" />
                       </span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800">
-                        7-Day Trial
+                        15-Day Trial
                       </span>
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">7. Electronics &amp; Gadgets</h3>
@@ -1014,7 +1000,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-cyan-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -1042,7 +1028,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-purple-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -1061,7 +1047,7 @@ function DashboardContent() {
                         <CakeIcon className="w-5 h-5 text-amber-700" />
                       </span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                        7-Day Trial
+                        15-Day Trial
                       </span>
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">9. Bakery &amp; Cake Shop</h3>
@@ -1070,7 +1056,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-amber-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -1089,7 +1075,7 @@ function DashboardContent() {
                         <GraduationCapIcon className="w-5 h-5 text-indigo-700" />
                       </span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
-                        7-Day Trial
+                        15-Day Trial
                       </span>
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">10. Tuition &amp; Coaching</h3>
@@ -1098,7 +1084,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-indigo-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
 
@@ -1117,7 +1103,7 @@ function DashboardContent() {
                         <ScissorsIcon className="w-5 h-5 text-fuchsia-700" />
                       </span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-fuchsia-100 text-fuchsia-800">
-                        7-Day Trial
+                        15-Day Trial
                       </span>
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">11. Salon &amp; Lounge</h3>
@@ -1126,7 +1112,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-fuchsia-700">
-                    Trial ends {trialEndFormatted}
+                    Trial ends after 15 days
                   </div>
                 </div>
               </div>
@@ -1262,14 +1248,14 @@ function DashboardContent() {
               <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-blue-950 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-blue-600" /> Includes 7-Day Free Trial
+                    <Clock className="w-4 h-4 text-blue-600" /> Includes 15-Day Free Trial
                   </span>
                   <span className="text-[10px] font-bold bg-blue-600 text-white px-2.5 py-0.5 rounded-full">
                     No Credit Card Required
                   </span>
                 </div>
                 <p className="text-xs text-blue-900 leading-relaxed">
-                  Your 7-day free trial will end on <strong>{trialEndFormatted}</strong>. Afterward, keep your site live with our ₹299/month flexible plan via Cashfree.
+                  Your 15-day free trial ends after 15 days. Afterward, keep your site live with our simple flexible plan via Cashfree.
                 </p>
               </div>
             )}
@@ -1455,7 +1441,7 @@ function DashboardContent() {
                           {site.type === 'portfolio' ? (
                             <span className="text-emerald-700">100% Free Lifetime</span>
                           ) : (
-                            <span className="text-blue-700">7-Day Free Trial</span>
+                            <span className="text-blue-700">15-Day Free Trial</span>
                           )}
                         </span>
                       </div>
@@ -1712,7 +1698,7 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* How 7-Day Free Trial & Pricing Works */}
+            {/* How 15-Day Free Trial & Pricing Works */}
             <div className="p-4 sm:p-5 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-600" />

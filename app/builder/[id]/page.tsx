@@ -2653,7 +2653,7 @@ export default function BuilderPage() {
                     ))}
                   </div>
                   <p className="text-[10px] text-zinc-500 mt-1">
-                    Select your website blueprint. CV and Wedding cards are 100% Free Lifetime, Restaurant digital menu is ₹99/mo, and all other blueprints include a 7-day free trial.
+                    Select your website blueprint. CV and Wedding cards are 100% Free Lifetime, Restaurant digital menu is ₹99/mo, and all other blueprints include a 15-day free trial.
                   </p>
                 </div>
 
@@ -4174,7 +4174,7 @@ export default function BuilderPage() {
                             Projects Showcase ({site.portfolioProjects?.length || 0}/5)
                           </span>
                           <span className="text-[10px] text-zinc-500 font-medium">
-                            Max 5 project images allowed. 7-day free trial.
+                            Max 5 project images allowed. 15-day free trial.
                           </span>
                         </div>
                         {(site.portfolioProjects?.length || 0) < 5 ? (
