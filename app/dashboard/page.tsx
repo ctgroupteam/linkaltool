@@ -23,6 +23,9 @@ import {
   MessageCircle,
   Sparkles,
   Layers,
+  Hammer,
+  ArrowRight,
+  ArrowLeft,
 } from 'lucide-react';
 import { SiteData, SiteType, SiteStatus } from '@/types/site';
 import { generateQrSvg, downloadQrPng, downloadQrSvg } from '@/lib/qrcode';
@@ -330,6 +333,148 @@ const SETTINGS_I18N = {
   }
 };
 
+function getCategoryInfo(cat: SiteType) {
+  switch (cat) {
+    case 'cv':
+      return {
+        title: '1. Free CV Website',
+        badge: 'Lifetime Free',
+        badgeColor: 'bg-emerald-100 text-emerald-800',
+        desc: 'ATS-optimized typography, 0 image uploads, clickable link toggles & 5 professional CV template layouts.',
+        price: '₹0 Free Lifetime',
+        isFree: true,
+      };
+    case 'ecommerce':
+      return {
+        title: '2. E-Commerce Website',
+        badge: 'Multi-Product',
+        badgeColor: 'bg-blue-100 text-blue-800',
+        desc: 'Product catalog grids, cart drawer, direct WhatsApp ordering, and trust badge bars.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'boutique':
+      return {
+        title: '3. Fashion & Boutique',
+        badge: 'Luxury Lookbook',
+        badgeColor: 'bg-pink-100 text-pink-800',
+        desc: 'Editorial fashion layout with fullscreen hero carousel, collection filter tags, and WhatsApp sizing inquiry.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'watch_store':
+      return {
+        title: '4. Luxury Watch Business',
+        badge: 'Dark Horology',
+        badgeColor: 'bg-amber-100 text-amber-800',
+        desc: 'Dark horology layout, animated crown preloader, movement and water resistance specs, and concierge WhatsApp checkout.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'restaurant':
+      return {
+        title: '5. Restaurant & Cafe Menu',
+        badge: '₹99/mo Special',
+        badgeColor: 'bg-orange-100 text-orange-800',
+        desc: 'Contactless QR digital dining menu with sticky food category tabs, veg/non-veg dietary tags & table order checkout.',
+        price: '₹99/mo Special',
+        isFree: false,
+      };
+    case 'wedding_card':
+      return {
+        title: '6. Wedding Card Invitation',
+        badge: 'Lifetime Free',
+        badgeColor: 'bg-emerald-100 text-emerald-800',
+        desc: '10 luxury pre-built color themes, couple bios, countdown timer, event itinerary & Google Maps RSVP.',
+        price: '₹0 Free Lifetime',
+        isFree: true,
+      };
+    case 'electronics':
+      return {
+        title: '7. Electronics & Gadgets',
+        badge: '15-Day Trial',
+        badgeColor: 'bg-cyan-100 text-cyan-800',
+        desc: 'Tech specification matrices, warranty cards, variant selections, and instant gadget inquiries.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'portfolio':
+      return {
+        title: '8. Creative Portfolio',
+        badge: 'Max 5 WebP',
+        badgeColor: 'bg-purple-100 text-purple-800',
+        desc: 'Showcase up to 5 WebP project showcases, interactive skills matrix, and direct recruiter project inquiry.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'bakery':
+      return {
+        title: '9. Bakery & Cake Shop',
+        badge: '15-Day Trial',
+        badgeColor: 'bg-amber-100 text-amber-800',
+        desc: 'Custom designer cake catalogs with egg/eggless badges, weight tiers, and occasion pre-order dispatch.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'tuition':
+      return {
+        title: '10. Tuition & Coaching Academy',
+        badge: '15-Day Trial',
+        badgeColor: 'bg-indigo-100 text-indigo-800',
+        desc: 'Standards covered (Class 8th-12th, NEET, JEE), batch timing matrix, fee comparison, and admission helpline.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    case 'salon':
+      return {
+        title: '11. Salon & Beauty Lounge',
+        badge: '15-Day Trial',
+        badgeColor: 'bg-fuchsia-100 text-fuchsia-800',
+        desc: 'Beauty lounge & spa treatment menu, service duration and pricing, bridal packages, and WhatsApp appointment booking.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+    default:
+      return {
+        title: 'Website Blueprint',
+        badge: '15-Day Trial',
+        badgeColor: 'bg-zinc-100 text-zinc-800',
+        desc: 'Branded website on your custom subdomain.',
+        price: '15-Day Free Trial',
+        isFree: false,
+      };
+  }
+}
+
+function getCategoryIcon(cat: SiteType) {
+  switch (cat) {
+    case 'cv':
+      return <FileTextIcon className="w-5 h-5 text-blue-700" />;
+    case 'ecommerce':
+      return <ShoppingBagIcon className="w-5 h-5 text-emerald-700" />;
+    case 'boutique':
+      return <BoutiqueIcon className="w-5 h-5 text-pink-700" />;
+    case 'watch_store':
+      return <WatchIcon className="w-5 h-5 text-amber-700" />;
+    case 'restaurant':
+      return <UtensilsIcon className="w-5 h-5 text-orange-700" />;
+    case 'wedding_card':
+      return <HeartHandshakeIcon className="w-5 h-5 text-emerald-700" />;
+    case 'electronics':
+      return <CpuIcon className="w-5 h-5 text-cyan-700" />;
+    case 'portfolio':
+      return <BriefcaseIcon className="w-5 h-5 text-purple-700" />;
+    case 'bakery':
+      return <CakeIcon className="w-5 h-5 text-amber-700" />;
+    case 'tuition':
+      return <GraduationCapIcon className="w-5 h-5 text-indigo-700" />;
+    case 'salon':
+      return <ScissorsIcon className="w-5 h-5 text-fuchsia-700" />;
+    default:
+      return <Layers className="w-5 h-5 text-blue-700" />;
+  }
+}
+
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -369,17 +514,57 @@ function DashboardContent() {
   // Auto-fill slug from site name if slug is untouched
   const [slugTouched, setSlugTouched] = useState(false);
 
-  // Check saved user in localStorage
+  // Fast switch to Builder tab upon clicking any blueprint card
+  const handleSelectBlueprint = (key: SiteType) => {
+    setCategory(key);
+    setDashboardTab('builder');
+    try {
+      localStorage.setItem('linkal_draft_category', key);
+      localStorage.setItem('linkal_dashboard_tab', 'builder');
+    } catch {}
+  };
+
+  // Check saved user & draft creation state in localStorage
   useEffect(() => {
     try {
       const savedUser = localStorage.getItem('linkal_user');
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
+      const savedDraft = localStorage.getItem('linkal_draft_creation');
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed.category) setCategory(parsed.category);
+        if (parsed.siteName) setSiteName(parsed.siteName);
+        if (parsed.whatsappPhone) setWhatsappPhone(parsed.whatsappPhone);
+        if (parsed.desiredSlug) {
+          setDesiredSlug(parsed.desiredSlug);
+          setSlugTouched(true);
+        }
+        if (parsed.promoCode) setPromoCode(parsed.promoCode);
+      }
+      const savedTab = localStorage.getItem('linkal_dashboard_tab');
+      if (savedTab && ['sites', 'builder', 'templates', 'settings', 'profile'].includes(savedTab)) {
+        setDashboardTab(savedTab as any);
+      }
     } catch {}
   }, []);
 
-  // Subdomain live debounce checker
+  // Save creation draft state to localStorage on any input change
+  useEffect(() => {
+    try {
+      localStorage.setItem('linkal_draft_creation', JSON.stringify({
+        category,
+        siteName,
+        whatsappPhone,
+        desiredSlug,
+        promoCode,
+        timestamp: Date.now()
+      }));
+    } catch {}
+  }, [category, siteName, whatsappPhone, desiredSlug, promoCode]);
+
+  // Subdomain live debounce checker (Blazing fast 90ms debounce)
   useEffect(() => {
     if (!desiredSlug || desiredSlug.length < 3) {
       setSlugAvailable(null);
@@ -414,13 +599,13 @@ function DashboardContent() {
       } finally {
         setSlugChecking(false);
       }
-    }, 280);
+    }, 90);
 
     return () => clearTimeout(timer);
   }, [desiredSlug]);
 
-  // Active dashboard view tab: 'sites' | 'templates' | 'settings' | 'profile'
-  const [dashboardTab, setDashboardTab] = useState<'sites' | 'templates' | 'settings' | 'profile'>('sites');
+  // Active dashboard view tab: 'sites' | 'builder' | 'templates' | 'settings' | 'profile'
+  const [dashboardTab, setDashboardTab] = useState<'sites' | 'builder' | 'templates' | 'settings' | 'profile'>('sites');
   const [settingsLang, setSettingsLang] = useState<'en' | 'hi' | 'mr'>('en');
   const [pwaInstalled, setPwaInstalled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -700,7 +885,10 @@ function DashboardContent() {
             <div className="hidden md:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200 mr-1">
               <button
                 type="button"
-                onClick={() => setDashboardTab('sites')}
+                onClick={() => {
+                  setDashboardTab('sites');
+                  try { localStorage.setItem('linkal_dashboard_tab', 'sites'); } catch {}
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'sites'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -713,7 +901,26 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => setDashboardTab('templates')}
+                onClick={() => {
+                  setDashboardTab('builder');
+                  try { localStorage.setItem('linkal_dashboard_tab', 'builder'); } catch {}
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  dashboardTab === 'builder'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-950'
+                }`}
+              >
+                <Hammer className="w-3.5 h-3.5 text-blue-600" />
+                <span>Builder</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDashboardTab('templates');
+                  try { localStorage.setItem('linkal_dashboard_tab', 'templates'); } catch {}
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'templates'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -726,7 +933,10 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => setDashboardTab('settings')}
+                onClick={() => {
+                  setDashboardTab('settings');
+                  try { localStorage.setItem('linkal_dashboard_tab', 'settings'); } catch {}
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'settings'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -739,7 +949,10 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => setDashboardTab('profile')}
+                onClick={() => {
+                  setDashboardTab('profile');
+                  try { localStorage.setItem('linkal_dashboard_tab', 'profile'); } catch {}
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'profile'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -893,6 +1106,23 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => {
+                        setDashboardTab('builder');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dashboardTab === 'builder' ? 'bg-blue-50 text-blue-700' : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Hammer className="w-4 h-4 text-blue-600" />
+                        <span>Website Builder</span>
+                      </div>
+                      <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">Active</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
                         setDashboardTab('templates');
                         setIsMenuOpen(false);
                       }}
@@ -1007,29 +1237,24 @@ function DashboardContent() {
 
         {/* ─── SECTION 1: CUSTOMER CREATION STUDIO (TEMPLATES) ─── */}
         {dashboardTab === 'templates' && (
-        <section id="builder-box" className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
+        <section id="templates-box" className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3 h-3 text-blue-600" /> Start Building Your Website
+              <Layers className="w-3 h-3 text-blue-600" /> 11 Pre-Engineered Website Blueprints
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
-              Choose Website Category &amp; Launch in 2 Minutes
+              Select Website Blueprint
             </h1>
             <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1">
-              Select your template blueprint, choose your custom subdomain on <strong>.linkal.in</strong>, and start editing.
+              Click any blueprint below to open the Builder immediately with tailored inputs for that industry.
             </p>
           </div>
 
-          <form onSubmit={handleStartBuilding} className="space-y-6">
-            {/* 1. Category Blueprint Cards */}
-            <div>
-              <label className="block text-xs font-bold text-zinc-900 uppercase tracking-wider mb-2.5">
-                1. Select Website Blueprint *
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {/* 1. Free CV Website */}
                 <div
-                  onClick={() => setCategory('cv')}
+                  onClick={() => handleSelectBlueprint('cv')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'cv'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1057,7 +1282,7 @@ function DashboardContent() {
 
                 {/* 2. E-Commerce Website */}
                 <div
-                  onClick={() => setCategory('ecommerce')}
+                  onClick={() => handleSelectBlueprint('ecommerce')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'ecommerce'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1085,7 +1310,7 @@ function DashboardContent() {
 
                 {/* 3. Fashion & Apparel Boutique */}
                 <div
-                  onClick={() => setCategory('boutique')}
+                  onClick={() => handleSelectBlueprint('boutique')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'boutique'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1113,7 +1338,7 @@ function DashboardContent() {
 
                 {/* 4. Luxury Watch Business */}
                 <div
-                  onClick={() => setCategory('watch_store')}
+                  onClick={() => handleSelectBlueprint('watch_store')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'watch_store'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1141,7 +1366,7 @@ function DashboardContent() {
 
                 {/* 5. Restaurant & Cafe Menu (Generic for all restaurants & cafes, ₹99) */}
                 <div
-                  onClick={() => setCategory('restaurant')}
+                  onClick={() => handleSelectBlueprint('restaurant')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'restaurant'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1169,7 +1394,7 @@ function DashboardContent() {
 
                 {/* 6. Royal Wedding Cards & Invitations (100% Free Lifetime) */}
                 <div
-                  onClick={() => setCategory('wedding_card')}
+                  onClick={() => handleSelectBlueprint('wedding_card')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'wedding_card'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1197,7 +1422,7 @@ function DashboardContent() {
 
                 {/* 7. Electronics & Gadgets */}
                 <div
-                  onClick={() => setCategory('electronics')}
+                  onClick={() => handleSelectBlueprint('electronics')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'electronics'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1225,7 +1450,7 @@ function DashboardContent() {
 
                 {/* 8. Freelancer & Creative Portfolio */}
                 <div
-                  onClick={() => setCategory('portfolio')}
+                  onClick={() => handleSelectBlueprint('portfolio')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'portfolio'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1253,7 +1478,7 @@ function DashboardContent() {
 
                 {/* 9. Bakery & Cake Shop */}
                 <div
-                  onClick={() => setCategory('bakery')}
+                  onClick={() => handleSelectBlueprint('bakery')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'bakery'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1281,7 +1506,7 @@ function DashboardContent() {
 
                 {/* 10. Tuition & Coaching Academy */}
                 <div
-                  onClick={() => setCategory('tuition')}
+                  onClick={() => handleSelectBlueprint('tuition')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'tuition'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1309,7 +1534,7 @@ function DashboardContent() {
 
                 {/* 11. Salon & Beauty Lounge */}
                 <div
-                  onClick={() => setCategory('salon')}
+                  onClick={() => handleSelectBlueprint('salon')}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     category === 'salon'
                       ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
@@ -1336,6 +1561,76 @@ function DashboardContent() {
                 </div>
               </div>
             </div>
+          </section>
+        )}
+
+        {/* ─── SECTION 2: WEBSITE BUILDER ─── */}
+        {dashboardTab === 'builder' && (
+          <section id="builder-box" className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
+            {/* Selected Blueprint Header Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-50 border border-zinc-200">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-white border border-zinc-200 shadow-xs">
+                  {getCategoryIcon(category)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-extrabold text-zinc-950">{getCategoryInfo(category).title}</span>
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${getCategoryInfo(category).badgeColor}`}>
+                      {getCategoryInfo(category).badge}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 font-medium mt-0.5 max-w-xl">
+                    {getCategoryInfo(category).desc}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDashboardTab('templates');
+                  try { localStorage.setItem('linkal_dashboard_tab', 'templates'); } catch {}
+                }}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-zinc-300 hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95 shrink-0"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Change Blueprint</span>
+              </button>
+            </div>
+
+            {/* Existing Sites Callout */}
+            {sites.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="text-xs text-blue-950 font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>You have <strong>{sites.length}</strong> active website{sites.length > 1 ? 's' : ''} in your account.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDashboardTab('sites');
+                    try { localStorage.setItem('linkal_dashboard_tab', 'sites'); } catch {}
+                  }}
+                  className="text-xs font-extrabold text-blue-700 hover:underline shrink-0 text-left"
+                >
+                  View My Websites &rarr;
+                </button>
+              </div>
+            )}
+
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-2">
+                <Hammer className="w-3 h-3 text-blue-600" /> Enter Details &amp; Launch
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-950 tracking-tight">
+                {category === 'cv' ? 'Setup Your Free CV Website (Lifetime Free)' : 'Configure & Launch Website'}
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1">
+                Enter your details, choose your custom subdomain on <strong>.linkal.in</strong>, and start editing.
+              </p>
+            </div>
+
+            <form onSubmit={handleStartBuilding} className="space-y-6">
 
             {/* 2. Site Name & WhatsApp Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2109,11 +2404,14 @@ function DashboardContent() {
       </main>
 
       {/* ─── MOBILE BOTTOM STICKY TASKBAR ─── */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-zinc-200 px-3 py-2 flex items-center justify-around shadow-lg">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-zinc-200 px-2 py-2 flex items-center justify-around shadow-lg">
         <button
           type="button"
-          onClick={() => setDashboardTab('sites')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all ${
+          onClick={() => {
+            setDashboardTab('sites');
+            try { localStorage.setItem('linkal_dashboard_tab', 'sites'); } catch {}
+          }}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'sites' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
         >
@@ -2123,8 +2421,25 @@ function DashboardContent() {
 
         <button
           type="button"
-          onClick={() => setDashboardTab('templates')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all ${
+          onClick={() => {
+            setDashboardTab('builder');
+            try { localStorage.setItem('linkal_dashboard_tab', 'builder'); } catch {}
+          }}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
+            dashboardTab === 'builder' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
+          }`}
+        >
+          <Hammer className="w-5 h-5" />
+          <span className="text-[10px]">Builder</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setDashboardTab('templates');
+            try { localStorage.setItem('linkal_dashboard_tab', 'templates'); } catch {}
+          }}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'templates' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
         >
@@ -2134,8 +2449,11 @@ function DashboardContent() {
 
         <button
           type="button"
-          onClick={() => setDashboardTab('settings')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all ${
+          onClick={() => {
+            setDashboardTab('settings');
+            try { localStorage.setItem('linkal_dashboard_tab', 'settings'); } catch {}
+          }}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'settings' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
         >
@@ -2145,8 +2463,11 @@ function DashboardContent() {
 
         <button
           type="button"
-          onClick={() => setDashboardTab('profile')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all ${
+          onClick={() => {
+            setDashboardTab('profile');
+            try { localStorage.setItem('linkal_dashboard_tab', 'profile'); } catch {}
+          }}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'profile' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
         >

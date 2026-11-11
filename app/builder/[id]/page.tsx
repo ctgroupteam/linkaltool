@@ -38,6 +38,8 @@ import {
   Globe as LayoutGrid,
   HelpCircle,
   RefreshCw,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import {
   SiteData,
@@ -197,6 +199,8 @@ export default function BuilderPage() {
   const [propagationSeconds, setPropagationSeconds] = useState(30);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [previewCvFormatModal, setPreviewCvFormatModal] = useState<string | null>(null);
+  const [isFullScreenPreview, setIsFullScreenPreview] = useState(false);
 
   useEffect(() => {
     try {
@@ -231,7 +235,7 @@ export default function BuilderPage() {
       } catch {
         setSubdomainStatus({ checking: false, available: true });
       }
-    }, 200);
+    }, 100);
     return () => clearTimeout(timer);
   }, [site?.slug, site?.id]);
 
@@ -825,7 +829,7 @@ export default function BuilderPage() {
       case 'tablet':
         return 'w-[768px] max-w-full h-[900px] max-h-full rounded-2xl shadow-xl border-8 border-zinc-900';
       default:
-        return 'w-full h-full rounded-xl border border-zinc-200';
+        return 'w-full h-full rounded-xl border border-zinc-200 shadow-xs';
     }
   };
 
@@ -1346,7 +1350,7 @@ export default function BuilderPage() {
       )}
 
       {/* Builder Main Work Area */}
-      <div className="flex-1 flex flex-col md:flex-row w-full max-w-full min-w-0 overflow-hidden pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col md:flex-row w-full max-w-full min-w-0 h-[calc(100dvh-60px)] min-h-[600px] overflow-hidden pb-16 md:pb-0">
         {/* Left Control Editor Pane */}
         <div
           className={`w-full md:w-[460px] lg:w-[500px] shrink-0 min-w-0 max-w-full bg-white border-r border-zinc-200 flex flex-col h-full overflow-y-auto overflow-x-hidden ${
@@ -1587,90 +1591,50 @@ export default function BuilderPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {/* Format 1: Classic ATS */}
-                  <button
-                    type="button"
-                    onClick={() => updateSiteField('cvFormat', 'classic')}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
-                      (site.cvFormat || 'classic') === 'classic'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
-                        : 'border-zinc-200 bg-white hover:border-zinc-300'
-                    }`}
-                  >
-                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>1. Classic ATS</span>
-                      {(site.cvFormat || 'classic') === 'classic' && <Check className="w-3.5 h-3.5 text-blue-600" />}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Single-column reverse chronological. Highest ATS scanner score.</p>
-                  </button>
+                  {[
+                    { key: 'classic', title: '1. Classic ATS', badge: '99.8% Pass', desc: 'Single-column reverse chronological. Highest ATS scanner score.' },
+                    { key: 'modern', title: '2. Modern Two-Column', badge: 'Split Sidebar', desc: 'Dual-column with sidebar for skills, contact & education. Modern crisp look.' },
+                    { key: 'tech', title: '3. Tech & Developer', badge: 'Code & Stack', desc: 'Projects & code showcase, tech stack pills, GitHub emphasis & clean monospace tags.' },
+                    { key: 'elegant', title: '4. Editorial & Elegant', badge: 'Executive Serif', desc: 'Classic serif typography, centered masthead, refined dividers for leaders & consultants.' },
+                    { key: 'compact', title: '5. Compact 1-Page ATS', badge: '1-Page Guarantee', desc: 'Dense, concise layout engineered to fit exactly on 1 printed page for rapid screening.' },
+                  ].map((fmt) => {
+                    const isSelected = (site.cvFormat || 'classic') === fmt.key;
+                    return (
+                      <div
+                        key={fmt.key}
+                        onClick={() => setPreviewCvFormatModal(fmt.key)}
+                        className={`group p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer hover:border-blue-500 hover:shadow-md flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
+                            : 'border-zinc-200 bg-white'
+                        }`}
+                      >
+                        <div>
+                          <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between mb-1">
+                            <span className="flex items-center gap-1.5">{fmt.title}</span>
+                            {isSelected ? (
+                              <span className="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                                <Check className="w-3 h-3" /> Active
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded-full">
+                                {fmt.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-zinc-500 leading-snug">{fmt.desc}</p>
+                        </div>
 
-                  {/* Format 2: Modern Two-Column */}
-                  <button
-                    type="button"
-                    onClick={() => updateSiteField('cvFormat', 'modern')}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
-                      site.cvFormat === 'modern'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
-                        : 'border-zinc-200 bg-white hover:border-zinc-300'
-                    }`}
-                  >
-                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>2. Modern Two-Column</span>
-                      {site.cvFormat === 'modern' && <Check className="w-3.5 h-3.5 text-blue-600" />}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Dual-column with sidebar for skills, contact &amp; education. Modern crisp look.</p>
-                  </button>
-
-                  {/* Format 3: Tech & Developer */}
-                  <button
-                    type="button"
-                    onClick={() => updateSiteField('cvFormat', 'tech')}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
-                      site.cvFormat === 'tech'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
-                        : 'border-zinc-200 bg-white hover:border-zinc-300'
-                    }`}
-                  >
-                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>3. Tech &amp; Developer</span>
-                      {site.cvFormat === 'tech' && <Check className="w-3.5 h-3.5 text-blue-600" />}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Projects &amp; code showcase, tech stack pills, GitHub emphasis &amp; clean monospace tags.</p>
-                  </button>
-
-                  {/* Format 4: Editorial & Elegant */}
-                  <button
-                    type="button"
-                    onClick={() => updateSiteField('cvFormat', 'elegant')}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
-                      site.cvFormat === 'elegant'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
-                        : 'border-zinc-200 bg-white hover:border-zinc-300'
-                    }`}
-                  >
-                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>4. Editorial &amp; Elegant</span>
-                      {site.cvFormat === 'elegant' && <Check className="w-3.5 h-3.5 text-blue-600" />}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Classic serif typography, centered masthead, refined dividers for leaders &amp; consultants.</p>
-                  </button>
-
-                  {/* Format 5: Compact 1-Page ATS */}
-                  <button
-                    type="button"
-                    onClick={() => updateSiteField('cvFormat', 'compact')}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
-                      site.cvFormat === 'compact'
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
-                        : 'border-zinc-200 bg-white hover:border-zinc-300'
-                    }`}
-                  >
-                    <div className="font-extrabold text-xs text-zinc-950 flex items-center justify-between">
-                      <span>5. Compact 1-Page ATS</span>
-                      {site.cvFormat === 'compact' && <Check className="w-3.5 h-3.5 text-blue-600" />}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 mt-1">Dense, concise layout engineered to fit exactly on 1 printed page for rapid screening.</p>
-                  </button>
+                        <div className="mt-3 pt-2 border-t border-zinc-200/60 flex items-center justify-between text-[11px] font-extrabold text-blue-600">
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Preview Format Layout</span>
+                          </span>
+                          <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="pt-2 border-t border-zinc-200">
@@ -5060,17 +5024,72 @@ export default function BuilderPage() {
 
         {/* Right Sandbox Live Iframe Preview (Renders Instant Realtime srcDoc) */}
         <div
-          className={`flex-1 min-w-0 max-w-full bg-zinc-200 p-2 sm:p-4 md:p-6 flex flex-col items-center justify-center relative overflow-hidden ${
+          className={`flex-1 min-w-0 max-w-full bg-zinc-100 p-2 sm:p-4 md:p-6 flex flex-col items-center justify-start h-full relative overflow-y-auto ${
             mobileViewMode === 'editor' ? 'hidden md:flex' : 'flex'
           }`}
         >
-          <div className="w-full max-w-6xl h-full flex flex-col items-center justify-center overflow-hidden">
+          {/* Preview Toolbar with Full Screen & Device switchers */}
+          <div className="w-full max-w-5xl flex items-center justify-between pb-2 mb-2 border-b border-zinc-200 shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-500">Live Preview</span>
+              <span className="text-[10px] font-mono font-bold bg-zinc-200 text-zinc-800 px-2 py-0.5 rounded truncate max-w-[150px] sm:max-w-none">
+                {site.slug}.linkal.in
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-1 bg-white border border-zinc-200 p-0.5 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                    previewDevice === 'desktop' ? 'bg-zinc-950 text-white' : 'text-zinc-500 hover:text-zinc-950'
+                  }`}
+                  title="Desktop Preview"
+                >
+                  <Monitor className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('tablet')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                    previewDevice === 'tablet' ? 'bg-zinc-950 text-white' : 'text-zinc-500 hover:text-zinc-950'
+                  }`}
+                  title="Tablet Preview"
+                >
+                  <Tablet className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                    previewDevice === 'mobile' ? 'bg-zinc-950 text-white' : 'text-zinc-500 hover:text-zinc-950'
+                  }`}
+                  title="Mobile Preview"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsFullScreenPreview(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-zinc-300 hover:bg-zinc-50 text-xs font-bold text-zinc-800 shadow-xs transition-all active:scale-95"
+                title="Open Full Screen Preview"
+              >
+                <Maximize2 className="w-3.5 h-3.5 text-zinc-600" />
+                <span>Full Screen</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="w-full max-w-6xl flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
             <iframe
               ref={iframeRef}
               src={`/api/sites/${site.id}/preview`}
               srcDoc={previewHtml}
               sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              className={`transition-all duration-300 bg-white max-w-full max-h-full ${getDeviceClass()}`}
+              className={`transition-all duration-300 bg-white max-w-full h-full shadow-lg ${getDeviceClass()}`}
               title="Live Website Sandbox Preview"
             />
           </div>
@@ -5078,8 +5097,8 @@ export default function BuilderPage() {
       </div>
 
       {/* Mobile Bottom Taskbar for Switching Editor/Preview */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-zinc-200 px-4 py-2 shadow-lg">
-        <div className="grid grid-cols-3 gap-2 text-center">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-zinc-200 px-3 py-2 shadow-lg">
+        <div className="grid grid-cols-4 gap-1.5 text-center">
           <button
             onClick={() => setMobileViewMode('editor')}
             className={`flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors ${
@@ -5101,7 +5120,15 @@ export default function BuilderPage() {
             }`}
           >
             <Eye className="w-4 h-4 mb-0.5" />
-            <span className="text-[10px]">Live Preview</span>
+            <span className="text-[10px]">Preview</span>
+          </button>
+
+          <button
+            onClick={() => setIsFullScreenPreview(true)}
+            className="flex flex-col items-center justify-center py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold transition-colors active:scale-95"
+          >
+            <Maximize2 className="w-4 h-4 mb-0.5 text-blue-600" />
+            <span className="text-[10px]">Full View</span>
           </button>
 
           <button
@@ -5480,6 +5507,406 @@ export default function BuilderPage() {
                 Close &amp; Go to My Sites
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── CV TEMPLATE FORMAT EXACT PREVIEW POPUP MODAL ─── */}
+      {previewCvFormatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs animate-in fade-in"
+            onClick={() => setPreviewCvFormatModal(null)}
+          />
+
+          <div className="relative z-10 w-full max-w-3xl bg-white border border-zinc-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/80">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <FileText className="w-5 h-5 text-blue-700" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-extrabold text-sm sm:text-base text-zinc-950">
+                      {previewCvFormatModal === 'modern' ? '2. Modern Two-Column Split Layout' :
+                       previewCvFormatModal === 'tech' ? '3. Tech & Developer Layout' :
+                       previewCvFormatModal === 'elegant' ? '4. Editorial & Elegant Layout' :
+                       previewCvFormatModal === 'compact' ? '5. Compact 1-Page ATS Layout' :
+                       '1. Classic ATS (Single Column) Layout'}
+                    </h3>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                      {previewCvFormatModal === 'modern' ? 'ATS 97.5% Pass' :
+                       previewCvFormatModal === 'tech' ? 'Code & Git Stack' :
+                       previewCvFormatModal === 'elegant' ? 'Executive Serif' :
+                       previewCvFormatModal === 'compact' ? '1-Page Guarantee' :
+                       'ATS 99.8% Pass Rate'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                    Exact visual structure of how your CV website and PDF printout will format.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPreviewCvFormatModal(null)}
+                className="p-1.5 rounded-xl border border-zinc-200 text-zinc-400 hover:text-zinc-950 hover:bg-zinc-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body: Left Wireframe, Right Spec Breakdown */}
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+                {/* Visual Layout Mockup */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-zinc-700">
+                    <span>Layout Wireframe</span>
+                    <span className="text-[10px] text-zinc-400 font-mono">100% Free Lifetime</span>
+                  </div>
+                  <div className="bg-zinc-100 p-3 rounded-2xl border border-zinc-200 flex items-center justify-center">
+                    {/* Visual wireframe */}
+                    {previewCvFormatModal === 'modern' ? (
+                      <div className="w-full bg-white border border-zinc-300 rounded-xl p-3 shadow-sm flex gap-2.5 text-[9px] aspect-[4/5] overflow-hidden select-none font-sans">
+                        <div className="w-1/3 bg-blue-50/60 border-r border-blue-100 p-2 rounded-lg flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold mx-auto flex items-center justify-center text-[10px]">YC</div>
+                            <div className="space-y-1">
+                              <div className="font-extrabold text-[8px] text-zinc-900 uppercase">Contact</div>
+                              <div className="h-1 bg-zinc-300 rounded w-full"></div>
+                              <div className="h-1 bg-zinc-300 rounded w-4/5"></div>
+                              <div className="h-1 bg-zinc-300 rounded w-2/3"></div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="font-extrabold text-[8px] text-zinc-900 uppercase">Core Skills</div>
+                              <div className="flex flex-wrap gap-0.5">
+                                <span className="px-1 py-0.2 bg-blue-100 text-blue-800 rounded text-[6px] font-bold">Strategy</span>
+                                <span className="px-1 py-0.2 bg-blue-100 text-blue-800 rounded text-[6px] font-bold">Ops</span>
+                                <span className="px-1 py-0.2 bg-blue-100 text-blue-800 rounded text-[6px] font-bold">Leadership</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-extrabold text-[8px] text-zinc-900 uppercase">Education</div>
+                            <div className="h-1 bg-zinc-300 rounded w-full"></div>
+                          </div>
+                        </div>
+                        <div className="w-2/3 p-1.5 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div>
+                              <div className="font-extrabold text-xs text-zinc-950">YAHYA MUNDE</div>
+                              <div className="text-[8px] font-bold text-blue-600">Senior Professional</div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="font-bold text-[8px] text-zinc-900 uppercase border-b border-zinc-200 pb-0.5">Executive Summary</div>
+                              <div className="h-1 bg-zinc-200 rounded w-full"></div>
+                              <div className="h-1 bg-zinc-200 rounded w-11/12"></div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="font-bold text-[8px] text-zinc-900 uppercase border-b border-zinc-200 pb-0.5">Experience</div>
+                              <div className="flex justify-between text-[7px] font-bold">
+                                <span>Senior Lead @ TechCorp</span>
+                                <span className="text-zinc-400">2022 — Present</span>
+                              </div>
+                              <div className="pl-1 border-l border-zinc-300 space-y-0.5">
+                                <div className="h-1 bg-zinc-200 rounded w-full"></div>
+                                <div className="h-1 bg-zinc-200 rounded w-5/6"></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-[7px] font-mono text-zinc-400 text-right">Modern 2-Column Split</div>
+                        </div>
+                      </div>
+                    ) : previewCvFormatModal === 'tech' ? (
+                      <div className="w-full bg-zinc-950 text-zinc-200 border border-zinc-800 rounded-xl p-3 shadow-sm flex flex-col justify-between text-[9px] font-mono aspect-[4/5] overflow-hidden select-none">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1 border-b border-zinc-800 pb-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span className="text-[7px] text-zinc-400 ml-1">candidate@bash:~$ cv-preview</span>
+                          </div>
+                          <div>
+                            <div className="text-emerald-400 font-bold text-[10px]">&gt; YAHYA // FULL-STACK ENGINEER</div>
+                            <div className="text-[7px] text-zinc-400">github.com/developer &bull; yahya@tech.in &bull; +91 9307426215</div>
+                          </div>
+                          <div>
+                            <div className="text-[7px] text-cyan-400 font-bold mb-0.5">// TECH_STACK</div>
+                            <div className="flex flex-wrap gap-0.5">
+                              <span className="px-1 py-0.2 bg-zinc-900 text-cyan-300 rounded text-[6px] border border-cyan-800">TypeScript</span>
+                              <span className="px-1 py-0.2 bg-zinc-900 text-cyan-300 rounded text-[6px] border border-cyan-800">React</span>
+                              <span className="px-1 py-0.2 bg-zinc-900 text-cyan-300 rounded text-[6px] border border-cyan-800">Next.js</span>
+                              <span className="px-1 py-0.2 bg-zinc-900 text-cyan-300 rounded text-[6px] border border-cyan-800">PostgreSQL</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[7px] text-amber-400 font-bold mb-0.5">// FEATURED_PROJECTS</div>
+                            <div className="bg-zinc-900 border border-zinc-800 rounded p-1 space-y-0.5">
+                              <div className="flex justify-between text-[7px] text-emerald-300 font-bold">
+                                <span>repo: linkal-platform</span>
+                                <span className="text-zinc-500">⭐ 450+ stars</span>
+                              </div>
+                              <div className="h-0.5 bg-zinc-700 rounded w-11/12"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-[7px] text-cyan-400 text-right">// Tech &amp; Developer Monospace</div>
+                      </div>
+                    ) : previewCvFormatModal === 'elegant' ? (
+                      <div className="w-full bg-[#fdfbf7] text-zinc-900 border border-amber-200 rounded-xl p-3 shadow-sm flex flex-col justify-between text-[9px] aspect-[4/5] overflow-hidden select-none font-serif">
+                        <div className="space-y-2">
+                          <div className="text-center border-b border-amber-300/80 pb-1.5">
+                            <div className="text-xs font-bold tracking-widest uppercase">YAHYA MUNDEWADI</div>
+                            <div className="text-[7px] text-zinc-600 italic">Executive Director &bull; Strategic Leadership</div>
+                            <div className="text-[6px] text-zinc-500 font-sans tracking-wide mt-0.5">MUMBAI, INDIA &bull; YAHYA@LINKAL.IN</div>
+                          </div>
+                          <div className="space-y-0.5 font-sans">
+                            <div className="text-center text-[7px] font-bold tracking-widest text-zinc-800 uppercase font-serif">Executive Profile</div>
+                            <div className="h-1 bg-zinc-300 rounded w-full"></div>
+                            <div className="h-1 bg-zinc-300 rounded w-11/12 mx-auto"></div>
+                          </div>
+                          <div className="space-y-1 font-sans">
+                            <div className="text-center text-[7px] font-bold tracking-widest text-zinc-800 uppercase font-serif">Career Milestones</div>
+                            <div className="border-t border-b border-zinc-200 py-1 space-y-0.5">
+                              <div className="flex justify-between font-serif text-[7px] font-bold">
+                                <span>Managing Partner &bull; Apex Global</span>
+                                <span className="font-sans text-[6px] text-zinc-500">2020 — PRESENT</span>
+                              </div>
+                              <div className="h-1 bg-zinc-300 rounded w-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-[7px] font-sans text-amber-800 text-center uppercase tracking-wider">Editorial &amp; Elegant Serif Wireframe</div>
+                      </div>
+                    ) : previewCvFormatModal === 'compact' ? (
+                      <div className="w-full bg-white border border-zinc-300 rounded-xl p-3 shadow-sm flex flex-col justify-between text-[9px] aspect-[4/5] overflow-hidden select-none font-sans">
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-end border-b-2 border-zinc-950 pb-1">
+                            <div>
+                              <div className="font-extrabold text-xs text-zinc-950">YAHYA MUNDE</div>
+                              <div className="text-[7px] font-bold text-zinc-600">Senior Associate</div>
+                            </div>
+                            <div className="text-[6px] text-zinc-500 text-right font-mono">
+                              yahya@linkal.in &bull; +91 9307426215 &bull; Mumbai
+                            </div>
+                          </div>
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold text-[7px] uppercase tracking-wider text-zinc-900 border-b border-zinc-200">Summary</div>
+                            <div className="h-1 bg-zinc-200 rounded w-full"></div>
+                            <div className="h-1 bg-zinc-200 rounded w-11/12"></div>
+                          </div>
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold text-[7px] uppercase tracking-wider text-zinc-900 border-b border-zinc-200">Experience</div>
+                            <div className="flex justify-between text-[6px] font-bold">
+                              <span>Senior Product Lead &bull; Acme Inc</span>
+                              <span>2022 — Present</span>
+                            </div>
+                            <div className="h-0.5 bg-zinc-200 rounded w-full"></div>
+                          </div>
+                        </div>
+                        <div className="text-[6px] font-mono text-zinc-400 text-center border-t border-dashed border-zinc-300 pt-1">
+                          Exact 1-Page A4 Guarantee (Zero Spillover)
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full bg-white border border-zinc-300 rounded-xl p-3 shadow-sm flex flex-col justify-between text-[9px] aspect-[4/5] overflow-hidden select-none font-sans">
+                        <div className="space-y-2">
+                          <div className="text-center border-b border-zinc-900 pb-1">
+                            <div className="font-extrabold text-xs text-zinc-950 uppercase tracking-wider">YAHYA MUNDEWADI</div>
+                            <div className="text-[7px] font-bold text-zinc-600">Senior Engineering Manager</div>
+                            <div className="text-[6px] text-zinc-500 font-mono mt-0.5">
+                              yahya@linkal.in &bull; +91 9307426215 &bull; Mumbai &bull; linkedin.com/in/yahya
+                            </div>
+                          </div>
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold text-[7px] text-zinc-950 uppercase border-b border-zinc-200 pb-0.5">Professional Summary</div>
+                            <div className="h-1 bg-zinc-200 rounded w-full"></div>
+                            <div className="h-1 bg-zinc-200 rounded w-5/6"></div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-extrabold text-[7px] text-zinc-950 uppercase border-b border-zinc-200 pb-0.5">Work Experience</div>
+                            <div className="flex justify-between text-[7px] font-bold">
+                              <span>Lead Architect &bull; Linkal AI</span>
+                              <span className="text-zinc-400 font-mono">2022 — Present</span>
+                            </div>
+                            <div className="pl-1 border-l border-zinc-300 space-y-0.5">
+                              <div className="h-1 bg-zinc-200 rounded w-full"></div>
+                              <div className="h-1 bg-zinc-200 rounded w-4/5"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-[7px] font-mono text-emerald-700 text-right">Classic ATS (99.8% Scanner Score)</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Specification & Features */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider mb-1.5">
+                      Layout Overview
+                    </h4>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {previewCvFormatModal === 'modern' ?
+                        'A balanced two-column format that places your contact information, skill tags, and credentials into a neat sidebar, leaving the main content area for prominent achievements.' :
+                       previewCvFormatModal === 'tech' ?
+                        'Purpose-built for software engineers, cloud architects, and tech creators. Highlights tech stack badges, GitHub repository links, commit stars, and clean monospace prompt accents.' :
+                       previewCvFormatModal === 'elegant' ?
+                        'Refined editorial styling with classical serif typography, centered executive masthead, and subtle dividers designed for directors, consultants, and senior leadership.' :
+                       previewCvFormatModal === 'compact' ?
+                        'High-density single-page format with optimized line heights, inline dates, and horizontal skills engineered to ensure your CV never spills over onto page 2.' :
+                        'Universally accepted single-column reverse chronological format. Guaranteed 99.8% automated parser pass rate across Workday, Taleo, Greenhouse, and Lever.'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider mb-1.5">
+                      Key Highlights
+                    </h4>
+                    <ul className="space-y-1.5 text-xs text-zinc-700">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>ATS Parser Safe: Tested on Workday, Taleo &amp; Greenhouse</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>100% Free Lifetime hosting on your custom subdomain</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Instant 1-Click Print &amp; Clean PDF Export</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Direct WhatsApp chat button for recruiters</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="pt-3 border-t border-zinc-200 flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateSiteField('cvFormat', previewCvFormatModal as any);
+                        setPreviewCvFormatModal(null);
+                      }}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Apply This Template Format</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewCvFormatModal(null)}
+                      className="py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-bold transition-all text-center"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── FULL-SCREEN INTERACTIVE LIVE PREVIEW MODAL ─── */}
+      {isFullScreenPreview && (
+        <div className="fixed inset-0 z-50 bg-zinc-950/95 flex flex-col animate-in fade-in duration-200">
+          <div className="h-14 px-4 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFullScreenPreview(false)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-white transition-all active:scale-95"
+              >
+                <X className="w-4 h-4" />
+                <span>Exit Full View</span>
+              </button>
+              <span className="text-xs font-extrabold text-white hidden sm:inline">{site.name}</span>
+              <span className="text-[11px] font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">
+                {site.slug}.linkal.in
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-1 bg-zinc-800 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                    previewDevice === 'desktop' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'
+                  }`}
+                  title="Desktop View"
+                >
+                  <Monitor className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('tablet')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                    previewDevice === 'tablet' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'
+                  }`}
+                  title="Tablet View"
+                >
+                  <Tablet className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                    previewDevice === 'mobile' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'
+                  }`}
+                  title="Mobile View"
+                >
+                  <Smartphone className="w-4 h-4" />
+                </button>
+              </div>
+
+              {site.type === 'cv' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (iframeRef.current?.contentWindow) {
+                      iframeRef.current.contentWindow.print();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white shadow-sm transition-all active:scale-95"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Print PDF</span>
+                </button>
+              )}
+
+              <a
+                href={`https://${site.slug}.linkal.in`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white shadow-sm transition-all active:scale-95"
+              >
+                <span>Open Live</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="flex-1 bg-zinc-950 p-2 sm:p-4 flex items-center justify-center overflow-hidden">
+            <iframe
+              srcDoc={previewHtml}
+              sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+              className={`bg-white transition-all duration-300 ${
+                previewDevice === 'mobile'
+                  ? 'w-[375px] max-w-full h-full max-h-[812px] rounded-3xl shadow-2xl border-8 border-zinc-800'
+                  : previewDevice === 'tablet'
+                  ? 'w-[768px] max-w-full h-full max-h-[900px] rounded-2xl shadow-2xl border-8 border-zinc-800'
+                  : 'w-full h-full rounded-xl border border-zinc-800 shadow-2xl'
+              }`}
+              title="Full Screen Live Preview"
+            />
           </div>
         </div>
       )}

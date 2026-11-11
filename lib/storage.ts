@@ -270,8 +270,13 @@ export async function getSiteById(id: string): Promise<SiteData | null> {
 }
 
 export async function getSiteBySlug(slug: string): Promise<SiteData | null> {
+  const cleanSlug = slug.toLowerCase().trim();
+  if (inMemorySites && inMemorySites.length > 0) {
+    const match = inMemorySites.find(s => s.slug.toLowerCase().trim() === cleanSlug);
+    if (match) return match;
+  }
   const sites = await getAllSites();
-  return sites.find(s => s.slug === slug) || null;
+  return sites.find(s => s.slug.toLowerCase().trim() === cleanSlug) || null;
 }
 
 export async function saveSite(site: SiteData): Promise<SiteData> {
