@@ -100,8 +100,8 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-11T18:39:19.323Z",
-    "updatedAt": "2026-11-11T18:39:31.765Z",
-    "visitsCount": 1,
+    "updatedAt": "2026-11-11T18:40:54.718Z",
+    "visitsCount": 2,
     "clicksCount": 0
   },
   {
@@ -205,8 +205,8 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-08T14:13:18.231Z",
-    "updatedAt": "2026-11-09T05:33:30.782Z",
-    "visitsCount": 26,
+    "updatedAt": "2026-11-11T18:41:25.384Z",
+    "visitsCount": 27,
     "clicksCount": 0,
     "deploymentLogs": [
       {
