@@ -875,12 +875,12 @@ export default function BuilderPage() {
               className="text-[11px] font-extrabold px-2 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs max-w-[130px] sm:max-w-[180px] md:max-w-[240px] truncate shrink"
               title="Change Blueprint Template"
             >
-              <option value="cv">1. Free CV Website (100% Free Lifetime)</option>
+              <option value="cv">1. Free CV Website (Lifetime Free)</option>
               <option value="ecommerce">2. E-Commerce Website (Multi-Templates)</option>
               <option value="boutique">3. Fashion &amp; Boutique</option>
               <option value="watch_store">4. Luxury Watch Business</option>
               <option value="restaurant">5. Restaurant &amp; Cafe Menu (₹99 Special)</option>
-              <option value="wedding_card">6. Wedding Card Invitation (100% Free Lifetime)</option>
+              <option value="wedding_card">6. Wedding Card Invitation (Lifetime Free)</option>
               <option value="electronics">7. Electronics &amp; Gadgets</option>
               <option value="portfolio">8. Creative Portfolio (Max 5 WebP)</option>
               <option value="bakery">9. Bakery &amp; Cake Shop</option>
@@ -2696,7 +2696,7 @@ export default function BuilderPage() {
                     ))}
                   </div>
                   <p className="text-[10px] text-zinc-500 mt-1">
-                    Select your website blueprint. CV and Wedding cards are 100% Free Lifetime, Restaurant digital menu is ₹99/mo, and all other blueprints include a 15-day free trial.
+                    Select your website blueprint. CV and Wedding cards are Lifetime Free, Restaurant digital menu is ₹99/mo, and all other blueprints include a 15-day free trial.
                   </p>
                 </div>
 

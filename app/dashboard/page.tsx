@@ -1042,7 +1042,7 @@ function DashboardContent() {
                         <FileTextIcon className="w-5 h-5 text-blue-700" />
                       </span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        100% Free
+                        Lifetime Free
                       </span>
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">1. Free CV Website</h3>
@@ -1182,7 +1182,7 @@ function DashboardContent() {
                         <HeartIcon className="w-5 h-5 text-rose-700" />
                       </span>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        100% Free
+                        Lifetime Free
                       </span>
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">6. Wedding Card Invitation</h3>
@@ -1444,14 +1444,14 @@ function DashboardContent() {
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-emerald-950 flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-emerald-600" /> Free CV Website: 100% Free Lifetime
+                    <Sparkles className="w-4 h-4 text-emerald-600" /> Free CV Website: Lifetime Free
                   </span>
                   <span className="text-[10px] font-bold bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">
-                    100% Free Forever
+                    Lifetime Free
                   </span>
                 </div>
                 <p className="text-xs text-emerald-900 leading-relaxed">
-                  Every user can create <strong>1 free CV website</strong> for life. Clean ATS format with zero clutter, maximum readability, fast recruiter screening, and instant PDF printing.
+                  Every user can create <strong>1 free CV website</strong> with Lifetime Free hosting. Clean ATS format with zero clutter, maximum readability, fast recruiter screening, and instant PDF printing.
                 </p>
                 <div className="pt-2">
                   <input
@@ -1500,7 +1500,7 @@ function DashboardContent() {
                 ) : (
                   <>
                     <Plus className="w-4 h-4 text-white" />
-                    <span>{category === 'cv' ? 'Build My Free CV Website (100% Free) →' : 'Open Visual Builder Now →'}</span>
+                    <span>{category === 'cv' ? 'Build My Free CV Website (Lifetime Free) →' : 'Open Visual Builder Now →'}</span>
                   </>
                 )}
               </button>

@@ -188,9 +188,9 @@ export function BillingModal({
             <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-sm">
               <Check className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-extrabold text-emerald-950">100% Free Lifetime Website</h4>
+            <h4 className="text-lg font-extrabold text-emerald-950">Lifetime Free Website</h4>
             <p className="text-xs text-emerald-800 max-w-sm mx-auto leading-relaxed">
-              Free CV Websites and Royal Wedding Invitations are completely free forever on Linkal. No payment, card, or renewal fee is ever required.
+              Free CV Websites and Royal Wedding Invitations are Lifetime Free on Linkal. No payment, card, or renewal fee is ever required.
             </p>
             <div className="pt-2">
               <button

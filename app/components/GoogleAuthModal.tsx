@@ -409,10 +409,10 @@ export function GoogleAuthModal({
           <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-between text-xs font-bold text-emerald-950">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              100% Free Lifetime CV Website
+              Lifetime Free CV Website
             </span>
             <span className="bg-emerald-600 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold">
-              ₹0 Free
+              Lifetime Free
             </span>
           </div>
         )}
