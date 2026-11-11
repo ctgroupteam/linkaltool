@@ -23,7 +23,6 @@ import {
   MessageCircle,
   Sparkles,
   Layers,
-  Hammer,
   ArrowRight,
   ArrowLeft,
 } from 'lucide-react';
@@ -60,6 +59,18 @@ function UtensilsIcon({ className = 'w-5 h-5' }: { className?: string }) {
       <path d="M15 2v19" />
       <path d="M5 2v19" />
       <path d="M8 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2" />
+    </svg>
+  );
+}
+
+function Hammer({ className = 'w-5 h-5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9" />
+      <path d="M17.64 15 22 10.64" />
+      <path d="m20.91 3.26-6.36 6.36" />
+      <path d="m18.09 6.09 2.82 2.82" />
+      <path d="m9.36 14.82 2.83 2.83" />
     </svg>
   );
 }
@@ -459,7 +470,7 @@ function getCategoryIcon(cat: SiteType) {
     case 'restaurant':
       return <UtensilsIcon className="w-5 h-5 text-orange-700" />;
     case 'wedding_card':
-      return <HeartHandshakeIcon className="w-5 h-5 text-emerald-700" />;
+      return <HeartIcon className="w-5 h-5 text-rose-700" />;
     case 'electronics':
       return <CpuIcon className="w-5 h-5 text-cyan-700" />;
     case 'portfolio':
