@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import {
   SiteData,
+  SiteType,
   BannerSlide,
   ProductItem,
   WatchItem,
@@ -479,6 +480,17 @@ export default function BuilderPage() {
     return generateStaticHtml(site);
   }, [site]);
 
+  // Synchronize preview iframe DOM directly for instant reactivity across all mobile & desktop browsers
+  useEffect(() => {
+    if (iframeRef.current && previewHtml) {
+      try {
+        iframeRef.current.srcdoc = previewHtml;
+      } catch (err) {
+        console.warn('Could not set srcdoc directly:', err);
+      }
+    }
+  }, [previewHtml]);
+
   // Helper: 99% Client-Side WebP Canvas Compression
   const compressImageToWebP = (
     file: File,
@@ -908,6 +920,59 @@ export default function BuilderPage() {
     router.push('/login');
   };
 
+  // Dedicated Blueprint Switcher with instant template preview update
+  const handleTypeChange = (newType: SiteType) => {
+    if (!site) return;
+    const updated: SiteData = { ...site, type: newType };
+    if (newType === 'cv') {
+      if (!updated.cvFormat) updated.cvFormat = 'classic';
+      setActiveTab('cv_format');
+    } else if (newType === 'wedding_card') {
+      if (!updated.weddingCard) {
+        updated.weddingCard = {
+          themeId: '1',
+          groomName: updated.name || 'Groom',
+          brideName: 'Bride',
+          weddingDate: '2026-12-15',
+          venueName: 'Grand Palace Banquet',
+          venueAddress: 'Colaba, Mumbai, Maharashtra 400005',
+          rsvpPhone: updated.whatsappNumber || '919999999999',
+          events: [],
+        };
+      }
+      setActiveTab('type_specific');
+    } else if (newType === 'restaurant') {
+      if (!updated.restaurantMenu || updated.restaurantMenu.length === 0) {
+        updated.restaurantMenu = [
+          { id: 'item-1', name: 'Signature Dish', price: '260', category: 'Main Course', isVeg: true, description: 'Chef special prepared fresh.' },
+          { id: 'item-2', name: 'Beverage Delight', price: '90', category: 'Drinks', isVeg: true, description: 'Chilled refreshing beverage.' },
+        ];
+      }
+      setActiveTab('type_specific');
+    } else if (newType === 'ecommerce') {
+      if (!updated.products || updated.products.length === 0) {
+        updated.products = [
+          { id: 'prod-1', name: 'Signature Item', price: '1,499', imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80', description: 'Handcrafted premium quality product.' },
+        ];
+      }
+      setActiveTab('type_specific');
+    } else if (['watch_store', 'tuition', 'boutique', 'portfolio'].includes(newType)) {
+      setActiveTab('type_specific');
+    } else {
+      setActiveTab('general');
+    }
+    setSite(updated);
+    try {
+      const cached = localStorage.getItem('linkal_sites_history');
+      if (cached) {
+        const list: SiteData[] = JSON.parse(cached);
+        const idx = list.findIndex((s) => s.id === site.id);
+        if (idx >= 0) list[idx] = updated;
+        localStorage.setItem('linkal_sites_history', JSON.stringify(list));
+      }
+    } catch {}
+  };
+
   if (loading || !site) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center space-y-3">
@@ -954,7 +1019,7 @@ export default function BuilderPage() {
           </button>
 
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
-            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[100px] sm:max-w-[140px] md:max-w-[180px] shrink-0">
+            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[90px] sm:max-w-[140px] md:max-w-[180px] shrink-0">
               {site.name}
             </span>
             <span className="hidden lg:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700 truncate max-w-[140px] shrink">
@@ -962,19 +1027,8 @@ export default function BuilderPage() {
             </span>
             <select
               value={site.type}
-              onChange={(e) => {
-                const newType = e.target.value as any;
-                const updated = { ...site, type: newType };
-                setSite(updated);
-                if (newType === 'cv') {
-                  setActiveTab('cv_profile');
-                } else if (['watch_store', 'restaurant', 'wedding_card', 'tuition', 'boutique', 'portfolio'].includes(newType)) {
-                  setActiveTab('type_specific');
-                } else {
-                  setActiveTab('general');
-                }
-              }}
-              className="text-[11px] font-extrabold px-2 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs max-w-[130px] sm:max-w-[180px] md:max-w-[240px] truncate shrink"
+              onChange={(e) => handleTypeChange(e.target.value as any)}
+              className="hidden md:inline-block text-[11px] font-extrabold px-2 py-1 rounded-lg border border-zinc-300 bg-white text-zinc-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs max-w-[180px] md:max-w-[240px] truncate shrink"
               title="Change Blueprint Template"
             >
               <option value="cv">1. Free CV Website (Lifetime Free)</option>
@@ -1034,11 +1088,11 @@ export default function BuilderPage() {
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={() => setShowQrModal(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all shadow-xs"
+            className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all shadow-xs shrink-0"
             title="Generate & Download QR Code"
           >
-            <QrIcon className="w-3.5 h-3.5 text-zinc-900" />
-            <span className="hidden md:inline">QR Code</span>
+            <QrIcon className="w-4 h-4 text-zinc-900" />
+            <span className="hidden md:inline ml-1.5">QR Code</span>
           </button>
 
           <button
@@ -1053,16 +1107,15 @@ export default function BuilderPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 shrink-0"
           >
             <Save className="w-3.5 h-3.5 text-zinc-900" />
-            <span className="hidden sm:inline">{saving ? 'Saving...' : 'Save Changes'}</span>
-            <span className="sm:hidden">{saving ? '...' : 'Save'}</span>
+            <span>{saving ? '...' : 'Save'}</span>
           </button>
 
           <button
             onClick={handlePublish}
-            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95"
+            className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95 shrink-0"
           >
             <Rocket className="w-3.5 h-3.5 text-emerald-400" />
             <span>Publish</span>
@@ -1125,6 +1178,34 @@ export default function BuilderPage() {
                   <LayoutGrid className="w-4 h-4 text-zinc-950" />
                   <span>My Sites Overview</span>
                 </button>
+
+                {/* Mobile / Universal Blueprint Switcher */}
+                <div className="pt-2 pb-2 border-t border-b border-zinc-100 my-2 px-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 px-2">
+                    Switch Blueprint
+                  </label>
+                  <select
+                    value={site.type}
+                    onChange={(e) => {
+                      handleTypeChange(e.target.value as any);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-xs font-bold p-2.5 rounded-xl border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
+                  >
+                    <option value="cv">1. Free CV Website (Lifetime Free)</option>
+                    <option value="ecommerce">2. E-Commerce Website (Multi-Templates)</option>
+                    <option value="boutique">3. Fashion &amp; Boutique</option>
+                    <option value="watch_store">4. Luxury Watch Business</option>
+                    <option value="restaurant">5. Restaurant &amp; Cafe Menu (₹99 Special)</option>
+                    <option value="wedding_card">6. Wedding Card Invitation (Lifetime Free)</option>
+                    <option value="electronics">7. Electronics &amp; Gadgets</option>
+                    <option value="portfolio">8. Creative Portfolio (Max 5 WebP)</option>
+                    <option value="bakery">9. Bakery &amp; Cake Shop</option>
+                    <option value="tuition">10. Tuition &amp; Coaching Academy</option>
+                    <option value="salon">11. Salon &amp; Beauty Lounge</option>
+                    <option value="single_product">12. Single Product Launchpad</option>
+                  </select>
+                </div>
 
                 {site.type === 'cv' ? (
                   <>
@@ -1702,7 +1783,6 @@ export default function BuilderPage() {
                         key={fmt.key}
                         onClick={() => {
                           updateSiteField('cvFormat', fmt.key as any);
-                          setPreviewCvFormatModal(fmt.key);
                         }}
                         className={`group p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer hover:border-blue-500 hover:shadow-md flex flex-col justify-between ${
                           isSelected
@@ -1738,7 +1818,6 @@ export default function BuilderPage() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              updateSiteField('cvFormat', fmt.key as any);
                               setPreviewCvFormatModal(fmt.key);
                             }}
                             className="flex items-center gap-1 hover:underline"
@@ -5140,7 +5219,7 @@ export default function BuilderPage() {
 
         {/* Right Sandbox Live Iframe Preview (Renders Instant Realtime srcDoc) */}
         <div
-          className={`flex-1 min-w-0 max-w-full flex flex-col items-center justify-start h-full w-full relative overflow-hidden ${
+          className={`flex-1 min-w-0 max-w-full flex flex-col items-stretch justify-start h-full w-full relative overflow-hidden ${
             mobileViewMode === 'editor' ? 'hidden md:flex' : 'flex'
           } p-0 md:p-6 bg-white md:bg-zinc-100`}
         >
@@ -5199,13 +5278,23 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          <div className="w-full h-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+          <div className="w-full h-full flex-1 flex flex-col items-stretch justify-start min-h-0 overflow-hidden md:items-center md:justify-center">
             <iframe
               ref={iframeRef}
+              key={`preview-frame-${site.id}-${site.type}-${site.cvFormat || 'classic'}-${site.weddingCard?.themeId || ''}-${site.themeColor || ''}-${site.fontFamily || ''}-${site.name}`}
               src={`/api/sites/${site.id}/preview`}
               srcDoc={previewHtml}
               sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              className={`transition-all duration-300 bg-white w-full h-full ${getDeviceClass()}`}
+              className={`transition-all duration-200 bg-white block ${
+                mobileViewMode === 'preview'
+                  ? 'w-full h-full min-h-full flex-1 border-0 rounded-none shadow-none m-0 p-0'
+                  : getDeviceClass()
+              }`}
+              style={
+                mobileViewMode === 'preview' || previewDevice === 'desktop'
+                  ? { width: '100%', height: '100%', minHeight: '100%', flex: '1 1 auto', border: 'none', margin: 0, padding: 0, display: 'block' }
+                  : undefined
+              }
               title="Live Website Sandbox Preview"
             />
           </div>
@@ -6012,6 +6101,7 @@ export default function BuilderPage() {
 
           <div className="flex-1 bg-zinc-950 p-2 sm:p-4 flex items-center justify-center overflow-hidden">
             <iframe
+              key={`fs-preview-frame-${site.id}-${site.type}-${site.cvFormat || 'classic'}-${site.weddingCard?.themeId || ''}-${site.themeColor || ''}`}
               srcDoc={previewHtml}
               sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
               className={`bg-white transition-all duration-300 ${
