@@ -61,7 +61,22 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Please enter your registered Email or WhatsApp Phone' }, { status: 400 });
       }
 
-      // Notify Founder Admin immediately
+      // Notify Founder Admin immediately via dual-write to Supabase + Admin Push API
+      try {
+        await supabaseAdmin.from('admin_notifications').insert({
+          id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          event_type: 'forgot_password',
+          title: '🔑 Password Assistance Requested',
+          body: `User ${fullName || 'Registered User'} (${email || 'No email'}) requested password assistance. Phone: ${phoneNumber || '—'}`,
+          user_name: fullName || 'User',
+          user_phone: phoneNumber || '',
+          user_email: email || '',
+          site_slug: '',
+          is_read: false,
+          created_at: new Date().toISOString(),
+        });
+      } catch (e) {}
+
       try {
         await fetch('https://admin.linkal.in/api/notify', {
           method: 'POST',
@@ -96,6 +111,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Check or Upsert in Supabase 'users' table
     let userRecord: any = null;
+    let isNewUser = true;
     try {
       const { data: existingUser, error: selectErr } = await supabaseAdmin
         .from('users')
@@ -104,6 +120,7 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       if (existingUser) {
+        isNewUser = false;
         if (action === 'signin' && existingUser.password_hash && password) {
           if (existingUser.password_hash !== password) {
             return NextResponse.json({ error: 'Incorrect password. Click "Forgot Password?" for assistance.' }, { status: 401 });
@@ -125,6 +142,7 @@ export async function POST(req: NextRequest) {
 
         userRecord = updated || existingUser;
       } else {
+        isNewUser = true;
         const newId = `usr-${Date.now()}`;
         const { data: inserted, error: insertErr } = await supabaseAdmin
           .from('users')
@@ -182,15 +200,38 @@ export async function POST(req: NextRequest) {
       saveUsersToGitHub(currentUsers).catch(() => {});
     } catch {}
 
-    // 3. Dispatch Instant Push Notification to Founder Admin
+    // 3. Dispatch Instant Notification to Founder Admin (Dual-Write: Supabase DB + Web Push)
+    const eventType = isNewUser ? 'new_user' : 'user_login';
+    const notifTitle = isNewUser ? '🎉 New User Registered' : '👤 User Logged In';
+    const notifBody = isNewUser
+      ? `${cleanName} signed up. Phone: ${cleanPhone || '—'}, Email: ${cleanEmail}`
+      : `${cleanName} logged into Linkal Studio. Phone: ${cleanPhone || '—'}, Email: ${cleanEmail}`;
+
+    try {
+      await supabaseAdmin.from('admin_notifications').insert({
+        id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        event_type: eventType,
+        title: notifTitle,
+        body: notifBody,
+        user_name: cleanName,
+        user_phone: cleanPhone,
+        user_email: cleanEmail,
+        site_slug: '',
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    } catch (dbErr) {
+      console.warn('[Admin Notif Auth Insert]', dbErr);
+    }
+
     try {
       await fetch('https://admin.linkal.in/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventType: 'new_user',
-          title: '🎉 New User Registered',
-          body: `${cleanName} signed up. Phone: ${cleanPhone || '—'}, Email: ${cleanEmail}`,
+          eventType,
+          title: notifTitle,
+          body: notifBody,
           userName: cleanName,
           userPhone: cleanPhone,
           userEmail: cleanEmail,

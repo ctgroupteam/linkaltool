@@ -998,7 +998,7 @@ export default function BuilderPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-zinc-50 flex flex-col text-zinc-950">
       {/* Studio Header Bar */}
       <header className="sticky top-0 z-30 bg-white border-b border-zinc-200 px-3 sm:px-4 h-15 flex items-center justify-between shadow-xs w-full max-w-full overflow-hidden">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1 mr-2">
           {/* Top-Left Hamburger Drawer Menu */}
           <button
             onClick={() => setIsMenuOpen(true)}
@@ -1010,7 +1010,7 @@ export default function BuilderPage() {
 
           <button
             onClick={() => router.push('/dashboard')}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all shrink-0"
+            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all shrink-0"
             title="Back to My Sites"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -1018,8 +1018,8 @@ export default function BuilderPage() {
             <span className="sm:hidden">Back</span>
           </button>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
-            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[90px] sm:max-w-[140px] md:max-w-[180px] shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[110px] sm:max-w-[160px] md:max-w-[220px]">
               {site.name}
             </span>
             <span className="hidden lg:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700 truncate max-w-[140px] shrink">
@@ -1532,8 +1532,8 @@ export default function BuilderPage() {
       <div className="flex-1 flex flex-col md:flex-row w-full max-w-full min-w-0 h-[calc(100dvh-60px)] min-h-[600px] overflow-hidden pb-16 md:pb-0">
         {/* Left Control Editor Pane */}
         <div
-          className={`w-full md:w-[460px] lg:w-[500px] shrink-0 min-w-0 max-w-full bg-white border-r border-zinc-200 flex flex-col h-full overflow-y-auto overflow-x-hidden ${
-            mobileViewMode === 'preview' ? 'hidden md:flex' : 'flex'
+          className={`w-full md:w-[460px] lg:w-[500px] shrink-0 min-w-0 max-w-full bg-white border-r border-zinc-200 flex-col h-full overflow-y-auto overflow-x-hidden ${
+            mobileViewMode === 'preview' ? 'max-md:hidden md:flex' : 'flex'
           }`}
         >
           {/* Editor Sub-Tabs */}
@@ -5219,8 +5219,8 @@ export default function BuilderPage() {
 
         {/* Right Sandbox Live Iframe Preview (Renders Instant Realtime srcDoc) */}
         <div
-          className={`flex-1 min-w-0 max-w-full flex flex-col items-stretch justify-start h-full w-full relative overflow-hidden ${
-            mobileViewMode === 'editor' ? 'hidden md:flex' : 'flex'
+          className={`flex-1 min-w-0 max-w-full flex-col items-stretch justify-start h-full w-full relative overflow-hidden ${
+            mobileViewMode === 'editor' ? 'max-md:hidden md:flex' : 'flex'
           } p-0 md:p-6 bg-white md:bg-zinc-100`}
         >
           {/* Preview Toolbar with Full Screen & Device switchers (Desktop mode only) */}
@@ -5281,7 +5281,7 @@ export default function BuilderPage() {
           <div className="w-full h-full flex-1 flex flex-col items-stretch justify-start min-h-0 overflow-hidden md:items-center md:justify-center">
             <iframe
               ref={iframeRef}
-              key={`preview-frame-${site.id}-${site.type}-${site.cvFormat || 'classic'}-${site.weddingCard?.themeId || ''}-${site.themeColor || ''}-${site.fontFamily || ''}-${site.name}`}
+              key="builder-preview-iframe"
               src={`/api/sites/${site.id}/preview`}
               srcDoc={previewHtml}
               sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"

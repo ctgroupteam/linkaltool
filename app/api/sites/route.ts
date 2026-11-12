@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAllSites, saveSite } from '@/lib/storage';
 import { SiteData, SiteType } from '@/types/site';
 import { provisionSubdomainSSL } from '@/lib/deployment/domainProvisioner';
+import { supabaseAdmin } from '@/lib/supabase';
 
 function generateSlug(name: string): string {
   return name
@@ -360,16 +361,38 @@ export async function POST(request: Request) {
     // Automatically provision live Vercel domain routing & SSL certificate
     provisionSubdomainSSL(saved.slug).catch(() => {});
 
-    // Notify Founder Admin of new site or CV initialized
+    // Notify Founder Admin of new site or CV initialized (Dual-Write: Supabase DB + Push Notification)
     try {
       const isCv = newSite.type === 'portfolio' || newSite.type === 'cv';
+      const notifTitle = isCv ? '📄 New Free CV Website Started' : '🛍️ New Website Started';
+      const notifBody = `${userName || saved.cvTitle || saved.name} started https://${saved.slug}.linkal.in | WhatsApp: ${whatsappNumber}`;
+
+      // 1. Direct Supabase Insert
+      try {
+        await supabaseAdmin.from('admin_notifications').insert({
+          id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          event_type: isCv ? 'new_cv' : 'new_site',
+          title: notifTitle,
+          body: notifBody,
+          user_name: userName || saved.cvTitle || saved.name || '',
+          user_phone: whatsappNumber || '',
+          user_email: userEmail || saved.cvEmail || '',
+          site_slug: saved.slug,
+          is_read: false,
+          created_at: new Date().toISOString(),
+        });
+      } catch (dbErr) {
+        console.warn('[Admin Notif Site Supabase Insert]', dbErr);
+      }
+
+      // 2. Dispatch to Admin Push API
       await fetch('https://admin.linkal.in/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventType: isCv ? 'new_cv' : 'new_site',
-          title: isCv ? '📄 New Free CV Website Started' : '🛍️ New Website Started',
-          body: `${userName || saved.cvTitle || saved.name} started https://${saved.slug}.linkal.in | WhatsApp: ${whatsappNumber}`,
+          title: notifTitle,
+          body: notifBody,
           userName: userName || saved.cvTitle || saved.name,
           siteSlug: saved.slug,
           userPhone: whatsappNumber,
