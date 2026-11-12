@@ -222,6 +222,82 @@ export default function BuilderPage() {
   const [previewCvFormatModal, setPreviewCvFormatModal] = useState<string | null>(null);
   const [isFullScreenPreview, setIsFullScreenPreview] = useState(false);
 
+  // Refs for tracking active state inside popstate (Android / browser hardware back button)
+  const previewCvFormatModalRef = React.useRef(previewCvFormatModal);
+  previewCvFormatModalRef.current = previewCvFormatModal;
+
+  const isFullScreenPreviewRef = React.useRef(isFullScreenPreview);
+  isFullScreenPreviewRef.current = isFullScreenPreview;
+
+  const showPublishModalRef = React.useRef(showPublishModal);
+  showPublishModalRef.current = showPublishModal;
+
+  const showQrModalRef = React.useRef(showQrModal);
+  showQrModalRef.current = showQrModal;
+
+  const showAuthModalRef = React.useRef(showAuthModal);
+  showAuthModalRef.current = showAuthModal;
+
+  const isMenuOpenRef = React.useRef(isMenuOpen);
+  isMenuOpenRef.current = isMenuOpen;
+
+  const mobileViewModeRef = React.useRef(mobileViewMode);
+  mobileViewModeRef.current = mobileViewMode;
+
+  // Intercept back button gestures to close modals or switch tabs instead of exiting PWA
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({ inBuilder: true }, '', window.location.pathname);
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      // 1. Close preview or modals first
+      if (previewCvFormatModalRef.current) {
+        setPreviewCvFormatModal(null);
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+      if (isFullScreenPreviewRef.current) {
+        setIsFullScreenPreview(false);
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+      if (showPublishModalRef.current) {
+        setShowPublishModal(false);
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+      if (showQrModalRef.current) {
+        setShowQrModal(false);
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+      if (showAuthModalRef.current) {
+        setShowAuthModal(false);
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+      if (isMenuOpenRef.current) {
+        setIsMenuOpen(false);
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+
+      // 2. Mobile preview mode: switch back to editor
+      if (mobileViewModeRef.current === 'preview') {
+        setMobileViewMode('editor');
+        window.history.pushState({ inBuilder: true }, '', window.location.pathname);
+        return;
+      }
+
+      // 3. Otherwise navigate to dashboard
+      router.push('/dashboard');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [router]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('linkal_user');
@@ -841,15 +917,15 @@ export default function BuilderPage() {
     );
   }
 
-  // Device width class
+  // Device width class: On mobile directly fills full screen without simulated phone bezels or horizontal collapsing
   const getDeviceClass = () => {
     switch (previewDevice) {
       case 'mobile':
-        return 'w-[375px] max-w-full h-[667px] max-h-full rounded-3xl shadow-xl border-8 border-zinc-900';
+        return 'w-full h-full md:w-[375px] md:h-[667px] md:rounded-3xl md:shadow-xl md:border-8 md:border-zinc-900 border-0 rounded-none shadow-none';
       case 'tablet':
-        return 'w-[768px] max-w-full h-[900px] max-h-full rounded-2xl shadow-xl border-8 border-zinc-900';
+        return 'w-full h-full md:w-[768px] md:h-[900px] md:rounded-2xl md:shadow-xl md:border-8 md:border-zinc-900 border-0 rounded-none shadow-none';
       default:
-        return 'w-full h-full rounded-xl border border-zinc-200 shadow-xs';
+        return 'w-full h-full md:rounded-xl md:border md:border-zinc-200 border-0 rounded-none shadow-none';
     }
   };
 
@@ -869,10 +945,12 @@ export default function BuilderPage() {
 
           <button
             onClick={() => router.push('/dashboard')}
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all shrink-0"
+            title="Back to My Sites"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>My Sites</span>
+            <span className="hidden sm:inline">My Sites</span>
+            <span className="sm:hidden">Back</span>
           </button>
 
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
@@ -1622,7 +1700,10 @@ export default function BuilderPage() {
                     return (
                       <div
                         key={fmt.key}
-                        onClick={() => setPreviewCvFormatModal(fmt.key)}
+                        onClick={() => {
+                          updateSiteField('cvFormat', fmt.key as any);
+                          setPreviewCvFormatModal(fmt.key);
+                        }}
                         className={`group p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer hover:border-blue-500 hover:shadow-md flex flex-col justify-between ${
                           isSelected
                             ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/20 shadow-xs'
@@ -1634,22 +1715,37 @@ export default function BuilderPage() {
                             <span className="flex items-center gap-1.5">{fmt.title}</span>
                             {isSelected ? (
                               <span className="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                                <Check className="w-3 h-3" /> Active
+                                <Check className="w-3 h-3" /> Selected
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded-full">
-                                {fmt.badge}
-                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateSiteField('cvFormat', fmt.key as any);
+                                }}
+                                className="text-[10px] font-bold bg-zinc-900 hover:bg-black text-white px-2.5 py-0.5 rounded-full transition-all"
+                              >
+                                Select
+                              </button>
                             )}
                           </div>
                           <p className="text-[11px] text-zinc-500 leading-snug">{fmt.desc}</p>
                         </div>
 
                         <div className="mt-3 pt-2 border-t border-zinc-200/60 flex items-center justify-between text-[11px] font-extrabold text-blue-600">
-                          <span className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateSiteField('cvFormat', fmt.key as any);
+                              setPreviewCvFormatModal(fmt.key);
+                            }}
+                            className="flex items-center gap-1 hover:underline"
+                          >
                             <Eye className="w-3.5 h-3.5" />
                             <span>Preview Format Layout</span>
-                          </span>
+                          </button>
                           <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
                         </div>
                       </div>
@@ -5044,12 +5140,12 @@ export default function BuilderPage() {
 
         {/* Right Sandbox Live Iframe Preview (Renders Instant Realtime srcDoc) */}
         <div
-          className={`flex-1 min-w-0 max-w-full bg-zinc-100 p-2 sm:p-4 md:p-6 flex flex-col items-center justify-start h-full relative overflow-y-auto ${
+          className={`flex-1 min-w-0 max-w-full flex flex-col items-center justify-start h-full w-full relative overflow-hidden ${
             mobileViewMode === 'editor' ? 'hidden md:flex' : 'flex'
-          }`}
+          } p-0 md:p-6 bg-white md:bg-zinc-100`}
         >
-          {/* Preview Toolbar with Full Screen & Device switchers */}
-          <div className="w-full max-w-5xl flex items-center justify-between pb-2 mb-2 border-b border-zinc-200 shrink-0">
+          {/* Preview Toolbar with Full Screen & Device switchers (Desktop mode only) */}
+          <div className="hidden md:flex w-full max-w-5xl items-center justify-between pb-2 mb-2 border-b border-zinc-200 shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-500">Live Preview</span>
               <span className="text-[10px] font-mono font-bold bg-zinc-200 text-zinc-800 px-2 py-0.5 rounded truncate max-w-[150px] sm:max-w-none">
@@ -5058,7 +5154,7 @@ export default function BuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-1 bg-white border border-zinc-200 p-0.5 rounded-xl">
+              <div className="flex items-center gap-1 bg-white border border-zinc-200 p-0.5 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setPreviewDevice('desktop')}
@@ -5103,13 +5199,13 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          <div className="w-full max-w-6xl flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+          <div className="w-full h-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
             <iframe
               ref={iframeRef}
               src={`/api/sites/${site.id}/preview`}
               srcDoc={previewHtml}
               sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              className={`transition-all duration-300 bg-white max-w-full h-full shadow-lg ${getDeviceClass()}`}
+              className={`transition-all duration-300 bg-white w-full h-full ${getDeviceClass()}`}
               title="Live Website Sandbox Preview"
             />
           </div>

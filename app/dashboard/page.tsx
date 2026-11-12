@@ -525,15 +525,120 @@ function DashboardContent() {
   // Auto-fill slug from site name if slug is untouched
   const [slugTouched, setSlugTouched] = useState(false);
 
+  // Active dashboard view tab: 'sites' | 'templates' | 'builder' | 'settings' | 'profile'
+  const [dashboardTab, setDashboardTab] = useState<'sites' | 'templates' | 'builder' | 'settings' | 'profile'>('sites');
+  const [settingsLang, setSettingsLang] = useState<'en' | 'hi' | 'mr'>('en');
+  const [pwaInstalled, setPwaInstalled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<string>('default');
+
+  // Track latest state in refs for popstate (Android/browser hardware back button)
+  const dashboardTabRef = React.useRef(dashboardTab);
+  dashboardTabRef.current = dashboardTab;
+
+  const modalsRef = React.useRef({
+    billingModalSite,
+    qrModalSite,
+    recentlyPublishedSite,
+    showGoogleModal,
+    isMenuOpen,
+  });
+  modalsRef.current = {
+    billingModalSite,
+    qrModalSite,
+    recentlyPublishedSite,
+    showGoogleModal,
+    isMenuOpen,
+  };
+
+  // Safe navigation helper that synchronizes React state, localStorage & browser history
+  const navigateToTab = (
+    tab: 'sites' | 'templates' | 'builder' | 'settings' | 'profile',
+    pushHistory = true
+  ) => {
+    if (tab === 'sites') setDashboardTab('sites');
+    else if (tab === 'templates') setDashboardTab('templates');
+    else if (tab === 'builder') setDashboardTab('builder');
+    else if (tab === 'settings') setDashboardTab('settings');
+    else if (tab === 'profile') setDashboardTab('profile');
+    try {
+      localStorage.setItem('linkal_dashboard_tab', tab);
+    } catch {}
+    if (pushHistory && typeof window !== 'undefined') {
+      window.history.pushState({ tab, linkalStudio: true }, '', window.location.pathname);
+    }
+  };
+
   // Fast switch to Builder tab upon clicking any blueprint card
   const handleSelectBlueprint = (key: SiteType) => {
     setCategory(key);
-    setDashboardTab('builder');
     try {
       localStorage.setItem('linkal_draft_category', key);
-      localStorage.setItem('linkal_dashboard_tab', 'builder');
     } catch {}
+    navigateToTab('builder');
   };
+
+  // Universal Hardware / Browser / Gesture Back Button Interceptor (Prevents PWA Studio from exiting)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Establish baseline history state
+      window.history.replaceState({ tab: 'sites', linkalStudio: true }, '', window.location.pathname);
+      const savedTab = localStorage.getItem('linkal_dashboard_tab') as any;
+      if (savedTab && ['templates', 'builder', 'settings', 'profile'].includes(savedTab)) {
+        window.history.pushState({ tab: savedTab, linkalStudio: true }, '', window.location.pathname);
+      }
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      const activeModals = modalsRef.current;
+
+      // 1. If any modal or slide-over drawer is open, close it and stay in current view
+      if (
+        activeModals.billingModalSite ||
+        activeModals.qrModalSite ||
+        activeModals.recentlyPublishedSite ||
+        activeModals.showGoogleModal ||
+        activeModals.isMenuOpen
+      ) {
+        setBillingModalSite(null);
+        setQrModalSite(null);
+        setRecentlyPublishedSite(null);
+        setShowGoogleModal(false);
+        setIsMenuOpen(false);
+        // Re-push current view into history so back button isn't consumed
+        window.history.pushState(
+          { tab: dashboardTabRef.current, linkalStudio: true },
+          '',
+          window.location.pathname
+        );
+        return;
+      }
+
+      // 2. If in Website Builder (Enter Details & Launch), Back goes to Templates
+      const currentTab = dashboardTabRef.current;
+      if (currentTab === 'builder') {
+        setDashboardTab('templates');
+        try {
+          localStorage.setItem('linkal_dashboard_tab', 'templates');
+        } catch {}
+        window.history.pushState({ tab: 'templates', linkalStudio: true }, '', window.location.pathname);
+        return;
+      }
+
+      // 3. If in Templates, Settings, or Profile, Back goes directly to Active Websites (homepage)
+      if (currentTab === 'templates' || currentTab === 'settings' || currentTab === 'profile') {
+        setDashboardTab('sites');
+        try {
+          localStorage.setItem('linkal_dashboard_tab', 'sites');
+        } catch {}
+        window.history.pushState({ tab: 'sites', linkalStudio: true }, '', window.location.pathname);
+        return;
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Check saved user & draft creation state in localStorage
   useEffect(() => {
@@ -615,12 +720,7 @@ function DashboardContent() {
     return () => clearTimeout(timer);
   }, [desiredSlug]);
 
-  // Active dashboard view tab: 'sites' | 'builder' | 'templates' | 'settings' | 'profile'
-  const [dashboardTab, setDashboardTab] = useState<'sites' | 'builder' | 'templates' | 'settings' | 'profile'>('sites');
-  const [settingsLang, setSettingsLang] = useState<'en' | 'hi' | 'mr'>('en');
-  const [pwaInstalled, setPwaInstalled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [notifPermission, setNotifPermission] = useState<string>('default');
+
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -896,10 +996,7 @@ function DashboardContent() {
             <div className="hidden md:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200 mr-1">
               <button
                 type="button"
-                onClick={() => {
-                  setDashboardTab('sites');
-                  try { localStorage.setItem('linkal_dashboard_tab', 'sites'); } catch {}
-                }}
+                onClick={() => navigateToTab('sites')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'sites'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -912,26 +1009,7 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setDashboardTab('builder');
-                  try { localStorage.setItem('linkal_dashboard_tab', 'builder'); } catch {}
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  dashboardTab === 'builder'
-                    ? 'bg-white text-zinc-950 shadow-xs'
-                    : 'text-zinc-600 hover:text-zinc-950'
-                }`}
-              >
-                <Hammer className="w-3.5 h-3.5 text-blue-600" />
-                <span>Builder</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setDashboardTab('templates');
-                  try { localStorage.setItem('linkal_dashboard_tab', 'templates'); } catch {}
-                }}
+                onClick={() => navigateToTab('templates')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'templates'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -944,10 +1022,20 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setDashboardTab('settings');
-                  try { localStorage.setItem('linkal_dashboard_tab', 'settings'); } catch {}
-                }}
+                onClick={() => navigateToTab('builder')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  dashboardTab === 'builder'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-950'
+                }`}
+              >
+                <Hammer className="w-3.5 h-3.5 text-blue-600" />
+                <span>Builder</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigateToTab('settings')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'settings'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -960,10 +1048,7 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setDashboardTab('profile');
-                  try { localStorage.setItem('linkal_dashboard_tab', 'profile'); } catch {}
-                }}
+                onClick={() => navigateToTab('profile')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   dashboardTab === 'profile'
                     ? 'bg-white text-zinc-950 shadow-xs'
@@ -979,9 +1064,9 @@ function DashboardContent() {
             <button
               type="button"
               onClick={() => {
-                setDashboardTab('templates');
+                navigateToTab('templates');
                 setTimeout(() => {
-                  document.getElementById('builder-box')?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById('templates-box')?.scrollIntoView({ behavior: 'smooth' });
                 }, 60);
               }}
               className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 active:scale-[0.98]"
@@ -1100,7 +1185,7 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        setDashboardTab('sites');
+                        navigateToTab('sites');
                         setIsMenuOpen(false);
                       }}
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -1117,24 +1202,7 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        setDashboardTab('builder');
-                        setIsMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
-                        dashboardTab === 'builder' ? 'bg-blue-50 text-blue-700' : 'text-zinc-700 hover:bg-zinc-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Hammer className="w-4 h-4 text-blue-600" />
-                        <span>Website Builder</span>
-                      </div>
-                      <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">Active</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDashboardTab('templates');
+                        navigateToTab('templates');
                         setIsMenuOpen(false);
                       }}
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -1151,7 +1219,24 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        setDashboardTab('settings');
+                        navigateToTab('builder');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dashboardTab === 'builder' ? 'bg-blue-50 text-blue-700' : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Hammer className="w-4 h-4 text-blue-600" />
+                        <span>Website Builder</span>
+                      </div>
+                      <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">Active</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigateToTab('settings');
                         setIsMenuOpen(false);
                       }}
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -1167,7 +1252,7 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        setDashboardTab('profile');
+                        navigateToTab('profile');
                         setIsMenuOpen(false);
                       }}
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -1249,6 +1334,18 @@ function DashboardContent() {
         {/* ─── SECTION 1: CUSTOMER CREATION STUDIO (TEMPLATES) ─── */}
         {dashboardTab === 'templates' && (
         <section id="templates-box" className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+            <button
+              type="button"
+              onClick={() => navigateToTab('sites')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Websites</span>
+            </button>
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Step 1: Choose Blueprint</span>
+          </div>
+
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-2">
               <Layers className="w-3 h-3 text-blue-600" /> 11 Pre-Engineered Website Blueprints
@@ -1598,14 +1695,11 @@ function DashboardContent() {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setDashboardTab('templates');
-                  try { localStorage.setItem('linkal_dashboard_tab', 'templates'); } catch {}
-                }}
+                onClick={() => navigateToTab('templates')}
                 className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-zinc-300 hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95 shrink-0"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Change Blueprint</span>
+                <span>Back to Templates</span>
               </button>
             </div>
 
@@ -2053,6 +2147,18 @@ function DashboardContent() {
         {/* ─── SECTION: SETTINGS & GUIDE TAB ─── */}
         {dashboardTab === 'settings' && (
           <section className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6 max-w-2xl mx-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <button
+                type="button"
+                onClick={() => navigateToTab('sites')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Websites</span>
+              </button>
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Studio Preferences</span>
+            </div>
+
             {/* Header & Language Switcher */}
             <div className="space-y-3 pb-4 border-b border-zinc-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -2280,6 +2386,18 @@ function DashboardContent() {
         {/* ─── SECTION: PROFILE TAB ─── */}
         {dashboardTab === 'profile' && (
           <section className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-w-xl mx-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <button
+                type="button"
+                onClick={() => navigateToTab('sites')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Websites</span>
+              </button>
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Account Overview</span>
+            </div>
+
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xl flex items-center justify-center shadow-md overflow-hidden shrink-0">
                 {(user as any)?.avatarUrl ? (
@@ -2418,10 +2536,7 @@ function DashboardContent() {
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-zinc-200 px-2 py-2 flex items-center justify-around shadow-lg">
         <button
           type="button"
-          onClick={() => {
-            setDashboardTab('sites');
-            try { localStorage.setItem('linkal_dashboard_tab', 'sites'); } catch {}
-          }}
+          onClick={() => navigateToTab('sites')}
           className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'sites' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
@@ -2432,24 +2547,7 @@ function DashboardContent() {
 
         <button
           type="button"
-          onClick={() => {
-            setDashboardTab('builder');
-            try { localStorage.setItem('linkal_dashboard_tab', 'builder'); } catch {}
-          }}
-          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
-            dashboardTab === 'builder' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
-          }`}
-        >
-          <Hammer className="w-5 h-5" />
-          <span className="text-[10px]">Builder</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setDashboardTab('templates');
-            try { localStorage.setItem('linkal_dashboard_tab', 'templates'); } catch {}
-          }}
+          onClick={() => navigateToTab('templates')}
           className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'templates' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
@@ -2460,10 +2558,18 @@ function DashboardContent() {
 
         <button
           type="button"
-          onClick={() => {
-            setDashboardTab('settings');
-            try { localStorage.setItem('linkal_dashboard_tab', 'settings'); } catch {}
-          }}
+          onClick={() => navigateToTab('builder')}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
+            dashboardTab === 'builder' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
+          }`}
+        >
+          <Hammer className="w-5 h-5" />
+          <span className="text-[10px]">Builder</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigateToTab('settings')}
           className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'settings' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
@@ -2474,10 +2580,7 @@ function DashboardContent() {
 
         <button
           type="button"
-          onClick={() => {
-            setDashboardTab('profile');
-            try { localStorage.setItem('linkal_dashboard_tab', 'profile'); } catch {}
-          }}
+          onClick={() => navigateToTab('profile')}
           className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all ${
             dashboardTab === 'profile' ? 'text-blue-600 font-extrabold' : 'text-zinc-500 font-medium'
           }`}
