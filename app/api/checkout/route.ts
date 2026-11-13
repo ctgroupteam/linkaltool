@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCashfreeOrder } from '@/lib/cashfree';
+import { createCashfreeOrder, createCashfreeSubscription } from '@/lib/cashfree';
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,15 +38,43 @@ export async function POST(req: NextRequest) {
     const isAutoPay = planTier.includes('autopay') || body.isAutoPay === true;
     const orderId = `ord_${slug || 'site'}_${Date.now()}`;
     const returnUrl = `https://studio.linkal.in/dashboard?order_id={order_id}&status=success&site_id=${encodeURIComponent(storeId || '')}&slug=${encodeURIComponent(slug || '')}&amount=${amount}&plan=${encodeURIComponent(planTier || '1_month_autopay')}`;
+    const cleanPhone = customerPhone ? customerPhone.replace(/[^0-9]/g, '') : '919307426215';
+    const cleanEmail = customerEmail || 'payments@linkal.in';
+    const customerId = `cust_${cleanPhone || Date.now()}`;
 
-    // 3. Create Cashfree Production Order
+    // 3. Option B: Attempt True Cashfree Recurring AutoPay Subscription if requested
+    if (isAutoPay) {
+      const sub = await createCashfreeSubscription({
+        subscriptionId: `sub_${slug || 'site'}_${Date.now()}`,
+        planName: 'Digital Menu 99 Monthly AutoPay',
+        amount: 99,
+        customerPhone: cleanPhone,
+        customerEmail: cleanEmail,
+        customerId,
+        returnUrl,
+      });
+
+      if (sub && sub.payment_session_id) {
+        return NextResponse.json({
+          success: true,
+          orderId: sub.subscription_id,
+          amount: 99,
+          currency: 'INR',
+          paymentSessionId: sub.payment_session_id,
+          isAutoPay: true,
+          isRecurringMandate: true,
+        });
+      }
+    }
+
+    // 4. Standard 30-Day Cashfree Production Order (Live PG Checkout fallback)
     const order = await createCashfreeOrder({
       orderId,
       orderAmount: amount,
       orderCurrency: 'INR',
-      customerPhone: customerPhone ? customerPhone.replace(/[^0-9]/g, '') : '919307426215',
-      customerEmail: customerEmail || 'payments@linkal.in',
-      customerId: `cust_${(customerPhone || 'user').replace(/[^0-9]/g, '') || Date.now()}`,
+      customerPhone: cleanPhone,
+      customerEmail: cleanEmail,
+      customerId,
       returnUrl,
     });
 
@@ -57,6 +85,7 @@ export async function POST(req: NextRequest) {
       currency: order.order_currency,
       paymentSessionId: order.payment_session_id,
       isAutoPay,
+      isRecurringMandate: false,
     });
   } catch (error: any) {
     console.error('Checkout error:', error);

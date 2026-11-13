@@ -73,6 +73,74 @@ export async function getCashfreeOrderStatus(orderId: string) {
   return await response.json();
 }
 
+export interface CreateSubscriptionParams {
+  subscriptionId: string;
+  planName?: string;
+  amount: number;
+  customerPhone: string;
+  customerEmail: string;
+  customerId: string;
+  customerName?: string;
+  returnUrl: string;
+}
+
+export async function createCashfreeSubscription(params: CreateSubscriptionParams) {
+  const payload = {
+    subscription_id: params.subscriptionId,
+    customer_details: {
+      customer_id: params.customerId,
+      customer_phone: params.customerPhone,
+      customer_email: params.customerEmail,
+      customer_name: params.customerName || 'Restaurant Owner',
+    },
+    plan_details: {
+      plan_name: params.planName || 'Digital Menu Monthly AutoPay',
+      plan_type: 'PERIODIC',
+      plan_amount: params.amount,
+      plan_max_amount: params.amount,
+      plan_intervals: 1,
+      plan_interval_type: 'MONTH',
+      plan_currency: 'INR',
+      plan_note: 'Monthly recurring subscription for digital menu site',
+    },
+    authorization_details: {
+      authorization_amount: params.amount,
+      payment_methods: ['upi', 'card'],
+    },
+    subscription_meta: {
+      return_url: params.returnUrl,
+    },
+  };
+
+  try {
+    const response = await fetch(`${CASHFREE_BASE_URL}/subscriptions`, {
+      method: 'POST',
+      headers: {
+        'x-client-id': CASHFREE_APP_ID,
+        'x-client-secret': CASHFREE_SECRET_KEY,
+        'x-api-version': CASHFREE_API_VERSION,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      if (data.code === 'profile_inactive') {
+        console.warn('[Cashfree] Subscriptions profile inactive in merchant dashboard; falling back to 30-day PG order.');
+        return null;
+      }
+      throw new Error(`Subscription creation failed: ${data.message || response.statusText}`);
+    }
+
+    return data;
+  } catch (err: any) {
+    console.warn('[Cashfree Subscription Error]', err.message);
+    return null;
+  }
+}
+
 export function verifyCashfreeWebhookSignature(
   timestamp: string,
   rawBody: string,
