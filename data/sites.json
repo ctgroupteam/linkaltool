@@ -73,7 +73,7 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-13T10:24:27.534Z",
-    "updatedAt": "2026-11-13T10:25:31.186Z",
+    "updatedAt": "2026-11-13T10:25:32.391Z",
     "visitsCount": 0,
     "clicksCount": 0,
     "logoUrl": "https://cdn.jsdelivr.net/gh/ctgroupteam/linkaltool@main/public/uploads/1794565499120-1000243420.webp",
@@ -95,6 +95,60 @@
         "status": "in_progress",
         "message": "Saving site data to Linkal Multi-Tenant database (royalhotel)...",
         "timestamp": "2026-11-13T10:25:31.169Z"
+      },
+      {
+        "step": "github",
+        "status": "success",
+        "message": "Saved site to Linkal High-Speed Database.",
+        "timestamp": "2026-11-13T10:25:32.234Z"
+      },
+      {
+        "step": "vercel",
+        "status": "in_progress",
+        "message": "Routing royalhotel.linkal.in and provisioning verified SSL certificate...",
+        "timestamp": "2026-11-13T10:25:32.234Z"
+      },
+      {
+        "step": "vercel",
+        "status": "success",
+        "message": "Routed royalhotel.linkal.in with verified SSL certificate.",
+        "timestamp": "2026-11-13T10:25:32.374Z"
+      },
+      {
+        "step": "cloudflare",
+        "status": "in_progress",
+        "message": "Configuring Cloudflare CDN caching and SSL routing for royalhotel.linkal.in...",
+        "timestamp": "2026-11-13T10:25:32.374Z"
+      },
+      {
+        "step": "cloudflare",
+        "status": "success",
+        "message": "Cloudflare CDN Shield active: https://royalhotel.linkal.in",
+        "timestamp": "2026-11-13T10:25:32.374Z"
+      },
+      {
+        "step": "general",
+        "status": "in_progress",
+        "message": "Configuring Google SEO, OpenGraph tags, and search indexing metadata...",
+        "timestamp": "2026-11-13T10:25:32.374Z"
+      },
+      {
+        "step": "general",
+        "status": "success",
+        "message": "Google SEO and search tags configured.",
+        "timestamp": "2026-11-13T10:25:32.374Z"
+      },
+      {
+        "step": "poll",
+        "status": "in_progress",
+        "message": "Verifying Linkal domain & SSL routing...",
+        "timestamp": "2026-11-13T10:25:32.374Z"
+      },
+      {
+        "step": "poll",
+        "status": "success",
+        "message": "Site is verified live at https://royalhotel.linkal.in",
+        "timestamp": "2026-11-13T10:25:32.374Z"
       }
     ],
     "liveUrl": "https://royalhotel.linkal.in",
