@@ -44,6 +44,11 @@ export function generateRestaurantHtml(site: SiteData): string {
 
   const categories = Array.from(new Set(menuItems.map(m => m.category || 'Specialties')));
 
+  const createdAtMs = site.createdAt ? new Date(site.createdAt).getTime() : Date.now();
+  const ageDays = (Date.now() - createdAtMs) / (1000 * 60 * 60 * 24);
+  const isPaid = (site as any).isPaid === true || ((site as any).planExpiresAt && new Date((site as any).planExpiresAt).getTime() > Date.now());
+  const trialExpired = !isPaid && ageDays >= 7;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,6 +133,30 @@ export function generateRestaurantHtml(site: SiteData): string {
     .rest-bottom-brand { color: #fff; font-weight: 700; font-size: 0.95rem; }
     .rest-bottom-cta { background: #25D366; color: #fff; text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 99px; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 14px rgba(37,211,102,0.4); }
 
+    /* 7-Day Free Trial Notice Banner */
+    .trial-expired-banner {
+      position: sticky; top: 0; z-index: 99999;
+      background: linear-gradient(90deg, #991b1b, #b91c1c);
+      color: #fff; padding: 0.65rem 1rem; font-size: 0.82rem; font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25); border-bottom: 2px solid #fca5a5;
+    }
+    .trial-banner-content {
+      max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap; text-align: center;
+    }
+    .trial-badge {
+      background: #ffffff; color: #991b1b; padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .trial-renew-link {
+      background: #fef08a; color: #854d0e; padding: 0.35rem 0.9rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.15s;
+    }
+    .trial-renew-link:hover { transform: scale(1.04); background: #ffffff; }
+
+    /* Search Bar (Turkish Zaika Style) */
+    .search-bar-wrap { max-width: 900px; margin: 1rem auto 0; padding: 0 1rem; }
+    .search-input-box { display: flex; align-items: center; gap: 0.6rem; background: #fff; border: 1.5px solid var(--border); border-radius: 99px; padding: 0.6rem 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .search-input-box svg { color: var(--text-muted); flex-shrink: 0; }
+    .search-input-box input { border: none; outline: none; background: transparent; width: 100%; font-size: 0.9rem; color: var(--navy); font-family: inherit; }
+
     @media (max-width: 640px) {
       .rest-title { font-size: 1.7rem; }
       .menu-grid { grid-template-columns: 1fr; }
@@ -135,6 +164,19 @@ export function generateRestaurantHtml(site: SiteData): string {
   </style>
 </head>
 <body>
+
+  <!-- 7-Day Free Trial Notice Banner -->
+  ${trialExpired ? `
+    <aside class="trial-expired-banner">
+      <div class="trial-banner-content">
+        <span class="trial-badge">Due Notice</span>
+        <span>7-Day Free Trial Completed. Keep this digital menu live with instant renewal.</span>
+        <a href="https://studio.linkal.in/builder/${site.id}?renew=true" target="_blank" rel="noopener noreferrer" class="trial-renew-link">
+          Continue &bull; Renew for ₹99 &rarr;
+        </a>
+      </div>
+    </aside>
+  ` : ''}
 
   <!-- TURKISH ZAIKA ENTRANCE LOADING ANIMATION OVERLAY -->
   <div id="loading-overlay">
@@ -173,6 +215,14 @@ export function generateRestaurantHtml(site: SiteData): string {
       }).join('')}
     </div>
   </nav>
+
+  <!-- Live Dish Search Bar (Turkish Zaika Style) -->
+  <div class="search-bar-wrap">
+    <div class="search-input-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="menu-search-input" placeholder="Search delicious dishes, biryani, starters..." oninput="filterMenuItems(this.value)">
+    </div>
+  </div>
 
   <main class="menu-container">
     ${categories.map(cat => {
@@ -246,6 +296,15 @@ export function generateRestaurantHtml(site: SiteData): string {
         }
       }, 70);
     })();
+
+    function filterMenuItems(query) {
+      var q = (query || '').toLowerCase().trim();
+      var cards = document.querySelectorAll('.menu-card');
+      cards.forEach(function(card) {
+        var text = (card.textContent || '').toLowerCase();
+        card.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+      });
+    }
   </script>
 </body>
 </html>`;

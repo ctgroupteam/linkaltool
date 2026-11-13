@@ -112,7 +112,7 @@ export async function POST(request: Request) {
         : siteType === 'restaurant'
         ? `Hello ${name}, I would like to place an order from your digital menu!`
         : siteType === 'wedding_card'
-        ? `Hello, RSVP confirmation for the wedding celebration!`
+        ? `Namaste! Blessing the couple and confirming our attendance for the wedding celebration!`
         : siteType === 'tuition'
         ? `Hello ${name}, I would like to enquire about coaching admissions and batch timings!`
         : `Hi ${name}, I saw your website and would like to place an order!`,
@@ -361,22 +361,50 @@ export async function POST(request: Request) {
     // Automatically provision live Vercel domain routing & SSL certificate
     provisionSubdomainSSL(saved.slug).catch(() => {});
 
+    // Link user WhatsApp phone to their registered account in Supabase
+    if (userEmail && cleanPhone) {
+      try {
+        await supabaseAdmin
+          .from('users')
+          .update({ phone_number: cleanPhone })
+          .eq('email', userEmail.toLowerCase().trim());
+      } catch (uErr) {
+        console.warn('[Site Create User Phone Sync]', uErr);
+      }
+    }
+
     // Notify Founder Admin of new site or CV initialized (Dual-Write: Supabase DB + Push Notification)
     try {
-      const isCv = newSite.type === 'portfolio' || newSite.type === 'cv';
-      const notifTitle = isCv ? '📄 New Free CV Website Started' : '🛍️ New Website Started';
-      const notifBody = `${userName || saved.cvTitle || saved.name} started https://${saved.slug}.linkal.in | WhatsApp: ${whatsappNumber}`;
+      const TYPE_LABELS: Record<string, string> = {
+        cv: 'Free Executive CV Website',
+        portfolio: 'Personal Portfolio Website',
+        wedding_card: 'Royal Wedding Card Invitation',
+        restaurant: 'Hotel & Restaurant Digital Menu',
+        watch_store: 'Luxury Watch Store',
+        ecommerce: 'Online E-Commerce Store',
+        boutique: 'Fashion Boutique Store',
+        tuition: 'Tuition & Coaching Academy',
+        salon: 'Salon & Spa Studio',
+        bakery: 'Bakery & Cake Shop',
+        electronics: 'Electronics & Gadget Store',
+        single_product: 'Single Product Landing Page',
+      };
+      const siteTypeLabel = TYPE_LABELS[saved.type] || 'New Website';
+      const creatorName = userName || saved.cvTitle || saved.name || 'Site Owner';
+      const creatorEmail = userEmail || saved.cvEmail || 'Not provided';
+      const notifTitle = `🚀 New Website Created: ${siteTypeLabel}`;
+      const notifBody = `Name: ${creatorName}\nEmail: ${creatorEmail}\nWebsite Type: ${siteTypeLabel}\nLive URL: https://${saved.slug}.linkal.in\nWhatsApp: ${whatsappNumber}`;
 
       // 1. Direct Supabase Insert
       try {
         await supabaseAdmin.from('admin_notifications').insert({
           id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          event_type: isCv ? 'new_cv' : 'new_site',
+          event_type: 'new_site',
           title: notifTitle,
           body: notifBody,
-          user_name: userName || saved.cvTitle || saved.name || '',
+          user_name: creatorName,
           user_phone: whatsappNumber || '',
-          user_email: userEmail || saved.cvEmail || '',
+          user_email: creatorEmail,
           site_slug: saved.slug,
           is_read: false,
           created_at: new Date().toISOString(),
@@ -390,13 +418,14 @@ export async function POST(request: Request) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventType: isCv ? 'new_cv' : 'new_site',
+          eventType: 'new_site',
+          siteTypeLabel,
           title: notifTitle,
           body: notifBody,
-          userName: userName || saved.cvTitle || saved.name,
+          userName: creatorName,
           siteSlug: saved.slug,
           userPhone: whatsappNumber,
-          userEmail: userEmail || saved.cvEmail,
+          userEmail: creatorEmail,
         }),
       });
     } catch (e) {}

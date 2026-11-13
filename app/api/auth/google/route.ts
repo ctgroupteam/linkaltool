@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 
 // Helper: Sync users database to GitHub ctgroupteam/linkaltool
-async function saveUsersToGitHub(users: any[]): Promise<boolean> {
+async function saveUsersToGitHub(newUserRecord: any): Promise<boolean> {
   const token = process.env.GITHUB_TOKEN;
   const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
   const repo = process.env.GITHUB_REPO || 'linkaltool';
@@ -14,6 +14,8 @@ async function saveUsersToGitHub(users: any[]): Promise<boolean> {
   try {
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/data/users.json`;
     let existingSha: string | undefined;
+    let usersList: any[] = [];
+
     const checkRes = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -22,12 +24,31 @@ async function saveUsersToGitHub(users: any[]): Promise<boolean> {
       },
       cache: 'no-store',
     });
+
     if (checkRes.ok) {
       const data = await checkRes.json();
       existingSha = data.sha;
+      if (data.content) {
+        try {
+          const raw = Buffer.from(data.content, 'base64').toString('utf-8');
+          usersList = JSON.parse(raw);
+        } catch {}
+      }
     }
 
-    const content = Buffer.from(JSON.stringify(users, null, 2), 'utf-8').toString('base64');
+    if (!Array.isArray(usersList)) {
+      usersList = [];
+    }
+
+    const cleanEmail = (newUserRecord.email || '').toLowerCase().trim();
+    const idx = usersList.findIndex((u: any) => (u.email || '').toLowerCase().trim() === cleanEmail);
+    if (idx !== -1) {
+      usersList[idx] = { ...usersList[idx], ...newUserRecord };
+    } else {
+      usersList.unshift(newUserRecord);
+    }
+
+    const content = Buffer.from(JSON.stringify(usersList, null, 2), 'utf-8').toString('base64');
     const putRes = await fetch(url, {
       method: 'PUT',
       headers: {
@@ -37,7 +58,7 @@ async function saveUsersToGitHub(users: any[]): Promise<boolean> {
         'User-Agent': 'Linkal-Website-Builder',
       },
       body: JSON.stringify({
-        message: `Sync registered users database [${users.length} users]`,
+        message: `Sync registered users database [${usersList.length} users]`,
         content,
         sha: existingSha,
       }),
@@ -107,7 +128,8 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = email.toLowerCase().trim();
     const cleanName = (fullName || cleanEmail.split('@')[0]).trim();
-    const cleanPhone = (phoneNumber || '').trim();
+    const rawDigits = (phoneNumber || '').replace(/\D/g, '');
+    const validPhone = rawDigits.length >= 10 ? rawDigits : '';
 
     // 1. Check or Upsert in Supabase 'users' table
     let userRecord: any = null;
@@ -127,12 +149,14 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        const effectivePhone = validPhone || (existingUser.phone_number && existingUser.phone_number !== '91' ? existingUser.phone_number : '');
+
         const { data: updated } = await supabaseAdmin
           .from('users')
           .update({
             full_name: cleanName || existingUser.full_name,
             avatar_url: avatarUrl || existingUser.avatar_url,
-            phone_number: cleanPhone || existingUser.phone_number,
+            phone_number: effectivePhone,
             password_hash: password || existingUser.password_hash,
             last_login: new Date().toISOString()
           })
@@ -152,7 +176,7 @@ export async function POST(req: NextRequest) {
             full_name: cleanName,
             google_id: googleId || `google-${Date.now()}`,
             avatar_url: avatarUrl,
-            phone_number: cleanPhone,
+            phone_number: validPhone,
             password_hash: password || '',
             role: 'user',
             created_at: new Date().toISOString()
@@ -174,7 +198,7 @@ export async function POST(req: NextRequest) {
         id: `usr-${Date.now()}`,
         email: cleanEmail,
         full_name: cleanName,
-        phone_number: cleanPhone,
+        phone_number: validPhone,
         avatar_url: avatarUrl,
         password_hash: password || '',
         created_at: new Date().toISOString()
@@ -196,16 +220,15 @@ export async function POST(req: NextRequest) {
       }
       fs.writeFileSync(userFile, JSON.stringify(currentUsers, null, 2), 'utf8');
 
-      // Also save to GitHub ctgroupteam/linkaltool/data/users.json
-      saveUsersToGitHub(currentUsers).catch(() => {});
+      // Also save to GitHub ctgroupteam/linkaltool/data/users.json with remote merge
+      saveUsersToGitHub(userRecord).catch(() => {});
     } catch {}
 
     // 3. Dispatch Instant Notification to Founder Admin (Dual-Write: Supabase DB + Web Push)
+    const effectivePhoneDisplay = userRecord.phone_number || validPhone || '';
     const eventType = isNewUser ? 'new_user' : 'user_login';
-    const notifTitle = isNewUser ? '🎉 New User Registered' : '👤 User Logged In';
-    const notifBody = isNewUser
-      ? `${cleanName} signed up. Phone: ${cleanPhone || '—'}, Email: ${cleanEmail}`
-      : `${cleanName} logged into Linkal Studio. Phone: ${cleanPhone || '—'}, Email: ${cleanEmail}`;
+    const notifTitle = isNewUser ? `🎉 New User Registered: ${cleanName}` : `👤 Google Sign-In: ${cleanName}`;
+    const notifBody = `Name: ${cleanName}\nEmail: ${cleanEmail}\nAction: ${isNewUser ? 'New Google Sign-Up' : 'Google Account Login'}\nWhatsApp: ${effectivePhoneDisplay || 'Not provided'}`;
 
     try {
       await supabaseAdmin.from('admin_notifications').insert({
@@ -214,7 +237,7 @@ export async function POST(req: NextRequest) {
         title: notifTitle,
         body: notifBody,
         user_name: cleanName,
-        user_phone: cleanPhone,
+        user_phone: effectivePhoneDisplay,
         user_email: cleanEmail,
         site_slug: '',
         is_read: false,
@@ -233,7 +256,7 @@ export async function POST(req: NextRequest) {
           title: notifTitle,
           body: notifBody,
           userName: cleanName,
-          userPhone: cleanPhone,
+          userPhone: effectivePhoneDisplay,
           userEmail: cleanEmail,
         })
       });
@@ -245,7 +268,7 @@ export async function POST(req: NextRequest) {
         id: userRecord.id,
         email: userRecord.email,
         fullName: userRecord.full_name || cleanName,
-        phoneNumber: userRecord.phone_number || cleanPhone,
+        phoneNumber: userRecord.phone_number || effectivePhoneDisplay,
         avatarUrl: userRecord.avatar_url || avatarUrl,
       }
     });

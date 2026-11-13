@@ -396,7 +396,7 @@ function getCategoryInfo(cat: SiteType) {
         title: '6. Wedding Card Invitation',
         badge: 'Lifetime Free',
         badgeColor: 'bg-emerald-100 text-emerald-800',
-        desc: '10 luxury pre-built color themes, couple bios, countdown timer, event itinerary & Google Maps RSVP.',
+        desc: '10 luxury pre-built color themes, couple bios, countdown timer, event itinerary & Google Maps directions.',
         price: '₹0 Free Lifetime',
         isFree: true,
       };
@@ -798,6 +798,15 @@ function DashboardContent() {
         try {
           localStorage.setItem(`linkal_sites_${userEmail}`, JSON.stringify(serverSites));
         } catch {}
+
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const renewSiteId = urlParams.get('renew');
+          if (renewSiteId) {
+            const found = serverSites.find(s => s.id === renewSiteId || s.slug === renewSiteId);
+            if (found) setBillingModalSite(found);
+          }
+        }
       } else {
         setSites([]);
       }
@@ -843,7 +852,7 @@ function DashboardContent() {
         category === 'cv'
           ? 'Please enter your WhatsApp contact number for your CV'
           : category === 'wedding_card'
-          ? 'Please enter your WhatsApp RSVP contact number'
+          ? 'Please enter your WhatsApp contact number for wishes & attendance'
           : 'Please enter a valid WhatsApp orders number'
       );
       return;
@@ -1520,7 +1529,7 @@ function DashboardContent() {
                     </div>
                     <h3 className="font-extrabold text-xs text-zinc-950">6. Wedding Card Invitation</h3>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1 leading-snug">
-                      10 luxury pre-built color themes, couple bios, countdown timer, event itinerary &amp; Google Maps RSVP.
+                      10 luxury pre-built color themes, couple bios, countdown timer, event itinerary &amp; Google Maps directions.
                     </p>
                   </div>
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/60 text-[10px] font-bold text-emerald-700">

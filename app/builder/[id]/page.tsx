@@ -57,6 +57,7 @@ import {
 import { generateStaticHtml } from '@/lib/generator';
 import { generateQrSvg, downloadQrPng, downloadQrSvg } from '@/lib/qrcode';
 import { GoogleAuthModal } from '@/app/components/GoogleAuthModal';
+import { BillingModal } from '@/app/components/BillingModal';
 
 function Maximize2({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -222,6 +223,16 @@ export default function BuilderPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [previewCvFormatModal, setPreviewCvFormatModal] = useState<string | null>(null);
   const [isFullScreenPreview, setIsFullScreenPreview] = useState(false);
+  const [showBillingModal, setShowBillingModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('renew') === 'true') {
+        setShowBillingModal(true);
+      }
+    }
+  }, []);
 
   // Refs for tracking active state inside popstate (Android / browser hardware back button)
   const previewCvFormatModalRef = React.useRef(previewCvFormatModal);
@@ -3541,13 +3552,35 @@ export default function BuilderPage() {
                           </div>
 
                           {/* Dish Photo Upload */}
-                          {dish.imageUrl && (
-                            <div className="flex items-center gap-3">
-                              <img src={dish.imageUrl} alt={dish.name} className="w-12 h-12 rounded-lg object-cover border" />
-                              <div className="flex-1 space-y-1">
-                                <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-950 text-white rounded text-[10px] font-bold cursor-pointer">
+                          <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-zinc-200">
+                            {dish.imageUrl ? (
+                              <div className="relative group shrink-0">
+                                <img src={dish.imageUrl} alt={dish.name} className="w-14 h-14 rounded-lg object-cover border" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...(site.restaurantMenu || [])];
+                                    updated[index].imageUrl = '';
+                                    updateSiteField('restaurantMenu', updated);
+                                  }}
+                                  className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-600 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow"
+                                  title="Remove image"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="w-14 h-14 rounded-lg border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center text-zinc-400 bg-zinc-50 shrink-0">
+                                <Upload className="w-4 h-4 mb-0.5" />
+                                <span className="text-[9px] font-bold">No Image</span>
+                              </div>
+                            )}
+
+                            <div className="flex-1 space-y-1.5 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <label className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-950 text-white rounded-md text-[10px] font-bold cursor-pointer hover:bg-zinc-800 transition-colors shadow-xs">
                                   <Upload className="w-3 h-3" />
-                                  <span>Change Photo (WebP)</span>
+                                  <span>{dish.imageUrl ? 'Change Photo (WebP)' : 'Upload Dish Photo (WebP)'}</span>
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -3561,20 +3594,33 @@ export default function BuilderPage() {
                                     }
                                   />
                                 </label>
-                                <input
-                                  type="url"
-                                  value={dish.imageUrl}
-                                  onChange={(e) => {
-                                    const updated = [...(site.restaurantMenu || [])];
-                                    updated[index].imageUrl = e.target.value;
-                                    updateSiteField('restaurantMenu', updated);
-                                  }}
-                                  placeholder="Image URL..."
-                                  className="w-full px-2 py-0.5 bg-white border border-zinc-300 rounded text-[10px]"
-                                />
+                                {dish.imageUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = [...(site.restaurantMenu || [])];
+                                      updated[index].imageUrl = '';
+                                      updateSiteField('restaurantMenu', updated);
+                                    }}
+                                    className="text-[10px] text-red-600 font-semibold hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                )}
                               </div>
+                              <input
+                                type="url"
+                                value={dish.imageUrl || ''}
+                                onChange={(e) => {
+                                  const updated = [...(site.restaurantMenu || [])];
+                                  updated[index].imageUrl = e.target.value;
+                                  updateSiteField('restaurantMenu', updated);
+                                }}
+                                placeholder="Or paste image URL (https://...)"
+                                className="w-full px-2 py-0.5 bg-zinc-50 border border-zinc-200 rounded text-[10px] text-zinc-700"
+                              />
                             </div>
-                          )}
+                          </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <input
@@ -3723,7 +3769,7 @@ export default function BuilderPage() {
                       </div>
                     </div>
 
-                    {/* Date & RSVP */}
+                    {/* Date & Wishes WhatsApp */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">Wedding Date</label>
@@ -3735,7 +3781,7 @@ export default function BuilderPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">RSVP WhatsApp Phone</label>
+                        <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">WhatsApp for Blessings &amp; Attendance</label>
                         <input
                           type="text"
                           value={site.weddingCard?.rsvpPhone || site.whatsappNumber}
@@ -6124,6 +6170,18 @@ export default function BuilderPage() {
         onSuccess={handleAuthSuccess}
         isCvSite={site?.type === 'portfolio'}
       />
+
+      {/* Production Billing & Cashfree Renewal Modal */}
+      {site && (
+        <BillingModal
+          isOpen={showBillingModal}
+          onClose={() => setShowBillingModal(false)}
+          siteId={site.id}
+          siteSlug={site.slug}
+          siteName={site.name}
+          siteType={site.type}
+        />
+      )}
     </div>
   );
 }
