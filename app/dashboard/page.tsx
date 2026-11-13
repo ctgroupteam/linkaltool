@@ -1149,6 +1149,9 @@ function DashboardContent() {
                       <button
                         type="button"
                         onClick={() => {
+                          localStorage.removeItem('linkal_user');
+                          try { sessionStorage.removeItem('g_last_access_token'); } catch {}
+                          setUser(null);
                           setIsMenuOpen(false);
                           setShowGoogleModal(true);
                         }}
@@ -2511,6 +2514,10 @@ function DashboardContent() {
                     onClick={() => {
                       try {
                         localStorage.removeItem('linkal_user');
+                        sessionStorage.removeItem('g_last_access_token');
+                        if (typeof window !== 'undefined' && (window as any).google?.accounts?.id?.disableAutoSelect) {
+                          (window as any).google.accounts.id.disableAutoSelect();
+                        }
                       } catch {}
                       setUser(null);
                       setSites([]);

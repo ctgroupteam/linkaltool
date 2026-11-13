@@ -1030,7 +1030,7 @@ export default function BuilderPage() {
           </button>
 
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[110px] sm:max-w-[160px] md:max-w-[220px]">
+            <span className="font-extrabold text-xs sm:text-sm text-zinc-950 truncate max-w-[75px] sm:max-w-[160px] md:max-w-[220px]">
               {site.name}
             </span>
             <span className="hidden lg:inline-flex px-2 py-0.5 rounded bg-zinc-100 font-mono text-[10px] font-bold text-zinc-700 truncate max-w-[140px] shrink">
@@ -1099,7 +1099,7 @@ export default function BuilderPage() {
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={() => setShowQrModal(true)}
-            className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all shadow-xs shrink-0"
+            className="hidden sm:inline-flex items-center justify-center p-2 sm:px-3 sm:py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 text-xs font-bold transition-all shadow-xs shrink-0"
             title="Generate & Download QR Code"
           >
             <QrIcon className="w-4 h-4 text-zinc-900" />
@@ -1544,7 +1544,7 @@ export default function BuilderPage() {
         {/* Left Control Editor Pane */}
         <div
           className={`w-full md:w-[460px] lg:w-[500px] shrink-0 min-w-0 max-w-full bg-white border-r border-zinc-200 flex-col h-full overflow-y-auto overflow-x-hidden ${
-            mobileViewMode === 'preview' ? 'max-md:hidden md:flex' : 'flex'
+            mobileViewMode === 'preview' ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* Editor Sub-Tabs */}
@@ -5266,7 +5266,7 @@ export default function BuilderPage() {
         {/* Right Sandbox Live Iframe Preview (Renders Instant Realtime srcDoc) */}
         <div
           className={`flex-1 min-w-0 max-w-full flex-col items-stretch justify-start h-full w-full relative overflow-hidden ${
-            mobileViewMode === 'editor' ? 'max-md:hidden md:flex' : 'flex'
+            mobileViewMode === 'editor' ? 'hidden md:flex' : 'flex'
           } p-0 md:p-6 bg-white md:bg-zinc-100`}
         >
           {/* Preview Toolbar with Full Screen & Device switchers (Desktop mode only) */}
@@ -6145,20 +6145,31 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          <div className="flex-1 bg-zinc-950 p-2 sm:p-4 flex items-center justify-center overflow-hidden">
-            <iframe
-              key={`fs-preview-frame-${site.id}-${site.type}-${site.cvFormat || 'classic'}-${site.weddingCard?.themeId || ''}-${site.themeColor || ''}`}
-              srcDoc={previewHtml}
-              sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              className={`bg-white transition-all duration-300 ${
-                previewDevice === 'mobile'
-                  ? 'w-[375px] max-w-full h-full max-h-[812px] rounded-3xl shadow-2xl border-8 border-zinc-800'
-                  : previewDevice === 'tablet'
-                  ? 'w-[768px] max-w-full h-full max-h-[900px] rounded-2xl shadow-2xl border-8 border-zinc-800'
-                  : 'w-full h-full rounded-xl border border-zinc-800 shadow-2xl'
-              }`}
-              title="Full Screen Live Preview"
-            />
+          <div className="flex-1 overflow-hidden relative bg-white">
+            {/* Mobile/Tablet: centered phone frame; Desktop: true full-screen fill */}
+            {(previewDevice === 'mobile' || previewDevice === 'tablet') ? (
+              <div className="w-full h-full bg-zinc-950 flex items-center justify-center p-4">
+                <iframe
+                  key={`fs-preview-frame-${site.id}-${site.type}-${site.cvFormat || 'classic'}-${site.weddingCard?.themeId || ''}-${site.themeColor || ''}`}
+                  srcDoc={previewHtml}
+                  sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+                  className={`bg-white transition-all duration-300 ${
+                    previewDevice === 'mobile'
+                      ? 'w-[375px] max-w-full h-full max-h-[812px] rounded-3xl shadow-2xl border-8 border-zinc-800'
+                      : 'w-[768px] max-w-full h-full max-h-[900px] rounded-2xl shadow-2xl border-8 border-zinc-800'
+                  }`}
+                  title="Full Screen Live Preview"
+                />
+              </div>
+            ) : (
+              <iframe
+                key={`fs-preview-frame-${site.id}-${site.type}-${site.cvFormat || 'classic'}-${site.weddingCard?.themeId || ''}-${site.themeColor || ''}`}
+                srcDoc={previewHtml}
+                sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+                style={{ width: '100%', height: '100%', border: 'none', display: 'block', margin: 0, padding: 0 }}
+                title="Full Screen Live Preview"
+              />
+            )}
           </div>
         </div>
       )}

@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
         await fetch('https://admin.linkal.in/api/notify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(6000),
           body: JSON.stringify({
             eventType: 'forgot_password',
             title: '🔑 Password Assistance Requested',
@@ -251,6 +252,7 @@ export async function POST(req: NextRequest) {
       await fetch('https://admin.linkal.in/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(6000),
         body: JSON.stringify({
           eventType,
           title: notifTitle,

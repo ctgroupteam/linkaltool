@@ -66,9 +66,16 @@ export function GoogleAuthModal({
       setEmail('');
       setPassword('');
       setGoogleUser(null);
-      if (typeof window !== 'undefined' && (window as any).google?.accounts?.id?.disableAutoSelect) {
+      if (typeof window !== 'undefined') {
         try {
-          (window as any).google.accounts.id.disableAutoSelect();
+          if ((window as any).google?.accounts?.id?.disableAutoSelect) {
+            (window as any).google.accounts.id.disableAutoSelect();
+          }
+          const lastToken = sessionStorage.getItem('g_last_access_token');
+          if (lastToken && (window as any).google?.accounts?.oauth2?.revoke) {
+            (window as any).google.accounts.oauth2.revoke(lastToken, () => {});
+            sessionStorage.removeItem('g_last_access_token');
+          }
         } catch {}
       }
     }
@@ -88,10 +95,18 @@ export function GoogleAuthModal({
             (window as any).google.accounts.id.disableAutoSelect();
           } catch {}
         }
+        const lastToken = sessionStorage.getItem('g_last_access_token');
+        if (lastToken && (window as any).google?.accounts?.oauth2?.revoke) {
+          try {
+            (window as any).google.accounts.oauth2.revoke(lastToken, () => {});
+            sessionStorage.removeItem('g_last_access_token');
+          } catch {}
+        }
+
         const client = (window as any).google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
           scope: 'email profile openid',
-          prompt: 'select_account',
+          prompt: 'select_account consent',
           callback: async (tokenResponse: any) => {
             if (tokenResponse.error) {
               setLoading(false);
@@ -100,6 +115,12 @@ export function GoogleAuthModal({
             }
 
             try {
+              if (tokenResponse.access_token) {
+                try {
+                  sessionStorage.setItem('g_last_access_token', tokenResponse.access_token);
+                } catch {}
+              }
+
               const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                 headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
               });
@@ -121,6 +142,9 @@ export function GoogleAuthModal({
               setEmail(cleanEmail);
               setFullName(cleanName);
 
+              // Use typed phone if present, or initialPhone
+              const effectivePhone = (phoneNumber.trim() || initialPhone.trim() || '').replace(/\D/g, '');
+
               // Seamless 1-Click Authenticate: Register or Sign In immediately
               try {
                 const authRes = await fetch('/api/auth/google', {
@@ -132,7 +156,7 @@ export function GoogleAuthModal({
                     fullName: cleanName,
                     avatarUrl: avatar,
                     googleId: profile.sub || `google-${Date.now()}`,
-                    phoneNumber: initialPhone || '',
+                    phoneNumber: effectivePhone,
                   }),
                 });
 
@@ -142,7 +166,7 @@ export function GoogleAuthModal({
                   email: cleanEmail,
                   fullName: cleanName,
                   avatarUrl: avatar,
-                  phoneNumber: initialPhone || '',
+                  phoneNumber: effectivePhone,
                 };
 
                 // Permanently persist login data in localStorage & cookie
@@ -167,7 +191,7 @@ export function GoogleAuthModal({
           },
         });
 
-        client.requestAccessToken({ prompt: 'select_account' });
+        client.requestAccessToken({ prompt: 'select_account consent' });
       } catch (err: any) {
         setLoading(false);
         setError('Could not open Google popup. Please enter your email below.');

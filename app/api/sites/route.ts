@@ -417,6 +417,7 @@ export async function POST(request: Request) {
       await fetch('https://admin.linkal.in/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(6000),
         body: JSON.stringify({
           eventType: 'new_site',
           siteTypeLabel,
