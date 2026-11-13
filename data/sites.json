@@ -1,5 +1,83 @@
 [
   {
+    "id": "site-1794565467534",
+    "name": "Royal Hotel",
+    "slug": "royalhotel",
+    "type": "restaurant",
+    "status": "draft",
+    "userEmail": "mdyahyamundewadi@gmail.com",
+    "userName": "Yahya Mundewadi",
+    "whatsappNumber": "919999999999",
+    "defaultWhatsappMessage": "Hello Royal Hotel, I would like to place an order from your digital menu!",
+    "themeColor": "#059669",
+    "fontFamily": "Inter",
+    "bannerSlider": [
+      {
+        "id": "slide-1",
+        "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80",
+        "title": "Welcome to Royal Hotel",
+        "subtitle": "Explore our exclusive offerings and order directly on WhatsApp with instant support.",
+        "ctaText": "Chat on WhatsApp"
+      }
+    ],
+    "sliderAutoRotateSeconds": 4,
+    "restaurantLoadingAnimation": true,
+    "restaurantMenu": [
+      {
+        "id": "dish-1",
+        "name": "Special Chicken Dum Biryani",
+        "category": "Biryani & Rice",
+        "price": "280",
+        "description": "Slow-cooked aromatic basmati rice layered with tender spiced chicken and saffron.",
+        "imageUrl": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80",
+        "isVeg": false,
+        "badge": "Signature Dish"
+      },
+      {
+        "id": "dish-2",
+        "name": "Paneer Butter Masala",
+        "category": "Gravy & Curries",
+        "price": "240",
+        "description": "Fresh cottage cheese simmered in rich buttery tomato and cashew gravy.",
+        "imageUrl": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fit=crop&q=80",
+        "isVeg": true,
+        "badge": "Chef Special"
+      },
+      {
+        "id": "dish-3",
+        "name": "Garlic Butter Naan",
+        "category": "Tandoor Breads",
+        "price": "60",
+        "description": "Traditional clay oven baked flatbread infused with roasted garlic and melted butter.",
+        "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&auto=format&fit=crop&q=80",
+        "isVeg": true
+      }
+    ],
+    "cvTitle": "Royal Hotel",
+    "cvHeadline": "Professional Title",
+    "cvLocation": "City, Country",
+    "cvEmail": "mdyahyamundewadi@gmail.com",
+    "cvPhone": "919999999999",
+    "cvLinkedin": "",
+    "cvLinkedinClickable": true,
+    "cvGithub": "",
+    "cvGithubClickable": true,
+    "cvWebsite": "https://royalhotel.linkal.in",
+    "cvWebsiteClickable": true,
+    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
+    "cvShowSummary": true,
+    "cvShowExperience": true,
+    "cvShowEducation": true,
+    "cvShowSkills": true,
+    "cvShowProjects": true,
+    "cvShowCertifications": true,
+    "cvFormat": "classic",
+    "createdAt": "2026-11-13T10:24:27.534Z",
+    "updatedAt": "2026-11-13T10:24:27.554Z",
+    "visitsCount": 0,
+    "clicksCount": 0
+  },
+  {
     "id": "site-1794147198230",
     "name": "tester",
     "slug": "tester",
