@@ -50,15 +50,12 @@ export async function POST(req: NextRequest) {
       returnUrl,
     });
 
-    const checkoutUrl = `https://payments.cashfree.com/order/#${order.payment_session_id}`;
-
     return NextResponse.json({
       success: true,
       orderId: order.order_id,
       amount: order.order_amount,
       currency: order.order_currency,
       paymentSessionId: order.payment_session_id,
-      checkoutUrl,
       isAutoPay,
     });
   } catch (error: any) {
