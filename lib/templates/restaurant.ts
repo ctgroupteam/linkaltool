@@ -198,6 +198,25 @@ export function generateRestaurantHtml(site: SiteData): string {
     </div>
   ` : ''}
 
+  <!-- 7-Day Trial Expiration & Renewal Notice -->
+  ${trialExpired ? `
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; border-bottom: 2px solid #f59e0b; padding: 0.85rem 1.25rem; position: sticky; top: 0; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+      <div style="max-width: 800px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="text-align: left;">
+          <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.88rem; color: #fbbf24;">
+            <span>⏱️ 7-Day Free Trial Ended • Renewal Due</span>
+          </div>
+          <p style="font-size: 0.75rem; color: #cbd5e1; margin-top: 2px; line-height: 1.4;">
+            If you are the restaurant owner, renew your plan for ₹99 to keep your live QR menu active and avoid losing customers.
+          </p>
+        </div>
+        <a href="https://studio.linkal.in/dashboard?renew=${encodeURIComponent(site.id || '')}&slug=${encodeURIComponent(site.slug || '')}" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 800; font-size: 0.78rem; padding: 0.55rem 1.25rem; border-radius: 99px; text-decoration: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(245,158,11,0.3); display: inline-block;">
+          Owner Login &amp; Renew Menu (₹99) &rarr;
+        </a>
+      </div>
+    </div>
+  ` : ''}
+
   <header class="rest-header">
     ${site.logoUrl ? `
       <img src="${escapeHtml(site.logoUrl)}" alt="${siteTitle}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.85rem; border: 2.5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: block;" onerror="this.style.display='none'" />

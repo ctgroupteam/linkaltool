@@ -3,11 +3,52 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, ShieldCheck, Zap, ArrowRight, Download } from 'lucide-react';
 
+function AlertTriangle({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
 function CreditCard({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="5" width="20" height="14" rx="2" />
       <line x1="2" y1="10" x2="22" y2="10" />
+    </svg>
+  );
+}
+
+function RefreshCw({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+      <path d="M16 21h5v-5" />
+    </svg>
+  );
+}
+
+function Calendar({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function Award({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="7" />
+      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
     </svg>
   );
 }
@@ -73,6 +114,7 @@ export function BillingModal({
   const [activeTab, setActiveTab] = useState<'plans' | 'orders' | 'receipt'>('plans');
   const [receiptList, setReceiptList] = useState<PaymentReceipt[]>([]);
   const [activeReceipt, setActiveReceipt] = useState<PaymentReceipt | null>(null);
+  const [showAutoPayModal, setShowAutoPayModal] = useState(false);
 
   useEffect(() => {
     try {
@@ -173,55 +215,63 @@ export function BillingModal({
     },
   ];
 
-  const handlePayNow = async () => {
+  // Initiate Cashfree checkout session
+  const initiatePayment = async (planKey: string, isAutoPay: boolean) => {
     try {
       setLoading(true);
-      const chosen = PLANS.find((p) => p.id === selectedPlan) || PLANS[0];
-      const newInvoiceNo = `INV-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
-      const orderId = `order_${Date.now()}`;
 
-      // Call checkout API
-      try {
-        await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            planTier: selectedPlan,
-            storeId: siteId,
-            slug: siteSlug,
-          }),
-        });
-      } catch {}
+      const userStr = localStorage.getItem('linkal_user');
+      let customerEmail = 'owner@linkal.in';
+      let customerPhone = '919307426215';
 
-      // Create official receipt
-      const newReceipt: PaymentReceipt = {
-        orderId,
-        invoiceNo: newInvoiceNo,
-        siteId,
-        siteSlug: siteSlug || 'menu',
-        siteName: siteName || 'Digital Menu Website',
-        planName: chosen.name,
-        amount: chosen.price,
-        subtotal: chosen.subtotal,
-        gst: chosen.gst,
-        date: new Date().toISOString(),
-        customerName: siteName || 'Website Owner',
-        paymentMethod: 'Cashfree Production (UPI / Cards)',
-        status: 'PAID',
-      };
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          if (u.email) customerEmail = u.email;
+          if (u.phoneNumber) customerPhone = u.phoneNumber;
+        } catch {}
+      }
 
-      // Persist in localStorage
-      const updatedHistory = [newReceipt, ...receiptList];
-      setReceiptList(updatedHistory);
-      localStorage.setItem('linkal_payment_history', JSON.stringify(updatedHistory));
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planTier: planKey,
+          isAutoPay,
+          storeId: siteId,
+          slug: siteSlug,
+          customerEmail,
+          customerPhone,
+        }),
+      });
 
-      // Show receipt view
-      setActiveReceipt(newReceipt);
-      setActiveTab('receipt');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create Cashfree checkout session');
+      }
+
+      if (data.checkoutUrl) {
+        // Direct redirect to Cashfree Production checkout
+        window.location.href = data.checkoutUrl;
+      } else if (data.paymentSessionId) {
+        window.location.href = `https://payments.cashfree.com/order/#${data.paymentSessionId}`;
+      } else {
+        throw new Error('Cashfree payment link not received');
+      }
     } catch (err: any) {
-      alert(err.message || 'Payment initiation error');
+      alert(`Payment Gateway Error: ${err.message || 'Could not connect to Cashfree'}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayButtonClick = () => {
+    // If selecting ₹99 plan for restaurant, open the AutoPay / One-Time options dialog
+    if (selectedPlan === '1_month' && isRestaurant) {
+      setShowAutoPayModal(true);
+    } else {
+      initiatePayment(selectedPlan, false);
     }
   };
 
@@ -334,7 +384,7 @@ export function BillingModal({
         {/* Navigation Tabs */}
         <div className="flex rounded-xl bg-zinc-100 p-1 text-xs font-bold">
           <button
-            onClick={() => setActiveTab('plans')}
+            onClick={() => { setActiveTab('plans'); setShowAutoPayModal(false); }}
             className={`flex-1 py-1.5 rounded-lg transition-all ${
               activeTab === 'plans'
                 ? 'bg-white text-zinc-950 shadow-xs'
@@ -344,7 +394,7 @@ export function BillingModal({
             Subscription Plans
           </button>
           <button
-            onClick={() => setActiveTab('orders')}
+            onClick={() => { setActiveTab('orders'); setShowAutoPayModal(false); }}
             className={`flex-1 py-1.5 rounded-lg transition-all ${
               activeTab === 'orders'
                 ? 'bg-white text-zinc-950 shadow-xs'
@@ -355,7 +405,7 @@ export function BillingModal({
           </button>
           {activeReceipt && (
             <button
-              onClick={() => setActiveTab('receipt')}
+              onClick={() => { setActiveTab('receipt'); setShowAutoPayModal(false); }}
               className={`flex-1 py-1.5 rounded-lg transition-all ${
                 activeTab === 'receipt'
                   ? 'bg-white text-emerald-800 shadow-xs'
@@ -386,6 +436,136 @@ export function BillingModal({
               </button>
             </div>
           </div>
+        ) : showAutoPayModal ? (
+          /* DECENT, DIGNIFIED AUTOPAY & ONE-TIME CHOICE MODAL (NO HUNKY-PUNKY STYLING) */
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+              <div>
+                <h4 className="text-base font-extrabold text-zinc-950">
+                  Select Subscription Frequency
+                </h4>
+                <p className="text-xs text-zinc-500">
+                  Choose how you would like to protect your online QR menu website from downtime.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAutoPayModal(false)}
+                className="text-xs font-bold text-zinc-500 hover:text-zinc-900"
+              >
+                ← Back
+              </button>
+            </div>
+
+            {/* Option 1: AutoPay (₹99 / month - Highlighted in dignified style with SVG icons) */}
+            <div className="p-5 rounded-2xl border-2 border-indigo-600/90 bg-indigo-50/30 relative space-y-3 shadow-xs">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                    <RefreshCw className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h5 className="text-sm font-extrabold text-zinc-950">AutoPay — ₹99 / Month</h5>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                        Most Affordable
+                      </span>
+                    </div>
+                    <p className="text-xs text-indigo-950/80 font-medium mt-0.5">
+                      Add AutoPay every month to stop the online menu from closing. Cancel anytime.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dignified Benefits List with clean SVGs */}
+              <div className="space-y-1.5 text-xs text-zinc-700 pt-1">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <span>Never lose customers — keeps your table QR code live 24/7 without manual renewal</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <span>Supported on PhonePe, Google Pay, Paytm, BHIM &amp; all major UPI apps</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <span>Zero cancellation charges — pause or cancel anytime with 1 tap</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => initiatePayment('1_month_autopay', true)}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>{loading ? 'Connecting to Cashfree...' : 'Set Up AutoPay ₹99 / Month (UPI / PhonePe)'}</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </button>
+            </div>
+
+            {/* Option 2: One-Time Payment (₹99 for 30 Days) */}
+            <div className="p-4 rounded-2xl border border-zinc-200 bg-white space-y-2.5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-zinc-100 text-zinc-700 flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-zinc-600" />
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-extrabold text-zinc-950">Pay One-Time — ₹99 (30 Days)</h5>
+                    <p className="text-xs text-zinc-500">Pay once without recurring billing.</p>
+                  </div>
+                </div>
+                <span className="font-mono font-bold text-zinc-950 text-sm">₹99</span>
+              </div>
+
+              {/* Warning Notice about website stopping */}
+              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl flex items-start gap-2 text-xs text-amber-900">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="leading-snug">
+                  <strong>Important Notice:</strong> Your website will be stopped after 30 days unless renewed manually. Don't lose customers or your active QR menu website.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => initiatePayment('1_month', false)}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-zinc-900 hover:bg-black text-white rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                <span>{loading ? 'Connecting...' : 'Pay ₹99 Once for 30 Days'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Option 3: 1 Full Year Annual Saver (₹899) */}
+            <div className="p-4 rounded-2xl border border-zinc-200 bg-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <Award className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h5 className="text-xs font-extrabold text-zinc-950">1 Full Year (Annual Saver)</h5>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">
+                      Save 24%
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">365 days of uninterrupted service for ₹899.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => initiatePayment('1_year_899', false)}
+                disabled={loading}
+                className="px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                Pay ₹899 ↗
+              </button>
+            </div>
+          </div>
         ) : activeTab === 'plans' ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -395,7 +575,7 @@ export function BillingModal({
                   onClick={() => setSelectedPlan(plan.id)}
                   className={`p-4 rounded-2xl border-2 cursor-pointer transition-all relative flex flex-col justify-between ${
                     selectedPlan === plan.id
-                      ? 'border-blue-600 bg-blue-50/40 shadow-sm'
+                      ? 'border-indigo-600 bg-indigo-50/30 shadow-sm'
                       : 'border-zinc-200 bg-white hover:border-zinc-300'
                   }`}
                 >
@@ -406,7 +586,7 @@ export function BillingModal({
                   )}
 
                   <div>
-                    <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider block mb-1">
                       {plan.badge}
                     </span>
                     <h4 className="text-base font-extrabold text-zinc-950">{plan.name}</h4>
@@ -418,7 +598,7 @@ export function BillingModal({
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-zinc-200/60 flex items-center justify-between text-xs font-semibold text-zinc-700">
-                    <span>WhatsApp Orders</span>
+                    <span>Live QR Menu &amp; WhatsApp Orders</span>
                     <Check className="w-4 h-4 text-emerald-600" />
                   </div>
                 </div>
@@ -431,14 +611,14 @@ export function BillingModal({
                 <span>Cashfree Production Gateway &bull; 100% Secure Checkout</span>
               </div>
               <p className="text-[11px] text-zinc-500">
-                Supports UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking, and EMI.
+                Supports UPI AutoPay, PhonePe, Google Pay, Paytm, Credit/Debit Cards, NetBanking, and EMI.
               </p>
             </div>
 
             <button
-              onClick={handlePayNow}
+              onClick={handlePayButtonClick}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-600/25 transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-600/25 transition-all cursor-pointer"
             >
               <CreditCard className="w-4 h-4" />
               <span>{loading ? 'Processing via Cashfree...' : `Pay ${PLANS.find((p) => p.id === selectedPlan)?.price} Now`}</span>
@@ -448,10 +628,12 @@ export function BillingModal({
         ) : activeTab === 'orders' ? (
           <div className="space-y-3">
             {receiptList.length === 0 ? (
-              <div className="text-center py-8 text-zinc-400 text-xs">
-                <FileText className="w-8 h-8 mx-auto mb-2 text-zinc-300" />
-                <p>No completed payments yet.</p>
-                <p className="text-[11px] text-zinc-400 mt-1">Select a plan above to renew your website.</p>
+              <div className="text-center py-10 px-4 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 text-zinc-500 text-xs space-y-2">
+                <FileText className="w-8 h-8 mx-auto text-zinc-400" />
+                <h5 className="font-extrabold text-zinc-800 text-sm">No Completed Payment Receipts Yet</h5>
+                <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
+                  Official GST tax invoices, transaction IDs, and PDF/Image download options will appear here immediately after your Cashfree payment is completed.
+                </p>
               </div>
             ) : (
               receiptList.map((rc, idx) => (
@@ -469,7 +651,7 @@ export function BillingModal({
                       setActiveReceipt(rc);
                       setActiveTab('receipt');
                     }}
-                    className="px-3 py-1.5 bg-white border border-zinc-200 hover:bg-zinc-100 rounded-xl text-xs font-bold text-zinc-800 shadow-2xs"
+                    className="px-3 py-1.5 bg-white border border-zinc-200 hover:bg-zinc-100 rounded-xl text-xs font-bold text-zinc-800 shadow-2xs cursor-pointer"
                   >
                     View Receipt ↗
                   </button>
@@ -478,7 +660,7 @@ export function BillingModal({
             )}
           </div>
         ) : (
-          /* Receipt Modal View */
+          /* Real Receipt Modal View */
           activeReceipt && (
             <div className="space-y-4">
               <div id="receipt-print-area" className="p-5 rounded-2xl border border-zinc-300 bg-white space-y-4 text-xs">
@@ -507,7 +689,7 @@ export function BillingModal({
                   </div>
                   <div>
                     <span className="text-zinc-500 block">Payment Gateway:</span>
-                    <span className="font-semibold text-zinc-800">Cashfree Production UPI</span>
+                    <span className="font-semibold text-zinc-800">{activeReceipt.paymentMethod}</span>
                   </div>
                 </div>
 
@@ -540,7 +722,7 @@ export function BillingModal({
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl font-bold text-xs shadow-xs"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl font-bold text-xs shadow-xs cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Download PDF (Print)</span>
@@ -548,10 +730,10 @@ export function BillingModal({
                 <button
                   type="button"
                   onClick={() => handleDownloadImage(activeReceipt)}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-xs"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-xs cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Download Image</span>
+                  <span>Download Image (PNG)</span>
                 </button>
               </div>
             </div>

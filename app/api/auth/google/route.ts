@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
 
       if (existingUser) {
         isNewUser = false;
-        if (action === 'signin' && existingUser.password_hash && password) {
+        if ((action === 'signin' || action === 'verify_or_create_with_password') && existingUser.password_hash && password) {
           if (existingUser.password_hash !== password) {
             return NextResponse.json({ error: 'Incorrect password. Click "Forgot Password?" for assistance.' }, { status: 401 });
           }

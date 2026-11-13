@@ -663,6 +663,109 @@ function DashboardContent() {
       if (savedTab && ['sites', 'builder', 'templates', 'settings', 'profile'].includes(savedTab)) {
         setDashboardTab(savedTab as any);
       }
+
+      // Handle Cashfree Payment Success Return
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentStatus = urlParams.get('status');
+        const orderId = urlParams.get('order_id');
+        const siteIdParam = urlParams.get('site_id');
+        const slugParam = urlParams.get('slug');
+        const amountParam = urlParams.get('amount') || '99';
+        const planParam = urlParams.get('plan') || '1_month_autopay';
+        const renewSiteId = urlParams.get('renew');
+
+        // Check if renewing while not logged in
+        if (renewSiteId && !savedUser) {
+          setShowGoogleModal(true);
+        }
+
+        if (paymentStatus === 'success' && orderId) {
+          const isAutoPay = planParam.includes('autopay');
+          const planTitle = isAutoPay ? '1 Month AutoPay (₹99/mo)' : (amountParam === '899' ? '1 Full Year Access (₹899)' : '1 Month Access (₹99)');
+          const subtotalNum = (Number(amountParam) / 1.18).toFixed(2);
+          const gstNum = (Number(amountParam) - Number(subtotalNum)).toFixed(2);
+          const invoiceNo = `INV-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
+
+          let currentUser: any = null;
+          if (savedUser) {
+            try { currentUser = JSON.parse(savedUser); } catch {}
+          }
+
+          const newReceipt = {
+            orderId,
+            invoiceNo,
+            siteId: siteIdParam || '',
+            siteSlug: slugParam || 'menu',
+            siteName: slugParam ? `${slugParam.toUpperCase()} Menu` : 'Digital Menu',
+            planName: planTitle,
+            amount: `₹${amountParam}`,
+            subtotal: `₹${subtotalNum}`,
+            gst: `₹${gstNum}`,
+            date: new Date().toISOString(),
+            customerName: currentUser?.fullName || 'Website Owner',
+            customerEmail: currentUser?.email || '',
+            paymentMethod: isAutoPay ? 'Cashfree UPI AutoPay (PhonePe / GPay)' : 'Cashfree Production (UPI / Cards)',
+            status: 'PAID' as const,
+          };
+
+          try {
+            const stored = localStorage.getItem('linkal_payment_history');
+            const history = stored ? JSON.parse(stored) : [];
+            if (!history.some((r: any) => r.orderId === orderId)) {
+              localStorage.setItem('linkal_payment_history', JSON.stringify([newReceipt, ...history]));
+            }
+          } catch {}
+
+          // Notify Founder Admin & Trigger Web Push
+          fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventType: 'subscription',
+              title: `💳 New Subscription: ${slugParam || 'Website'} (${newReceipt.amount})`,
+              body: `User: ${currentUser?.fullName || 'Website Owner'} (${currentUser?.email || 'No email'})\nPlan: ${planTitle}\nAmount: ${newReceipt.amount}\nWebsite: https://${slugParam}.linkal.in\nPayment: Cashfree Production`,
+              userName: currentUser?.fullName || 'Website Owner',
+              userEmail: currentUser?.email || '',
+              userPhone: currentUser?.phoneNumber || '',
+              siteSlug: slugParam || '',
+            }),
+          }).catch(console.warn);
+
+          // Update site status on server
+          if (siteIdParam) {
+            fetch(`/api/sites/${siteIdParam}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                isPaid: true,
+                planStatus: 'active',
+                planExpiresAt: new Date(Date.now() + (amountParam === '899' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+                subscriptionEndsAt: new Date(Date.now() + (amountParam === '899' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+                isAutoPay,
+              }),
+            }).catch(console.warn);
+          }
+
+          // Open billing modal with verified receipt
+          setBillingModalSite({
+            id: siteIdParam || 'site',
+            name: slugParam || 'Website',
+            slug: slugParam || 'menu',
+            type: 'restaurant',
+            status: 'live',
+            whatsappNumber: currentUser?.phoneNumber || '919307426215',
+            themeColor: '#e11d48',
+            fontFamily: 'Plus Jakarta Sans',
+            bannerSlider: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as any);
+
+          // Clear query params
+          window.history.replaceState({}, '', '/dashboard');
+        }
+      }
     } catch {}
   }, []);
 

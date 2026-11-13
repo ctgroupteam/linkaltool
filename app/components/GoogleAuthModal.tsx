@@ -142,48 +142,10 @@ export function GoogleAuthModal({
               setEmail(cleanEmail);
               setFullName(cleanName);
 
-              // Use typed phone if present, or initialPhone
-              const effectivePhone = (phoneNumber.trim() || initialPhone.trim() || '').replace(/\D/g, '');
-
-              // Seamless 1-Click Authenticate: Register or Sign In immediately
-              try {
-                const authRes = await fetch('/api/auth/google', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    action: 'google_one_click',
-                    email: cleanEmail,
-                    fullName: cleanName,
-                    avatarUrl: avatar,
-                    googleId: profile.sub || `google-${Date.now()}`,
-                    phoneNumber: effectivePhone,
-                  }),
-                });
-
-                const authData = await authRes.json();
-                const authenticatedUser = authData.user || {
-                  id: `usr-${Date.now()}`,
-                  email: cleanEmail,
-                  fullName: cleanName,
-                  avatarUrl: avatar,
-                  phoneNumber: effectivePhone,
-                };
-
-                // Permanently persist login data in localStorage & cookie
-                try {
-                  localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
-                  document.cookie = `linkal_user_email=${encodeURIComponent(authenticatedUser.email)}; path=/; max-age=31536000; SameSite=Lax`;
-                } catch {}
-
-                setLoading(false);
-                onSuccess(authenticatedUser);
-                onClose();
-                return;
-              } catch (authErr: any) {
-                console.warn('1-Click automatic auth fallback to manual form:', authErr);
-              }
-
+              // Switch to password entry with exact selected account bound
+              setTab('signin');
               setLoading(false);
+              setSuccessMsg(`Account selected: ${cleanEmail}. Please enter your password to confirm and save your session.`);
             } catch (err: any) {
               setLoading(false);
               setError(err.message || 'Error reading Google profile');
@@ -198,6 +160,7 @@ export function GoogleAuthModal({
       }
     } else {
       setLoading(false);
+      setError('Google Sign-In is initializing. Please try again in 2 seconds.');
     }
   };
 
@@ -271,6 +234,7 @@ export function GoogleAuthModal({
 
         try {
           localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
+          document.cookie = `linkal_user_email=${encodeURIComponent(authenticatedUser.email)}; path=/; max-age=31536000; SameSite=Lax`;
         } catch {}
 
         onSuccess(authenticatedUser);
