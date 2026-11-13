@@ -221,8 +221,10 @@ export async function POST(req: NextRequest) {
       }
       fs.writeFileSync(userFile, JSON.stringify(currentUsers, null, 2), 'utf8');
 
-      // Also save to GitHub ctgroupteam/linkaltool/data/users.json with remote merge
-      saveUsersToGitHub(userRecord).catch(() => {});
+      // Only sync to GitHub for new users to prevent triggering redundant Vercel rebuilds on logins
+      if (isNewUser) {
+        saveUsersToGitHub(userRecord).catch(() => {});
+      }
     } catch {}
 
     // 3. Dispatch Instant Notification to Founder Admin (Dual-Write: Supabase DB + Web Push)

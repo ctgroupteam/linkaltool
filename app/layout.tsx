@@ -96,6 +96,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/linkal.jpeg" type="image/jpeg" />
         <link rel="apple-touch-icon" href="/linkal.jpeg" />
         <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script src="https://sdk.cashfree.com/js/v3/cashfree.js" async></script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

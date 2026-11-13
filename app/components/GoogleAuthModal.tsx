@@ -142,10 +142,43 @@ export function GoogleAuthModal({
               setEmail(cleanEmail);
               setFullName(cleanName);
 
-              // Switch to password entry with exact selected account bound
-              setTab('signin');
-              setLoading(false);
-              setSuccessMsg(`Account selected: ${cleanEmail}. Please enter your password to confirm and save your session.`);
+              // Clear any stale cached user session
+              try {
+                localStorage.removeItem('linkal_user');
+                sessionStorage.removeItem('linkal_user');
+              } catch {}
+
+              // Immediately authenticate user with backend and trigger admin push notification
+              const authRes = await fetch('/api/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'google_signin',
+                  email: cleanEmail,
+                  fullName: cleanName,
+                  googleId: profile.sub,
+                  avatarUrl: avatar,
+                  phoneNumber: phoneNumber.trim() || undefined,
+                }),
+              });
+
+              const authData = await authRes.json();
+              if (!authRes.ok) throw new Error(authData.error || 'Google Sign-In failed');
+
+              const authenticatedUser = authData.user || {
+                id: `usr-${Date.now()}`,
+                email: cleanEmail,
+                fullName: cleanName,
+                phoneNumber: authData.user?.phoneNumber || phoneNumber.trim() || '',
+                avatar_url: avatar,
+              };
+
+              try {
+                localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
+              } catch {}
+
+              onSuccess(authenticatedUser);
+              onClose();
             } catch (err: any) {
               setLoading(false);
               setError(err.message || 'Error reading Google profile');

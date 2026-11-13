@@ -255,7 +255,40 @@ export function BillingModal({
         // Direct redirect to Cashfree Production checkout
         window.location.href = data.checkoutUrl;
       } else if (data.paymentSessionId) {
-        window.location.href = `https://payments.cashfree.com/order/#${data.paymentSessionId}`;
+        // Official Cashfree Web SDK v3 Checkout
+        const loadCashfreeSdk = async (): Promise<any> => {
+          if ((window as any).Cashfree) return (window as any).Cashfree;
+          return new Promise((resolve, reject) => {
+            const existingScript = document.querySelector('script[src*="sdk.cashfree.com/js/v3/cashfree.js"]');
+            if (existingScript) {
+              const checkInterval = setInterval(() => {
+                if ((window as any).Cashfree) {
+                  clearInterval(checkInterval);
+                  resolve((window as any).Cashfree);
+                }
+              }, 50);
+              setTimeout(() => {
+                clearInterval(checkInterval);
+                if ((window as any).Cashfree) resolve((window as any).Cashfree);
+                else reject(new Error('Cashfree SDK initialization timeout'));
+              }, 3000);
+              return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+            script.async = true;
+            script.onload = () => resolve((window as any).Cashfree);
+            script.onerror = () => reject(new Error('Failed to load Cashfree Payment SDK'));
+            document.head.appendChild(script);
+          });
+        };
+
+        const CashfreeSDK = await loadCashfreeSdk();
+        const cashfreeInstance = CashfreeSDK({ mode: 'production' });
+        await cashfreeInstance.checkout({
+          paymentSessionId: data.paymentSessionId,
+          redirectTarget: '_self',
+        });
       } else {
         throw new Error('Cashfree payment link not received');
       }
