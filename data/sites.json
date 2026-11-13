@@ -4,7 +4,7 @@
     "name": "Royal Hotel",
     "slug": "royalhotel",
     "type": "restaurant",
-    "status": "draft",
+    "status": "deploying",
     "userEmail": "mdyahyamundewadi@gmail.com",
     "userName": "Yahya Mundewadi",
     "whatsappNumber": "919999999999",
@@ -73,10 +73,11 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-13T10:24:27.534Z",
-    "updatedAt": "2026-11-13T10:25:29.263Z",
+    "updatedAt": "2026-11-13T10:25:30.168Z",
     "visitsCount": 0,
     "clicksCount": 0,
-    "logoUrl": "https://cdn.jsdelivr.net/gh/ctgroupteam/linkaltool@main/public/uploads/1794565499120-1000243420.webp"
+    "logoUrl": "https://cdn.jsdelivr.net/gh/ctgroupteam/linkaltool@main/public/uploads/1794565499120-1000243420.webp",
+    "deploymentLogs": []
   },
   {
     "id": "site-1794147198230",
