@@ -14,7 +14,7 @@
     "bannerSlider": [
       {
         "id": "slide-1",
-        "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80",
+        "imageUrl": "https://cdn.jsdelivr.net/gh/ctgroupteam/linkaltool@main/public/uploads/1794565510804-1000252607.webp",
         "title": "Welcome to Royal Hotel",
         "subtitle": "Explore our exclusive offerings and order directly on WhatsApp with instant support.",
         "ctaText": "Chat on WhatsApp"
@@ -73,9 +73,10 @@
     "cvShowCertifications": true,
     "cvFormat": "classic",
     "createdAt": "2026-11-13T10:24:27.534Z",
-    "updatedAt": "2026-11-13T10:24:27.554Z",
+    "updatedAt": "2026-11-13T10:25:24.725Z",
     "visitsCount": 0,
-    "clicksCount": 0
+    "clicksCount": 0,
+    "logoUrl": "https://cdn.jsdelivr.net/gh/ctgroupteam/linkaltool@main/public/uploads/1794565499120-1000243420.webp"
   },
   {
     "id": "site-1794147198230",
