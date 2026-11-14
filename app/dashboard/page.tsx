@@ -640,10 +640,16 @@ function DashboardContent() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Check saved user & draft creation state in localStorage
+  // Check saved user & draft creation state in localStorage / cookie
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem('linkal_user');
+      let savedUser = localStorage.getItem('linkal_user');
+      if (!savedUser && typeof document !== 'undefined') {
+        const match = document.cookie.match(/(?:^|;\s*)linkal_user=([^;]+)/);
+        if (match) {
+          try { savedUser = decodeURIComponent(match[1]); } catch {}
+        }
+      }
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
@@ -664,9 +670,13 @@ function DashboardContent() {
         setDashboardTab(savedTab as any);
       }
 
-      // Handle Cashfree Payment Success Return
+      // Handle query params (?tab=profile etc.) & Cashfree Return
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
+        const queryTab = urlParams.get('tab');
+        if (queryTab && ['sites', 'templates', 'builder', 'settings', 'profile'].includes(queryTab)) {
+          setDashboardTab(queryTab as any);
+        }
         const paymentStatus = urlParams.get('status');
         const orderId = urlParams.get('order_id');
         const siteIdParam = urlParams.get('site_id');
@@ -1419,32 +1429,34 @@ function DashboardContent() {
 
       {/* ─── MAIN CUSTOMER CONTENT ─── */}
       <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 overflow-hidden">
-        {/* ─── TOP FREE LIFETIME ANNOUNCEMENT BANNER ─── */}
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-amber-300" />
+        {/* ─── TOP FREE LIFETIME ANNOUNCEMENT BANNER (ONLY ON MAIN WEBSITES SECTION) ─── */}
+        {dashboardTab === 'sites' && (
+          <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <span className="font-extrabold text-sm sm:text-base block">
+                  CV Websites &amp; Wedding Websites are 100% Completely Free Lifetime!
+                </span>
+                <span className="text-xs text-emerald-100 font-medium block">
+                  Start with ₹0 &bull; No renewal fees &bull; Restaurant digital menus start at just ₹99/month.
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-extrabold text-sm sm:text-base block">
-                CV Websites &amp; Wedding Websites are 100% Completely Free Lifetime!
-              </span>
-              <span className="text-xs text-emerald-100 font-medium block">
-                Start with ₹0 &bull; No renewal fees &bull; Restaurant digital menus start at just ₹99/month.
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setDashboardTab('templates');
+                setCategory('cv');
+              }}
+              className="px-4 py-2 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-extrabold shadow-sm transition-all shrink-0 active:scale-95"
+            >
+              Create Free Now &rarr;
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setDashboardTab('templates');
-              setCategory('cv');
-            }}
-            className="px-4 py-2 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-extrabold shadow-sm transition-all shrink-0 active:scale-95"
-          >
-            Create Free Now &rarr;
-          </button>
-        </div>
+        )}
 
         {/* ─── SECTION 1: CUSTOMER CREATION STUDIO (TEMPLATES) ─── */}
         {dashboardTab === 'templates' && (
@@ -2077,11 +2089,11 @@ function DashboardContent() {
               </div>
               <button
                 type="button"
-                onClick={() => setShowGoogleModal(true)}
+                onClick={() => navigateToTab('profile')}
                 className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-extrabold shadow-md transition-all active:scale-[0.98]"
               >
                 <GoogleIcon className="w-4 h-4" />
-                <span>1-Click Google Sign In (Choose Account)</span>
+                <span>1-Click Google Sign In / Create Account &rarr;</span>
               </button>
             </div>
           ) : loading ? (
@@ -2500,151 +2512,178 @@ function DashboardContent() {
 
         {/* ─── SECTION: PROFILE TAB ─── */}
         {dashboardTab === 'profile' && (
-          <section className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-w-xl mx-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <button
-                type="button"
-                onClick={() => navigateToTab('sites')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back to Websites</span>
-              </button>
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Account Overview</span>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xl flex items-center justify-center shadow-md overflow-hidden shrink-0">
-                {(user as any)?.avatarUrl ? (
-                  <img src={(user as any).avatarUrl} alt={user?.fullName || 'User'} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{user?.fullName ? user.fullName[0].toUpperCase() : 'U'}</span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-extrabold text-zinc-950 truncate">{user?.fullName || 'Guest User'}</h2>
-                  {user && (
-                    <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
-                      ✓ Google Verified
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-zinc-500 font-mono truncate">{user?.email || 'Not signed in'}</p>
-              </div>
-            </div>
-
+          <section className="space-y-6 max-w-xl mx-auto">
             {user ? (
-              <div className="space-y-4 pt-2 border-t border-zinc-200">
-                <div>
-                  <label className="block text-xs font-bold text-zinc-900 mb-1">
-                    Full Name (Compulsory &bull; Displayed in CV &amp; Stores) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={user.fullName || ''}
-                    onChange={(e) => {
-                      const updated = { ...user, fullName: e.target.value };
-                      setUser(updated);
-                      try {
-                        localStorage.setItem('linkal_user', JSON.stringify(updated));
-                      } catch {}
-                    }}
-                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
-                  />
+              <div className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                  <button
+                    type="button"
+                    onClick={() => navigateToTab('sites')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Websites</span>
+                  </button>
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Account Overview</span>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-900 mb-1">
-                    Compulsory WhatsApp Phone Number (Direct Contact) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={user.phoneNumber || ''}
-                    onChange={(e) => {
-                      const updated = { ...user, phoneNumber: e.target.value };
-                      setUser(updated);
-                      try {
-                        localStorage.setItem('linkal_user', JSON.stringify(updated));
-                      } catch {}
-                    }}
-                    placeholder="e.g. 919307426215"
-                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
-                  />
-                  <span className="text-[10px] text-zinc-500 mt-1 block">
-                    Compulsory: Recruiters contact you on this number for your CV, or customers place WhatsApp store orders.
-                  </span>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xl flex items-center justify-center shadow-md overflow-hidden shrink-0">
+                    {(user as any)?.avatarUrl && !String((user as any).avatarUrl).includes('dicebear') ? (
+                      <img src={(user as any).avatarUrl} alt={user?.fullName || 'User'} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{user?.fullName ? user.fullName[0].toUpperCase() : 'U'}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-extrabold text-zinc-950 truncate">{user?.fullName || 'User'}</h2>
+                      <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                        ✓ Verified Account
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-500 font-mono truncate">{user?.email || 'Not signed in'}</p>
+                  </div>
                 </div>
 
-                <div className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200 flex items-center justify-between text-xs">
+                <div className="space-y-4 pt-2 border-t border-zinc-200">
                   <div>
-                    <span className="font-bold text-zinc-800 block">Active Websites Owned</span>
-                    <span className="text-[10px] text-zinc-500">Only your created websites appear here.</span>
+                    <label className="block text-xs font-bold text-zinc-900 mb-1">
+                      Full Name (Compulsory &bull; Displayed in CV &amp; Stores) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={user.fullName || ''}
+                      onChange={(e) => {
+                        const updated = { ...user, fullName: e.target.value };
+                        setUser(updated);
+                        try {
+                          localStorage.setItem('linkal_user', JSON.stringify(updated));
+                          const str = encodeURIComponent(JSON.stringify(updated));
+                          document.cookie = `linkal_user=${str}; path=/; domain=.linkal.in; max-age=31536000; SameSite=Lax`;
+                          document.cookie = `linkal_user=${str}; path=/; max-age=31536000; SameSite=Lax`;
+                        } catch {}
+                      }}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-semibold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
+                    />
                   </div>
-                  <span className="font-extrabold text-blue-600 font-mono text-base">{sites.length}</span>
-                </div>
 
-                {/* Apple iOS Safari Installation & Web Push Instructions */}
-                <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 text-xs space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-zinc-900 text-white flex items-center justify-center text-xs font-bold"></span>
-                    <strong className="text-zinc-950 font-extrabold">Apple iOS (iPhone &amp; iPad) Installation &amp; Notifications</strong>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-900 mb-1">
+                      Compulsory WhatsApp Phone Number (Direct Contact) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={user.phoneNumber || ''}
+                      onChange={(e) => {
+                        const updated = { ...user, phoneNumber: e.target.value };
+                        setUser(updated);
+                        try {
+                          localStorage.setItem('linkal_user', JSON.stringify(updated));
+                          const str = encodeURIComponent(JSON.stringify(updated));
+                          document.cookie = `linkal_user=${str}; path=/; domain=.linkal.in; max-age=31536000; SameSite=Lax`;
+                          document.cookie = `linkal_user=${str}; path=/; max-age=31536000; SameSite=Lax`;
+                        } catch {}
+                      }}
+                      placeholder="e.g. 919307426215"
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-1 block">
+                      Compulsory: Recruiters contact you on this number for your CV, or customers place WhatsApp store orders.
+                    </span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed">
-                    On iOS 16.4+, Apple requires adding the app to your Home Screen from Safari to enable Web Push notifications:
-                  </p>
-                  <ol className="text-[11px] text-zinc-700 space-y-1.5 pl-4 list-decimal leading-relaxed">
-                    <li>Open <strong>studio.linkal.in</strong> in <strong>Safari</strong> on your iPhone or iPad.</li>
-                    <li>Tap the <strong>Share</strong> button (box with upward arrow <span className="font-mono font-bold">⎋</span>) in Safari's bottom toolbar.</li>
-                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong> (<span className="font-mono font-bold">⊞</span>).</li>
-                    <li>Launch Linkal Studio from your Home Screen &amp; tap <strong>"Allow Notifications"</strong> when prompted.</li>
-                  </ol>
-                </div>
 
-                <div className="pt-2 flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setDashboardTab('templates')}
-                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
-                  >
-                    Create New Site →
-                  </button>
+                  <div className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-zinc-800 block">Active Websites Owned</span>
+                      <span className="text-[10px] text-zinc-500">Only your created websites appear here.</span>
+                    </div>
+                    <span className="font-extrabold text-blue-600 font-mono text-base">{sites.length}</span>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      try {
-                        localStorage.removeItem('linkal_user');
-                        sessionStorage.removeItem('g_last_access_token');
-                        if (typeof window !== 'undefined' && (window as any).google?.accounts?.id?.disableAutoSelect) {
-                          (window as any).google.accounts.id.disableAutoSelect();
-                        }
-                      } catch {}
-                      setUser(null);
-                      setSites([]);
-                      setDashboardTab('sites');
-                    }}
-                    className="px-3.5 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors"
-                  >
-                    Sign Out
-                  </button>
+                  {/* Apple iOS Safari Installation & Web Push Instructions */}
+                  <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 text-xs space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-zinc-900 text-white flex items-center justify-center text-xs font-bold"></span>
+                      <strong className="text-zinc-950 font-extrabold">Apple iOS (iPhone &amp; iPad) Installation &amp; Notifications</strong>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 leading-relaxed">
+                      On iOS 16.4+, Apple requires adding the app to your Home Screen from Safari to enable Web Push notifications:
+                    </p>
+                    <ol className="text-[11px] text-zinc-700 space-y-1.5 pl-4 list-decimal leading-relaxed">
+                      <li>Open <strong>studio.linkal.in</strong> in <strong>Safari</strong> on your iPhone or iPad.</li>
+                      <li>Tap the <strong>Share</strong> button (box with upward arrow <span className="font-mono font-bold">⎋</span>) in Safari's bottom toolbar.</li>
+                      <li>Scroll down and tap <strong>"Add to Home Screen"</strong> (<span className="font-mono font-bold">⊞</span>).</li>
+                      <li>Launch Linkal Studio from your Home Screen &amp; tap <strong>"Allow Notifications"</strong> when prompted.</li>
+                    </ol>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDashboardTab('templates')}
+                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+                    >
+                      Create New Site →
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          localStorage.removeItem('linkal_user');
+                          sessionStorage.removeItem('g_last_access_token');
+                          sessionStorage.removeItem('linkal_user');
+                          document.cookie = 'linkal_user=; path=/; domain=.linkal.in; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                          document.cookie = 'linkal_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                          if (typeof window !== 'undefined' && (window as any).google?.accounts?.id?.disableAutoSelect) {
+                            (window as any).google.accounts.id.disableAutoSelect();
+                          }
+                        } catch {}
+                        setUser(null);
+                        setSites([]);
+                        setDashboardTab('sites');
+                      }}
+                      className="px-3.5 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-6 space-y-4">
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                  Sign in with your Google account to secure your sites, access your profile, and receive notifications.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleModal(true)}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border-2 border-zinc-300 hover:border-zinc-400 text-zinc-800 rounded-2xl font-bold text-sm shadow-sm transition-all"
-                >
-                  <GoogleIcon className="w-5 h-5" />
-                  <span>Sign In with Google (Choose Account)</span>
-                </button>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+                  <button
+                    type="button"
+                    onClick={() => navigateToTab('sites')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-bold text-zinc-700 transition-all shadow-xs active:scale-95"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Websites</span>
+                  </button>
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Independent Login Page</span>
+                </div>
+
+                <GoogleAuthModal
+                  isOpen={true}
+                  inline={true}
+                  onClose={() => {}}
+                  isCvSite={false}
+                  initialName=""
+                  initialPhone=""
+                  onSuccess={(authedUser) => {
+                    setUser(authedUser);
+                    try {
+                      localStorage.setItem('linkal_user', JSON.stringify(authedUser));
+                      const str = encodeURIComponent(JSON.stringify(authedUser));
+                      document.cookie = `linkal_user=${str}; path=/; domain=.linkal.in; max-age=31536000; SameSite=Lax`;
+                      document.cookie = `linkal_user=${str}; path=/; max-age=31536000; SameSite=Lax`;
+                    } catch {}
+                  }}
+                />
               </div>
             )}
           </section>

@@ -12,6 +12,7 @@ interface GoogleAuthModalProps {
   isCvSite?: boolean;
   initialName?: string;
   initialPhone?: string;
+  inline?: boolean;
 }
 
 export function GoogleAuthModal({
@@ -21,6 +22,7 @@ export function GoogleAuthModal({
   isCvSite = true,
   initialName = '',
   initialPhone = '',
+  inline = false,
 }: GoogleAuthModalProps) {
   const [tab, setTab] = useState<'signup' | 'signin' | 'forgot'>('signup');
   const [loading, setLoading] = useState(false);
@@ -40,6 +42,17 @@ export function GoogleAuthModal({
   const [phoneNumber, setPhoneNumber] = useState(initialPhone || '');
   const [password, setPassword] = useState('');
   const [gsiLoaded, setGsiLoaded] = useState(false);
+  // Cross-domain cookie and localStorage session syncer
+  const saveSessionAcrossDomains = (userData: any) => {
+    try {
+      localStorage.setItem('linkal_user', JSON.stringify(userData));
+      const encoded = encodeURIComponent(JSON.stringify(userData));
+      document.cookie = `linkal_user=${encoded}; path=/; domain=.linkal.in; max-age=31536000; SameSite=Lax`;
+      document.cookie = `linkal_user=${encoded}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `linkal_user_email=${encodeURIComponent(userData.email || '')}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {}
+  };
+
 
   // Load Google Identity Services script
   useEffect(() => {
@@ -81,7 +94,7 @@ export function GoogleAuthModal({
     }
   }, [isOpen, initialName, initialPhone]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !inline) return null;
 
   // Trigger Google Account Selector Popup (Forces account chooser on every device)
   const handleLaunchGooglePopup = () => {
@@ -173,12 +186,9 @@ export function GoogleAuthModal({
                 avatar_url: avatar,
               };
 
-              try {
-                localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
-              } catch {}
-
+              saveSessionAcrossDomains(authenticatedUser);
               onSuccess(authenticatedUser);
-              onClose();
+              if (!inline) onClose();
             } catch (err: any) {
               setLoading(false);
               setError(err.message || 'Error reading Google profile');
@@ -265,13 +275,9 @@ export function GoogleAuthModal({
           phoneNumber: phoneNumber.trim(),
         };
 
-        try {
-          localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
-          document.cookie = `linkal_user_email=${encodeURIComponent(authenticatedUser.email)}; path=/; max-age=31536000; SameSite=Lax`;
-        } catch {}
-
+        saveSessionAcrossDomains(authenticatedUser);
         onSuccess(authenticatedUser);
-        onClose();
+        if (!inline) onClose();
         return;
       }
 
@@ -333,12 +339,9 @@ export function GoogleAuthModal({
         avatar_url: avatar,
       };
 
-      try {
-        localStorage.setItem('linkal_user', JSON.stringify(authenticatedUser));
-      } catch {}
-
+      saveSessionAcrossDomains(authenticatedUser);
       onSuccess(authenticatedUser);
-      onClose();
+      if (!inline) onClose();
     } catch (err: any) {
       setError(err.message || 'Authentication error');
     } finally {
@@ -346,11 +349,11 @@ export function GoogleAuthModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl border border-zinc-200 shadow-2xl p-6 sm:p-7 space-y-4 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+  const formContent = (
+    <div className={`relative w-full max-w-md bg-white rounded-3xl border border-zinc-200 p-6 sm:p-7 space-y-4 ${
+      inline ? 'shadow-sm mx-auto' : 'shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto'
+    }`}>
+      {!inline && (
         <button
           onClick={onClose}
           className="absolute right-4 top-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
@@ -358,6 +361,7 @@ export function GoogleAuthModal({
         >
           <X className="w-5 h-5" />
         </button>
+      )}
 
         {/* Header Badge */}
         <div className="text-center space-y-1.5 pt-1">
@@ -627,6 +631,16 @@ export function GoogleAuthModal({
           <span>Encrypted Cloud Identity &bull; 0 hidden fees</span>
         </div>
       </div>
+  );
+
+  if (inline) {
+    return formContent;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+      {formContent}
     </div>
   );
 }
