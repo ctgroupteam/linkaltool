@@ -1,9 +1,61 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { getSiteBySlug, saveSite } from '@/lib/storage';
 import { generateStaticHtml } from '@/lib/generator';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
+
+
+// Helper: Check if slug matches a static student CV in "free CVs"
+function getFreeCvHtml(slug: string): string | null {
+  try {
+    const cleanSlug = slug.toLowerCase().trim();
+    const baseDirs = [
+      path.join(process.cwd(), 'free CVs'),
+      path.join(process.cwd(), 'free-cvs'),
+      path.join(process.cwd(), '..', 'free CVs'),
+      path.join(process.cwd(), 'public', 'free-cvs'),
+    ];
+
+    for (const baseDir of baseDirs) {
+      if (!fs.existsSync(baseDir)) continue;
+
+      // 1. Check mapping.json
+      const mappingFile = path.join(baseDir, 'mapping.json');
+      let targetFolder = cleanSlug;
+      if (fs.existsSync(mappingFile)) {
+        try {
+          const mapping = JSON.parse(fs.readFileSync(mappingFile, 'utf8'));
+          if (mapping[cleanSlug]) {
+            targetFolder = String(mapping[cleanSlug]);
+          }
+        } catch {}
+      }
+
+      // 2. Direct folder check
+      const directPath = path.join(baseDir, targetFolder, 'index.html');
+      if (fs.existsSync(directPath)) {
+        return fs.readFileSync(directPath, 'utf8');
+      }
+
+      // 3. Case-insensitive folder search
+      const items = fs.readdirSync(baseDir);
+      for (const item of items) {
+        if (item.toLowerCase() === targetFolder.toLowerCase()) {
+          const subFile = path.join(baseDir, item, 'index.html');
+          if (fs.existsSync(subFile)) {
+            return fs.readFileSync(subFile, 'utf8');
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Free CV] lookup note:', e);
+  }
+  return null;
+}
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -21,6 +73,19 @@ export async function GET(request: Request, context: RouteContext) {
       );
     }
 
+    // 1. Check if this subdomain is a direct student CV from "free CVs"
+    const staticCvHtml = getFreeCvHtml(cleanSlug);
+    if (staticCvHtml) {
+      return new Response(staticCvHtml, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      });
+    }
+
+    // 2. Otherwise look up in Linkal customer database
     const site = await getSiteBySlug(cleanSlug);
 
     if (!site) {
