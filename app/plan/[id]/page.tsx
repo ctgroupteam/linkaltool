@@ -156,7 +156,7 @@ export default function PlanManagementPage() {
       try {
         const u = localStorage.getItem('linkal_user');
         if (u) storedUser = JSON.parse(u);
-      } catch {}
+      } catch { }
 
       const cleanPhone = site.whatsappNumber?.replace(/[^0-9]/g, '') || storedUser?.phoneNumber?.replace(/[^0-9]/g, '') || '919307426215';
       const cleanEmail = site.userEmail || storedUser?.email || 'payments@linkal.in';
@@ -409,11 +409,10 @@ export default function PlanManagementPage() {
               {/* Option 1: ₹99 Monthly */}
               <div
                 onClick={() => setSelectedPlanTier('1_month_autopay')}
-                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all relative ${
-                  selectedPlanTier === '1_month_autopay'
+                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all relative ${selectedPlanTier === '1_month_autopay'
                     ? 'border-blue-600 bg-blue-50/40 shadow-md'
                     : 'border-slate-200 hover:border-slate-300 bg-white'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold">
@@ -445,11 +444,10 @@ export default function PlanManagementPage() {
               {/* Option 2: ₹899 1 Full Year */}
               <div
                 onClick={() => setSelectedPlanTier('1_year')}
-                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all relative ${
-                  selectedPlanTier === '1_year'
+                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all relative ${selectedPlanTier === '1_year'
                     ? 'border-blue-600 bg-blue-50/40 shadow-md'
                     : 'border-slate-200 hover:border-slate-300 bg-white'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
@@ -486,9 +484,9 @@ export default function PlanManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Billing History</span>
-              <h2 className="text-xl font-extrabold text-slate-900">Order Receipts &amp; Tax Invoices</h2>
+              <h2 className="text-xl font-extrabold text-slate-900">Order Receipts &amp; Invoices</h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Download verified computer-generated tax invoices with Linkal AI seal and GST details.
+                Download verified computer-generated official receipts with Linkal AI confirmation.
               </p>
             </div>
             <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
@@ -524,8 +522,8 @@ export default function PlanManagementPage() {
                       siteName: ord.siteName || site.name,
                       planName: ord.planName || 'Digital Menu Monthly Subscription',
                       amount: ord.amount || 99,
-                      subtotal: ord.subtotal || (Number(ord.amount || 99) / 1.18).toFixed(2),
-                      gst: ord.gst || (Number(ord.amount || 99) - Number((ord.amount || 99) / 1.18)).toFixed(2),
+                      subtotal: ord.amount || 99,
+                      gst: 0,
                       date: ord.paidAt || ord.createdAt || new Date().toISOString(),
                       customerName: ord.userName || site.userName || 'Website Owner',
                       customerEmail: ord.userEmail || site.userEmail || '',

@@ -73,10 +73,10 @@ export async function POST(req: NextRequest) {
         userName: customerDetails?.customer_name || site?.userName || 'Website Owner',
         userPhone: customerDetails?.customer_phone || site?.whatsappNumber || '',
         planTier: amountNum >= 899 ? '1_year' : '1_month_autopay',
-        planName: amountNum >= 899 ? '1 Full Year All-Access (₹899)' : 'Digital Menu & QR Ordering — Monthly (₹99/mo)',
+        planName: amountNum >= 899 ? '1 Full Year All-Access Subscription' : 'Digital Menu & Online Ordering Plan',
         amount: amountNum,
-        subtotal,
-        gst,
+        subtotal: amountNum,
+        gst: 0,
         currency: 'INR',
         paymentMethod: paymentData?.payment_group || 'Cashfree Production',
         paymentStatus: 'PAID',
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
             siteSlug: orderRecord.siteSlug,
           }),
         });
-      } catch {}
+      } catch { }
 
       return NextResponse.json({ success: true, processed: true, orderId });
     }

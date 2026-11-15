@@ -9,10 +9,10 @@
     "userName": "Yahya Mundewadi",
     "userPhone": "919999999999",
     "planTier": "1_month_autopay",
-    "planName": "Digital Menu & QR Ordering — Monthly (₹99/mo)",
+    "planName": "Digital Menu & Online Ordering Plan",
     "amount": 99,
-    "subtotal": 83.9,
-    "gst": 15.1,
+    "subtotal": 99,
+    "gst": 0,
     "currency": "INR",
     "paymentMethod": "Cashfree Production (UPI / Cards)",
     "paymentStatus": "PAID",
@@ -22,4 +22,3 @@
     "createdAt": "2026-11-14T10:24:27.534Z"
   }
 ]
-

@@ -62,8 +62,8 @@ export async function POST(req: NextRequest) {
     // 5. Generate and persist Order Record
     const invoiceNo = `INV-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
     const planTitle = amountNum >= 899
-      ? '1 Full Year All-Access (₹899)'
-      : 'Digital Menu & QR Ordering — Monthly (₹99/mo)';
+      ? '1 Full Year All-Access Subscription'
+      : 'Digital Menu & Online Ordering Plan';
 
     const orderRecord: OrderRecord = {
       orderId,
@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
       planTier: body.planTier || (amountNum >= 899 ? '1_year' : '1_month_autopay'),
       planName: planTitle,
       amount: amountNum,
-      subtotal,
-      gst,
+      subtotal: amountNum,
+      gst: 0,
       currency: 'INR',
       paymentMethod: body.isAutoPay ? 'Cashfree UPI AutoPay (PhonePe / GPay)' : 'Cashfree Production (UPI / Cards)',
       paymentStatus: 'PAID',

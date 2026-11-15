@@ -17,6 +17,18 @@ export interface ReceiptData {
   subscriptionEndsAt?: string;
 }
 
+function cleanAscii(str: string): string {
+  if (!str) return '';
+  return String(str)
+    .replace(/[\u20B9₹]/g, 'Rs. ')
+    .replace(/[—–]/g, '-')
+    .replace(/[•●]/g, '-')
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[^\x20-\x7E\n]/g, ' ')
+    .trim();
+}
+
 function loadJsPdf(): Promise<any> {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined') return reject(new Error('Window not defined'));
@@ -56,11 +68,8 @@ export async function downloadReceiptPdf(receipt: ReceiptData) {
       format: 'a4',
     });
 
-    const amtStr = String(receipt.amount).replace('₹', '').trim();
-    const amtNum = Number(amtStr) || 99;
-    const subtotal = (amtNum / 1.18).toFixed(2);
-    const gst = (amtNum - Number(subtotal)).toFixed(2);
-    const invoiceNo = receipt.invoiceNo || `INV-2026-${receipt.orderId.slice(-5)}`;
+    const amtNum = Number(String(receipt.amount).replace(/[^0-9.]/g, '')) || 99;
+    const invoiceNo = cleanAscii(receipt.invoiceNo || `INV-2026-${receipt.orderId.slice(-5)}`);
     const dateStr = new Date(receipt.date || Date.now()).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
@@ -76,154 +85,175 @@ export async function downloadReceiptPdf(receipt: ReceiptData) {
         })
       : '30 Days from Payment';
 
-    // ─── HEADER BAR ───
-    doc.setFillColor(13, 27, 62); // #0D1B3E
-    doc.rect(0, 0, 210, 28, 'F');
+    const customerName = cleanAscii(receipt.customerName || 'Website Owner');
+    const customerEmail = cleanAscii(receipt.customerEmail || '-');
+    const customerPhone = cleanAscii(receipt.customerPhone ? `+${receipt.customerPhone.replace(/[^0-9]/g, '')}` : '-');
+    const siteSlug = cleanAscii(receipt.siteSlug || 'site');
+    const siteUrl = `https://${siteSlug}.linkal.in`;
+    const orderId = cleanAscii(receipt.orderId || `ord_${Date.now()}`);
+    const paymentMethod = cleanAscii(receipt.paymentMethod || 'Cashfree Production (UPI / Cards)');
 
+    // Clean plan title without raw symbols and capped in length to never overlap PERIOD column
+    let cleanPlanTitle = cleanAscii(receipt.planName || 'Digital Menu Website Monthly Subscription');
+    if (cleanPlanTitle.length > 45) {
+      cleanPlanTitle = cleanPlanTitle.slice(0, 42) + '...';
+    }
+
+    // ─── HEADER BAR (Navy) ───
+    doc.setFillColor(13, 27, 62); // #0D1B3E
+    doc.rect(0, 0, 210, 26, 'F');
+
+    // Linkal AI Brand Title
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('LINKAL AI', 15, 14);
+    doc.text('LINKAL AI', 15, 12);
 
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
-    doc.text("India's 1-Minute Website Generator • https://linkal.in", 15, 21);
+    doc.setTextColor(147, 197, 253); // #93C5FD
+    doc.text("India's 1-Minute Website Generator | https://linkal.in", 15, 19);
 
-    doc.setFontSize(11);
+    // Right Header
+    doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.text('TAX INVOICE / RECEIPT', 195, 14, { align: 'right' });
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('ORIGINAL FOR RECIPIENT', 195, 21, { align: 'right' });
+    doc.setFontSize(12);
+    doc.text('PAYMENT RECEIPT', 195, 12, { align: 'right' });
 
-    // ─── STATUS BADGE ───
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(203, 213, 225); // #CBD5E1
+    doc.text('CUSTOMER OFFICIAL COPY', 195, 19, { align: 'right' });
+
+    // ─── STATUS BADGE (Green Pill) ───
     doc.setFillColor(236, 253, 245); // #ECFDF5
     doc.setDrawColor(16, 185, 129); // #10B981
-    doc.roundedRect(15, 34, 48, 8, 2, 2, 'FD');
-    doc.setTextColor(5, 150, 105);
+    doc.roundedRect(15, 33, 56, 7.5, 2, 2, 'FD');
+    doc.setTextColor(5, 150, 105); // #059669
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text('● PAYMENT COMPLETED (PAID)', 17, 39.5);
+    doc.setFontSize(8);
+    doc.text('[PAID] PAYMENT COMPLETED', 17, 38);
 
-    // ─── INVOICE & ORDER METADATA ───
-    doc.setTextColor(30, 41, 59);
+    // ─── RECEIPT & CUSTOMER DETAILS (2 Columns) ───
+    // Left Column: Receipt Metadata
+    doc.setTextColor(15, 23, 42); // #0F172A
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Invoice Details:', 15, 50);
+    doc.text('Receipt Details:', 15, 48);
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(`Invoice Number: ${invoiceNo}`, 15, 56);
-    doc.text(`Order ID: ${receipt.orderId}`, 15, 61);
-    doc.text(`Date of Issue: ${dateStr}`, 15, 66);
-    doc.text(`Payment Gateway: ${receipt.paymentMethod || 'Cashfree Production (UPI / Cards)'}`, 15, 71);
+    doc.setFontSize(8.5);
+    doc.text(`Receipt Number: ${invoiceNo}`, 15, 54);
+    doc.text(`Order ID: ${orderId}`, 15, 59.5);
+    doc.text(`Date of Issue: ${dateStr}`, 15, 65);
+    doc.text(`Payment Gateway: ${paymentMethod}`, 15, 70.5);
 
-    // Billed To
+    // Right Column: Customer Info
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 41, 59);
-    doc.text('Billed To (Customer):', 120, 50);
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(9);
+    doc.text('Billed To (Customer):', 115, 48);
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(`Name: ${receipt.customerName || 'Website Owner'}`, 120, 56);
-    doc.text(`Email: ${receipt.customerEmail || '—'}`, 120, 61);
-    if (receipt.customerPhone) {
-      doc.text(`Phone: +${receipt.customerPhone}`, 120, 66);
-    }
-    doc.text(`Live Website: https://${receipt.siteSlug}.linkal.in`, 120, 71);
+    doc.setFontSize(8.5);
+    doc.text(`Name: ${customerName}`, 115, 54);
+    doc.text(`Email: ${customerEmail}`, 115, 59.5);
+    doc.text(`Phone: ${customerPhone}`, 115, 65);
+    doc.text(`Live Website: ${siteUrl}`, 115, 70.5);
 
     // ─── DIVIDER LINE ───
     doc.setDrawColor(226, 232, 240);
-    doc.line(15, 78, 195, 78);
+    doc.line(15, 77, 195, 77);
 
     // ─── TABLE HEADER ───
-    doc.setFillColor(241, 245, 249);
-    doc.rect(15, 83, 180, 8, 'F');
+    doc.setFillColor(241, 245, 249); // #F1F5F9
+    doc.rect(15, 82, 180, 8, 'F');
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text('SL', 18, 88.5);
-    doc.text('DESCRIPTION / SERVICES', 32, 88.5);
-    doc.text('PERIOD', 135, 88.5);
-    doc.text('AMOUNT (INR)', 190, 88.5, { align: 'right' });
+    doc.setFontSize(8.5);
+    doc.text('SL', 18, 87.5);
+    doc.text('DESCRIPTION / SERVICES', 30, 87.5);
+    doc.text('PERIOD', 130, 87.5);
+    doc.text('AMOUNT (INR)', 190, 87.5, { align: 'right' });
 
     // ─── TABLE ROWS ───
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(51, 65, 85);
 
     // Row 1: Plan
-    doc.text('1', 18, 97);
+    doc.text('1', 18, 96);
     doc.setFont('helvetica', 'bold');
-    doc.text(receipt.planName || 'Digital Menu Website Monthly Subscription', 32, 97);
+    doc.text(cleanPlanTitle, 30, 96);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Valid until ${validUntilStr}`, 135, 97);
-    doc.text(`₹${subtotal}`, 190, 97, { align: 'right' });
+    doc.text(`Until ${validUntilStr}`, 130, 96);
+    doc.text(`Rs. ${amtNum}.00`, 190, 96, { align: 'right' });
 
     // Row 2: Features
-    doc.text('2', 18, 105);
-    doc.text('Unlimited WhatsApp Online Ordering & Menu Catalog', 32, 105);
-    doc.text('Active', 135, 105);
-    doc.text('Included', 190, 105, { align: 'right' });
+    doc.text('2', 18, 104);
+    doc.text('Unlimited WhatsApp Ordering & Live Menu', 30, 104);
+    doc.text('Active', 130, 104);
+    doc.text('Included', 190, 104, { align: 'right' });
 
     // Row 3: Domain & SSL
-    doc.text('3', 18, 113);
-    doc.text(`Dedicated Subdomain (https://${receipt.siteSlug}.linkal.in) + Instant SSL`, 32, 113);
-    doc.text('Active', 135, 113);
-    doc.text('Included', 190, 113, { align: 'right' });
+    doc.text('3', 18, 112);
+    doc.text(`Custom Subdomain (${siteSlug}.linkal.in) + Instant SSL`, 30, 112);
+    doc.text('Active', 130, 112);
+    doc.text('Included', 190, 112, { align: 'right' });
 
+    // Table bottom line
     doc.setDrawColor(226, 232, 240);
-    doc.line(15, 120, 195, 120);
+    doc.line(15, 119, 195, 119);
 
-    // ─── TOTALS CALCULATION BOX ───
+    // ─── TOTALS SECTION (NO GST) ───
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text('Taxable Value (Subtotal):', 140, 128);
-    doc.text(`₹${subtotal}`, 190, 128, { align: 'right' });
+    doc.setFontSize(9);
+    doc.text('Plan Amount:', 135, 127);
+    doc.text(`Rs. ${amtNum}.00`, 190, 127, { align: 'right' });
 
-    doc.text('CGST (9%):', 140, 134);
-    doc.text(`₹${(Number(gst) / 2).toFixed(2)}`, 190, 134, { align: 'right' });
+    doc.text('Discount:', 135, 133);
+    doc.text('Rs. 0.00', 190, 133, { align: 'right' });
 
-    doc.text('SGST (9%):', 140, 140);
-    doc.text(`₹${(Number(gst) / 2).toFixed(2)}`, 190, 140, { align: 'right' });
-
+    // Total Highlight Box
     doc.setFillColor(248, 250, 252);
-    doc.rect(135, 145, 60, 10, 'F');
+    doc.rect(130, 138, 65, 10, 'F');
     doc.setDrawColor(13, 27, 62);
     doc.setLineWidth(0.4);
-    doc.rect(135, 145, 60, 10, 'D');
+    doc.rect(130, 138, 65, 10, 'D');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
     doc.setTextColor(13, 27, 62);
-    doc.text('Total Paid:', 140, 151.5);
-    doc.text(`₹${amtNum}.00`, 190, 151.5, { align: 'right' });
+    doc.text('Total Paid:', 135, 144.5);
+    doc.text(`Rs. ${amtNum}.00`, 190, 144.5, { align: 'right' });
 
     // ─── VERIFICATION FOOTER ───
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(15, 23, 42);
-    doc.text('PAYMENT VERIFICATION & TERMS:', 15, 175);
+    doc.text('PAYMENT VERIFICATION & TERMS:', 15, 165);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('1. Payment processed securely via Cashfree Payments India Private Limited.', 15, 180);
-    doc.text('2. Your live website and digital menu remain active throughout the paid billing period.', 15, 184);
-    doc.text('3. For subscription renewals, billing queries, or support: support@linkal.in | WhatsApp: +91 8766882442.', 15, 188);
-    doc.text('4. This is a computer-generated tax invoice and requires no physical signature.', 15, 192);
+    doc.text('1. Payment processed securely via Cashfree Payments India Private Limited.', 15, 171);
+    doc.text('2. Your live website and digital menu remain active throughout the subscription period.', 15, 176);
+    doc.text('3. For subscription renewals, billing queries, or support: support@linkal.in | WhatsApp: +91 8766882442.', 15, 181);
+    doc.text('4. This is a computer-generated official receipt issued by Linkal AI and requires no physical signature.', 15, 186);
 
     // Bottom brand bar
     doc.setFillColor(241, 245, 249);
     doc.rect(0, 285, 210, 12, 'F');
     doc.setTextColor(100, 116, 139);
     doc.setFontSize(7.5);
-    doc.text('Linkal AI Technologies • Registered SaaS Platform • www.linkal.in', 105, 292, { align: 'center' });
+    doc.text('Linkal AI Technologies - Registered SaaS Platform - https://linkal.in', 105, 292, { align: 'center' });
 
     // Trigger browser download
-    doc.save(`Invoice_${invoiceNo}.pdf`);
+    doc.save(`Receipt_${invoiceNo}.pdf`);
   } catch (err) {
     console.error('[Receipt PDF Error]', err);
-    // Fallback to high-res image download
     downloadReceiptImage(receipt);
   }
 }
@@ -231,15 +261,12 @@ export async function downloadReceiptPdf(receipt: ReceiptData) {
 export function downloadReceiptImage(receipt: ReceiptData) {
   const canvas = document.createElement('canvas');
   canvas.width = 640;
-  canvas.height = 760;
+  canvas.height = 720;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const amtStr = String(receipt.amount).replace('₹', '').trim();
-  const amtNum = Number(amtStr) || 99;
-  const subtotal = (amtNum / 1.18).toFixed(2);
-  const gst = (amtNum - Number(subtotal)).toFixed(2);
-  const invoiceNo = receipt.invoiceNo || `INV-2026-${receipt.orderId.slice(-5)}`;
+  const amtNum = Number(String(receipt.amount).replace(/[^0-9.]/g, '')) || 99;
+  const invoiceNo = cleanAscii(receipt.invoiceNo || `INV-2026-${receipt.orderId.slice(-5)}`);
   const dateStr = new Date(receipt.date || Date.now()).toLocaleDateString('en-IN', {
     year: 'numeric',
     month: 'short',
@@ -265,7 +292,7 @@ export function downloadReceiptImage(receipt: ReceiptData) {
 
   ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.fillStyle = '#93c5fd';
-  ctx.fillText('Official Tax Invoice & Payment Receipt', 36, 74);
+  ctx.fillText('Official Payment & Subscription Receipt', 36, 74);
 
   // Paid Status Pill
   ctx.fillStyle = '#ecfdf5';
@@ -278,12 +305,12 @@ export function downloadReceiptImage(receipt: ReceiptData) {
 
   ctx.fillStyle = '#059669';
   ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('✓ PAYMENT PAID', canvas.width - 150, 58);
+  ctx.fillText('[PAID] COMPLETED', canvas.width - 150, 58);
 
   // Meta details
   ctx.fillStyle = '#475569';
   ctx.font = '13px sans-serif';
-  ctx.fillText(`Invoice No: ${invoiceNo}`, 36, 130);
+  ctx.fillText(`Receipt No: ${invoiceNo}`, 36, 130);
   ctx.fillText(`Order ID: ${receipt.orderId}`, 36, 152);
   ctx.fillText(`Date: ${dateStr}`, 36, 174);
   ctx.fillText(`Customer: ${receipt.customerName || 'Website Owner'}`, 36, 196);
@@ -305,8 +332,8 @@ export function downloadReceiptImage(receipt: ReceiptData) {
   // Table rows
   ctx.font = '13px sans-serif';
   ctx.fillStyle = '#334155';
-  ctx.fillText(receipt.planName || 'Digital Menu Monthly Subscription', 36, 310);
-  ctx.fillText(`₹${subtotal}`, canvas.width - 120, 310);
+  ctx.fillText(cleanAscii(receipt.planName || 'Digital Menu Monthly Subscription'), 36, 310);
+  ctx.fillText(`Rs. ${amtNum}.00`, canvas.width - 120, 310);
 
   ctx.fillText('Unlimited WhatsApp Online Ordering', 36, 345);
   ctx.fillText('Included', canvas.width - 120, 345);
@@ -320,25 +347,25 @@ export function downloadReceiptImage(receipt: ReceiptData) {
   ctx.lineTo(canvas.width - 36, 415);
   ctx.stroke();
 
-  // Calculation
+  // Calculation (NO GST)
   ctx.fillStyle = '#475569';
-  ctx.fillText('Subtotal (Taxable):', canvas.width - 250, 450);
-  ctx.fillText(`₹${subtotal}`, canvas.width - 120, 450);
+  ctx.fillText('Plan Amount:', canvas.width - 250, 450);
+  ctx.fillText(`Rs. ${amtNum}.00`, canvas.width - 120, 450);
 
-  ctx.fillText('GST (18%):', canvas.width - 250, 480);
-  ctx.fillText(`₹${gst}`, canvas.width - 120, 480);
+  ctx.fillText('Discount:', canvas.width - 250, 480);
+  ctx.fillText('Rs. 0.00', canvas.width - 120, 480);
 
   ctx.fillStyle = '#0f172a';
   ctx.font = 'bold 20px sans-serif';
   ctx.fillText('Total Paid:', canvas.width - 250, 525);
-  ctx.fillText(`₹${amtNum}.00`, canvas.width - 120, 525);
+  ctx.fillText(`Rs. ${amtNum}.00`, canvas.width - 120, 525);
 
   // Verification
   ctx.fillStyle = '#94a3b8';
   ctx.font = '11px sans-serif';
-  ctx.fillText('Payment Verified & Processed by Cashfree Payments India', 36, 640);
-  ctx.fillText('Computer-generated tax receipt. Valid for business accounting.', 36, 665);
-  ctx.fillText('Linkal SaaS Platform • support@linkal.in • https://linkal.in', 36, 690);
+  ctx.fillText('Payment Verified & Processed by Cashfree Payments India', 36, 620);
+  ctx.fillText('Official computer-generated receipt issued by Linkal AI.', 36, 645);
+  ctx.fillText('Linkal SaaS Platform - support@linkal.in - https://linkal.in', 36, 670);
 
   const a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');
