@@ -1,0 +1,25 @@
+[
+  {
+    "orderId": "ord_royalhotel_1794565467",
+    "invoiceNo": "INV-2026-99014",
+    "siteId": "site-1794565467534",
+    "siteSlug": "royalhotel",
+    "siteName": "Royal Hotel",
+    "userEmail": "mdyahyamundewadi@gmail.com",
+    "userName": "Yahya Mundewadi",
+    "userPhone": "919999999999",
+    "planTier": "1_month_autopay",
+    "planName": "Digital Menu & QR Ordering — Monthly (₹99/mo)",
+    "amount": 99,
+    "subtotal": 83.9,
+    "gst": 15.1,
+    "currency": "INR",
+    "paymentMethod": "Cashfree Production (UPI / Cards)",
+    "paymentStatus": "PAID",
+    "paidAt": "2026-11-14T10:24:27.534Z",
+    "subscriptionEndsAt": "2026-12-15T23:59:59.000Z",
+    "isAutoPay": true,
+    "createdAt": "2026-11-14T10:24:27.534Z"
+  }
+]
+

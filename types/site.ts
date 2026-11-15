@@ -332,7 +332,12 @@ export interface SiteData {
 
   // Subscription & Free Trial
   planStatus?: 'trial' | 'active' | 'expired';
-  planType?: 'free_cv' | 'monthly_299' | 'quarterly_799' | 'halfyearly_1499' | 'yearly_2699';
+  planType?: 'free_cv' | 'monthly_99' | 'monthly_299' | 'quarterly_799' | 'halfyearly_1499' | 'yearly_899' | 'yearly_2699' | string;
+  isPaid?: boolean;
+  planExpiresAt?: string;
+  subscriptionEndsAt?: string;
+  lastPaymentAmount?: number;
+  lastPaymentDate?: string;
   isFreeLifetime?: boolean;
   trialEndsAt?: string;
   userEmail?: string;

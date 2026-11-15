@@ -80,3 +80,4 @@ async function syncDomains() {
 }
 
 syncDomains().catch(console.error);
+

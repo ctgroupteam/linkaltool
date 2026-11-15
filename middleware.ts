@@ -18,6 +18,7 @@ export function middleware(request: NextRequest) {
     url.pathname.startsWith('/deploy') ||
     url.pathname.startsWith('/stats') ||
     url.pathname.startsWith('/login') ||
+    url.pathname.startsWith('/plan') ||
     url.pathname.includes('.')
   ) {
     return NextResponse.next();

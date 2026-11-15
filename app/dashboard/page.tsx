@@ -917,7 +917,7 @@ function DashboardContent() {
           const renewSiteId = urlParams.get('renew');
           if (renewSiteId) {
             const found = serverSites.find(s => s.id === renewSiteId || s.slug === renewSiteId);
-            if (found) setBillingModalSite(found);
+            if (found) router.push(`/plan/${found.id}`);
           }
         }
       } else {
@@ -2235,32 +2235,32 @@ function DashboardContent() {
                       </a>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1">
+                    {/* Dedicated My Plan & Subscription Button */}
+                    <div className="pt-2 flex items-center gap-2">
                       <button
-                        onClick={() => setBillingModalSite(site)}
-                        className="text-[11px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1"
+                        onClick={() => router.push(`/plan/${site.id}`)}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#0D1B3E] hover:bg-black text-white text-[11px] font-extrabold shadow-sm transition-all"
                       >
-                        <CreditCard className="w-3 h-3 text-blue-700" />
-                        <span>Billing &amp; Plans</span>
+                        <CreditCard className="w-3.5 h-3.5 text-cyan-300" />
+                        <span>My Plan &amp; Subscription</span>
+                        <ArrowUpRight className="w-3 h-3 text-cyan-300" />
                       </button>
 
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => setQrModalSite(site)}
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-950 hover:bg-zinc-100"
-                          title="Generate QR code"
-                        >
-                          <QrIcon className="w-3.5 h-3.5" />
-                        </button>
+                      <button
+                        onClick={() => setQrModalSite(site)}
+                        className="p-2 rounded-xl border border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition-colors"
+                        title="Generate QR code"
+                      >
+                        <QrIcon className="w-3.5 h-3.5" />
+                      </button>
 
-                        <button
-                          onClick={() => handleDeleteSite(site.id, site.name)}
-                          className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50"
-                          title="Delete site"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleDeleteSite(site.id, site.name)}
+                        className="p-2 rounded-xl border border-zinc-200 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        title="Delete site"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>
