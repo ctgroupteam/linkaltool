@@ -240,7 +240,7 @@ export async function downloadReceiptPdf(receipt: ReceiptData) {
     doc.setTextColor(100, 116, 139);
     doc.text('1. Payment processed securely via Cashfree Payments India Private Limited.', 15, 171);
     doc.text('2. Your live website and digital menu remain active throughout the subscription period.', 15, 176);
-    doc.text('3. For subscription renewals, billing queries, or support: support@linkal.in | WhatsApp: +91 8766882442.', 15, 181);
+    doc.text('3. For subscription renewals, billing queries, or support: WhatsApp: +91 8766882442.', 15, 181);
     doc.text('4. This is a computer-generated official receipt issued by Linkal AI and requires no physical signature.', 15, 186);
 
     // Bottom brand bar
@@ -365,7 +365,7 @@ export function downloadReceiptImage(receipt: ReceiptData) {
   ctx.font = '11px sans-serif';
   ctx.fillText('Payment Verified & Processed by Cashfree Payments India', 36, 620);
   ctx.fillText('Official computer-generated receipt issued by Linkal AI.', 36, 645);
-  ctx.fillText('Linkal SaaS Platform - support@linkal.in - https://linkal.in', 36, 670);
+  ctx.fillText('Linkal SaaS Platform - WhatsApp: +91 8766882442 - https://linkal.in', 36, 670);
 
   const a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');

@@ -366,7 +366,7 @@ export function BillingModal({
     ctx.font = '11px sans-serif';
     ctx.fillText('Payment Verified & Processed by Cashfree Payments India', 35, 570);
     ctx.fillText('Computer-generated tax receipt. No physical signature required.', 35, 590);
-    ctx.fillText('Linkal SaaS Platform • support@linkal.in • https://linkal.in', 35, 610);
+    ctx.fillText('Linkal SaaS Platform • WhatsApp: +91 8766882442 • https://linkal.in', 35, 610);
 
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');
