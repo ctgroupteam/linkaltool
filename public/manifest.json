@@ -1,9 +1,9 @@
 {
   "id": "linkal-studio-pwa-v1",
   "name": "Linkal Studio",
-  "short_name": "Studio",
+  "short_name": "Linkal Studio",
   "description": "Visual website builder, digital QR menu generator, and executive CV maker under linkal.in",
-  "start_url": "/dashboard?source=pwa",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
@@ -13,16 +13,28 @@
   "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/linkal.jpeg",
+      "src": "/favicon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/linkal.jpeg",
+      "src": "/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -30,15 +42,15 @@
       "name": "My Websites",
       "short_name": "Websites",
       "description": "View and manage your live websites",
-      "url": "/dashboard",
-      "icons": [{ "src": "/linkal.jpeg", "sizes": "192x192" }]
+      "url": "/",
+      "icons": [{ "src": "/favicon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Create Website",
       "short_name": "Create",
       "description": "Build a new store or executive CV",
-      "url": "/dashboard?action=create",
-      "icons": [{ "src": "/linkal.jpeg", "sizes": "192x192" }]
+      "url": "/?tab=builder",
+      "icons": [{ "src": "/favicon-96.png", "sizes": "96x96" }]
     }
   ]
 }

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     'WhatsApp store builder'
   ],
   alternates: {
-    canonical: 'https://studio.linkal.in',
+    canonical: 'https://studio.linkal.in/',
   },
   robots: {
     index: true,
@@ -50,24 +50,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://studio.linkal.in',
+    url: 'https://studio.linkal.in/',
     title: 'Linkal Studio — Instant Website Builder & Storefront Creator',
     description: 'Launch a branded storefront, digital QR menu, or CV website in 1 minute on custom subdomains with Linkal Studio.',
     siteName: 'Linkal Studio',
     images: [
       {
-        url: 'https://linkal.in/linkal.jpeg',
-        width: 1200,
-        height: 630,
-        alt: 'Linkal Studio',
+        url: 'https://linkal.in/favicon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'Linkal Studio Logo',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'Linkal Studio — Instant Website Builder & Storefront Creator',
     description: 'Launch your branded website or digital menu in 1 minute with Linkal Studio.',
-    images: ['https://linkal.in/linkal.jpeg'],
+    images: ['https://linkal.in/favicon-512.png'],
   },
   appleWebApp: {
     capable: true,
@@ -75,8 +75,16 @@ export const metadata: Metadata = {
     title: 'Linkal Studio',
   },
   icons: {
-    icon: '/linkal.jpeg',
-    apple: '/linkal.jpeg',
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/favicon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   other: {
     'mobile-web-app-capable': 'yes',
@@ -92,11 +100,30 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jakarta.variable} overflow-x-hidden w-full max-w-full`}>
       <head>
-        <link rel="icon" href="/linkal.jpeg" type="image/jpeg" />
-        <link rel="shortcut icon" href="/linkal.jpeg" type="image/jpeg" />
-        <link rel="apple-touch-icon" href="/linkal.jpeg" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" href="/favicon-48.png" sizes="48x48" />
+        <link rel="icon" type="image/png" href="/favicon-96.png" sizes="96x96" />
+        <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <script src="https://accounts.google.com/gsi/client" async defer></script>
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js" async></script>
+        {/* Google Search Central: Site Name Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Linkal Studio',
+              alternateName: ['Linkal AI Studio', 'Linkal Studio AI'],
+              url: 'https://studio.linkal.in/',
+            }),
+          }}
+        />
+        {/* Application Schema */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -109,7 +136,7 @@ export default function RootLayout({
               applicationCategory: 'BusinessApplication',
               operatingSystem: 'All',
               browserRequirements: 'Requires JavaScript. Requires HTML5.',
-              image: 'https://linkal.in/linkal.jpeg',
+              image: 'https://linkal.in/favicon-512.png',
               description: 'Linkal Studio is India\'s fastest visual website builder and digital store creator. Launch branded storefronts and digital QR menus in 1 minute.',
               offers: {
                 '@type': 'Offer',
