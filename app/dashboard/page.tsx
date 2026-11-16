@@ -33,6 +33,13 @@ import { GoogleAuthModal } from '@/app/components/GoogleAuthModal';
 import { PwaInstallPrompt } from '@/app/components/PwaInstallPrompt';
 
 // ─── SAFE TYPED INLINE SVG HELPERS ───────────────────────────────────────
+function Spinner({ className = 'w-4 h-4 animate-spin' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  );
+}
 function Menu({ className = 'w-5 h-5' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -499,6 +506,8 @@ function DashboardContent() {
   // User state (Google sign-in)
   const [user, setUser] = useState<{ id: string; email: string; fullName: string; phoneNumber?: string } | null>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Active category selection - default to Free CV Website
   const [category, setCategory] = useState<SiteType>('cv');
@@ -651,14 +660,24 @@ function DashboardContent() {
         }
       }
       if (savedUser) {
-        setUser(JSON.parse(savedUser));
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          if (parsedUser.phoneNumber && parsedUser.phoneNumber !== '91') {
+            setWhatsappPhone(parsedUser.phoneNumber);
+          }
+        } catch {}
+      }
+      const savedPhone = localStorage.getItem('linkal_saved_phone');
+      if (savedPhone && savedPhone !== '91') {
+        setWhatsappPhone(savedPhone);
       }
       const savedDraft = localStorage.getItem('linkal_draft_creation');
       if (savedDraft) {
         const parsed = JSON.parse(savedDraft);
         if (parsed.category) setCategory(parsed.category);
         if (parsed.siteName) setSiteName(parsed.siteName);
-        if (parsed.whatsappPhone) setWhatsappPhone(parsed.whatsappPhone);
+        if (parsed.whatsappPhone && parsed.whatsappPhone !== '91') setWhatsappPhone(parsed.whatsappPhone);
         if (parsed.desiredSlug) {
           setDesiredSlug(parsed.desiredSlug);
           setSlugTouched(true);
@@ -912,6 +931,29 @@ function DashboardContent() {
           localStorage.setItem(`linkal_sites_${userEmail}`, JSON.stringify(serverSites));
         } catch {}
 
+        // Auto-fill phone from existing sites if user profile doesn't have it yet
+        const siteWithPhone = serverSites.find((s) => {
+          const p = (s.whatsappNumber || s.cvPhone || '').replace(/\D/g, '');
+          return p.length >= 10;
+        });
+        if (siteWithPhone) {
+          const validPhone = (siteWithPhone.whatsappNumber || siteWithPhone.cvPhone || '').replace(/\D/g, '');
+          setWhatsappPhone((prev) => (prev === '91' || !prev ? validPhone : prev));
+          try {
+            localStorage.setItem('linkal_saved_phone', validPhone);
+          } catch {}
+          setUser((prevUser) => {
+            if (prevUser && (!prevUser.phoneNumber || prevUser.phoneNumber === '91' || prevUser.phoneNumber.length < 10)) {
+              const updatedUser = { ...prevUser, phoneNumber: validPhone };
+              try {
+                localStorage.setItem('linkal_user', JSON.stringify(updatedUser));
+              } catch {}
+              return updatedUser;
+            }
+            return prevUser;
+          });
+        }
+
         if (typeof window !== 'undefined') {
           const urlParams = new URLSearchParams(window.location.search);
           const renewSiteId = urlParams.get('renew');
@@ -1020,7 +1062,31 @@ function DashboardContent() {
         localStorage.setItem('linkal_sites_history', JSON.stringify(updatedList));
       } catch {}
 
-      // Reset form
+      // Automatically sync this phone number to user profile and all websites
+      const cleanWhatsapp = whatsappPhone.trim().replace(/\D/g, '');
+      if (cleanWhatsapp && cleanWhatsapp.length >= 10) {
+        try {
+          localStorage.setItem('linkal_saved_phone', cleanWhatsapp);
+        } catch {}
+        if (currentUser?.email && (!currentUser.phoneNumber || currentUser.phoneNumber !== cleanWhatsapp)) {
+          currentUser.phoneNumber = cleanWhatsapp;
+          setUser({ ...currentUser });
+          try {
+            localStorage.setItem('linkal_user', JSON.stringify(currentUser));
+          } catch {}
+          fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              fullName: currentUser.fullName,
+              phoneNumber: cleanWhatsapp,
+            }),
+          }).catch(() => {});
+        }
+      }
+
+      // Reset form (keeping whatsappPhone prefilled with user's saved number)
       setSiteName('');
       setDesiredSlug('');
       setSlugTouched(false);
@@ -1032,6 +1098,55 @@ function DashboardContent() {
       setCreateError(err.message || 'Error creating site');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    try {
+      setSavingProfile(true);
+      setProfileMsg(null);
+      const cleanPhone = (user.phoneNumber || '').replace(/\D/g, '');
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          fullName: user.fullName,
+          phoneNumber: cleanPhone,
+          avatarUrl: (user as any).avatarUrl,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save profile');
+
+      if (cleanPhone) {
+        setWhatsappPhone(cleanPhone);
+        try {
+          localStorage.setItem('linkal_saved_phone', cleanPhone);
+          const updated = { ...user, phoneNumber: cleanPhone };
+          localStorage.setItem('linkal_user', JSON.stringify(updated));
+        } catch {}
+
+        // Immediately update phone on all sites in current user view
+        setSites((prev) =>
+          prev.map((s) => ({
+            ...s,
+            whatsappNumber: cleanPhone,
+            cvPhone: cleanPhone,
+            userName: user.fullName || s.userName,
+          }))
+        );
+      }
+
+      setProfileMsg({
+        type: 'success',
+        text: '✓ Profile & phone number saved! Updated across your profile and all your websites.',
+      });
+    } catch (err: any) {
+      setProfileMsg({ type: 'error', text: err.message || 'Error saving profile' });
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -1909,9 +2024,15 @@ function DashboardContent() {
                     className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs sm:text-sm font-mono font-bold text-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
-                <span className="text-[11px] text-zinc-500 font-medium mt-1 block">
-                  {category === 'cv' ? 'Direct WhatsApp line for recruiters & hiring managers.' : 'Customer orders will be dispatched directly to this WhatsApp.'}
-                </span>
+                {user?.phoneNumber && user.phoneNumber !== '91' ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-1">
+                    ✓ Pre-filled from your profile. Takes the same number for all your websites.
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-zinc-500 font-medium mt-1 block">
+                    {category === 'cv' ? 'Direct WhatsApp line for recruiters & hiring managers.' : 'Customer orders will be dispatched directly to this WhatsApp.'}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -2591,9 +2712,40 @@ function DashboardContent() {
                       className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-950 focus:bg-white focus:ring-2 focus:ring-blue-600"
                     />
                     <span className="text-[10px] text-zinc-500 mt-1 block">
-                      Compulsory: Recruiters contact you on this number for your CV, or customers place WhatsApp store orders.
+                      Compulsory: Single number across all your websites. Automatically prefilled on site creation so you never have to enter it again.
                     </span>
                   </div>
+
+                  {profileMsg && (
+                    <div
+                      className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                        profileMsg.type === 'success'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-red-50 text-red-700 border border-red-200'
+                      }`}
+                    >
+                      <span>{profileMsg.text}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleSaveProfile}
+                    disabled={savingProfile}
+                    className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    {savingProfile ? (
+                      <>
+                        <Spinner className="w-4 h-4" />
+                        <span>Saving & Syncing All Sites...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Save Profile & Apply to All Websites</span>
+                      </>
+                    )}
+                  </button>
 
                   <div className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200 flex items-center justify-between text-xs">
                     <div>
