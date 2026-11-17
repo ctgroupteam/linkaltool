@@ -67,113 +67,6 @@ function loadInitialDiskSites(): SiteData[] {
 }
 
 let inMemorySites: SiteData[] = loadInitialDiskSites();
-let lastSyncedFromRemote = false;
-
-// Helper: Sync sites from GitHub repository (ctgroupteam/linkaltool)
-async function fetchRemoteSitesFromGitHub(): Promise<SiteData[] | null> {
-  const token = process.env.GITHUB_TOKEN;
-  const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
-  const repo = process.env.GITHUB_REPO || 'linkaltool';
-  if (!token) return null;
-
-  const reposToTry = [
-    { owner, repo },
-    { owner: 'ctgroupteam', repo: 'linkaltool' },
-    { owner: 'ctgroupteam', repo: 'linkal' },
-  ].filter((v, idx, arr) => arr.findIndex(x => x.owner === v.owner && x.repo === v.repo) === idx);
-
-  for (const target of reposToTry) {
-    try {
-      const url = `https://api.github.com/repos/${target.owner}/${target.repo}/contents/data/sites.json`;
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-          'User-Agent': 'Linkal-Website-Builder',
-        },
-        cache: 'no-store',
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.content) {
-          const content = Buffer.from(data.content, 'base64').toString('utf-8');
-          const rawSites = JSON.parse(content);
-          if (Array.isArray(rawSites)) {
-            // Clean out any legacy dummy sites
-            const sites = rawSites.filter((s: any) => s.slug !== 'barchi-s-furniture' && s.slug !== 'adil-portfolio' && s.slug !== 'solapurshop');
-            console.log(`[Storage] Synced ${sites.length} sites from GitHub (${target.owner}/${target.repo})`);
-            return sites;
-          }
-        }
-      }
-    } catch (err) {
-      console.warn(`[Storage] Could not fetch remote sites from GitHub (${target.owner}/${target.repo}):`, err);
-    }
-  }
-
-  return null;
-}
-
-// Helper: Save sites to GitHub repository
-async function saveRemoteSitesToGitHub(sites: SiteData[]): Promise<boolean> {
-  const token = process.env.GITHUB_TOKEN;
-  const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
-  const repo = process.env.GITHUB_REPO || 'linkaltool';
-  if (!token) return false;
-
-  const reposToTry = [
-    { owner, repo },
-    { owner: 'ctgroupteam', repo: 'linkaltool' },
-  ].filter((v, idx, arr) => arr.findIndex(x => x.owner === v.owner && x.repo === v.repo) === idx);
-
-  // Clean out any legacy dummy sites before saving
-  const cleanSites = sites.filter((s: any) => s.slug !== 'barchi-s-furniture' && s.slug !== 'adil-portfolio' && s.slug !== 'solapurshop');
-
-  for (const target of reposToTry) {
-    try {
-      const url = `https://api.github.com/repos/${target.owner}/${target.repo}/contents/data/sites.json`;
-      let existingSha: string | undefined;
-      const checkRes = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-          'User-Agent': 'Linkal-Website-Builder',
-        },
-        cache: 'no-store',
-      });
-      if (checkRes.ok) {
-        const data = await checkRes.json();
-        existingSha = data.sha;
-      }
-
-      const content = Buffer.from(JSON.stringify(cleanSites, null, 2), 'utf-8').toString('base64');
-      const putRes = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-          'Content-Type': 'application/json',
-          'User-Agent': 'Linkal-Website-Builder',
-        },
-        body: JSON.stringify({
-          message: `Sync customer sites database [${cleanSites.length} sites]`,
-          content,
-          sha: existingSha,
-        }),
-      });
-
-      if (putRes.ok) {
-        console.log(`[Storage] Successfully committed ${cleanSites.length} sites to GitHub database (${target.owner}/${target.repo})`);
-        return true;
-      }
-    } catch (err) {
-      console.warn(`[Storage] Could not save sites to GitHub database (${target.owner}/${target.repo}):`, err);
-    }
-  }
-
-  return false;
-}
 
 function ensureDataFile(): void {
   try {
@@ -190,10 +83,14 @@ function ensureDataFile(): void {
   }
 }
 
+/**
+ * Fetch all sites from Supabase (Primary Source of Truth) with local fallback.
+ * Zero GitHub API calls — 100% safe from token suspensions.
+ */
 export async function getAllSites(): Promise<SiteData[]> {
   const dataFile = getDataFilePath();
 
-  // 1. Try fetching from Supabase stores table if table exists
+  // 1. Primary Source: Supabase stores table
   try {
     const { data, error } = await supabaseAdmin
       .from('stores')
@@ -228,25 +125,10 @@ export async function getAllSites(): Promise<SiteData[]> {
       return dbSites;
     }
   } catch (err) {
-    // Supabase table not created yet or connection error; fallback gracefully
+    console.warn('[Storage] Supabase fetch fallback to local cache:', err);
   }
 
-  // 2. Fetch from remote GitHub database
-  if (!lastSyncedFromRemote) {
-    const remoteSites = await fetchRemoteSitesFromGitHub();
-    if (remoteSites !== null) {
-      inMemorySites = remoteSites;
-      lastSyncedFromRemote = true;
-      try {
-        ensureDataFile();
-        fs.writeFileSync(dataFile, JSON.stringify(remoteSites, null, 2), 'utf-8');
-      } catch {}
-      return inMemorySites;
-    }
-    lastSyncedFromRemote = true;
-  }
-
-  // 3. Local disk cache
+  // 2. Local disk cache fallback
   try {
     ensureDataFile();
     if (fs.existsSync(dataFile)) {
@@ -279,6 +161,10 @@ export async function getSiteBySlug(slug: string): Promise<SiteData | null> {
   return sites.find(s => s.slug.toLowerCase().trim() === cleanSlug) || null;
 }
 
+/**
+ * Save site directly to Supabase and memory cache.
+ * ZERO GitHub commits, ZERO Vercel rebuilds, INSTANT live updates.
+ */
 export async function saveSite(site: SiteData): Promise<SiteData> {
   const sites = await getAllSites();
   const index = sites.findIndex(s => s.id === site.id);
@@ -298,7 +184,7 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
 
   inMemorySites = sites;
   
-  // 1. Save locally / tmp
+  // 1. Save to local disk cache / tmp
   try {
     ensureDataFile();
     const dataFile = getDataFilePath();
@@ -307,16 +193,9 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
     console.warn('Write storage fallback:', error);
   }
 
-  // 2. Commit to GitHub database
+  // 2. Primary Database: Upsert directly to Supabase stores table
   try {
-    await saveRemoteSitesToGitHub(sites);
-  } catch (e) {
-    console.error('[Storage] Remote GitHub save error:', e);
-  }
-
-  // 3. Upsert to Supabase stores table if available
-  try {
-    await supabaseAdmin.from('stores').upsert({
+    const { error: sbError } = await supabaseAdmin.from('stores').upsert({
       id: site.id,
       slug: site.slug,
       business_name: site.name,
@@ -330,13 +209,22 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
       clicks_count: updatedSite.clicksCount || 0,
       updated_at: new Date().toISOString(),
     });
+    if (sbError) {
+      console.warn('[Storage] Supabase upsert error:', sbError.message);
+    } else {
+      console.log(`[Storage] Saved ${site.slug} directly to Supabase (Zero-Deploy)`);
+    }
   } catch (err) {
-    console.warn('[Storage] Supabase stores upsert note:', err);
+    console.warn('[Storage] Supabase stores upsert exception:', err);
   }
 
   return updatedSite;
 }
 
+/**
+ * Delete site directly from Supabase and memory cache.
+ * ZERO GitHub commits.
+ */
 export async function deleteSite(id: string): Promise<boolean> {
   const sites = await getAllSites();
   const filtered = sites.filter(s => s.id !== id);
@@ -353,14 +241,11 @@ export async function deleteSite(id: string): Promise<boolean> {
   }
 
   try {
-    await saveRemoteSitesToGitHub(filtered);
-  } catch (e) {
-    console.error('[Storage] Remote GitHub delete error:', e);
-  }
-
-  try {
     await supabaseAdmin.from('stores').delete().eq('id', id);
-  } catch (e) {}
+    console.log(`[Storage] Deleted site ${id} directly from Supabase`);
+  } catch (e) {
+    console.warn('[Storage] Supabase delete exception:', e);
+  }
 
   return true;
 }

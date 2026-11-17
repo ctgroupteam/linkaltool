@@ -129,6 +129,18 @@ export async function GET(request: Request, context: RouteContext) {
       ).catch(() => {});
     } catch {}
 
+    // Support custom raw HTML websites stored directly in Supabase
+    const customHtml = (site as any).custom_html || (site as any).customHtml || (site as any).site_data?.custom_html;
+    if (customHtml) {
+      return new Response(customHtml, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      });
+    }
+
     const html = generateStaticHtml(site);
 
     return new Response(html, {
