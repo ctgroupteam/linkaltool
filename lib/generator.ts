@@ -1163,7 +1163,7 @@ export function generateStaticHtml(site: SiteData): string {
 <body>
 
   <!-- Signature Fast Entrance Loading Bar -->
-  <div id="ecom-loading-overlay" style="position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; transition:opacity 0.5s ease, visibility 0.5s;">
+  <div id="ecom-loading-overlay" style="position:fixed; inset:0; background:#ffffff; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; transition:opacity 0.4s ease, visibility 0.4s;">
     <div style="text-align:center; max-width:320px; width:100%;">
       ${site.logoUrl ? `<img src="${escapeHtml(site.logoUrl)}" style="width:76px; height:76px; border-radius:50%; object-fit:cover; margin:0 auto 16px; box-shadow:0 6px 18px rgba(0,0,0,0.12); display:block;" />` : ''}
       <div style="font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:4px;">${siteTitle}</div>
@@ -1174,6 +1174,47 @@ export function generateStaticHtml(site: SiteData): string {
       <div id="ecom-ptxt" style="font-size:0.75rem; color:#64748b; font-weight:600;">Loading 0%</div>
     </div>
   </div>
+  <script>
+    (function() {
+      var ov = document.getElementById('ecom-loading-overlay');
+      var pb = document.getElementById('ecom-pbar');
+      var pt = document.getElementById('ecom-ptxt');
+      if (!ov) return;
+      var p = 0;
+      var timer = setInterval(function() {
+        p += Math.floor(Math.random() * 25) + 20;
+        if (p >= 100) {
+          p = 100;
+          clearInterval(timer);
+          if (pb) pb.style.width = '100%';
+          if (pt) pt.textContent = 'Ready';
+          setTimeout(function() {
+            ov.style.opacity = '0';
+            ov.style.pointerEvents = 'none';
+            setTimeout(function() {
+              ov.style.visibility = 'hidden';
+              if (ov.parentNode) ov.parentNode.removeChild(ov);
+            }, 350);
+          }, 150);
+        } else {
+          if (pb) pb.style.width = p + '%';
+          if (pt) pt.textContent = 'Loading ' + p + '%';
+        }
+      }, 40);
+
+      // Hard safety timeout: Ensure it always disappears within 600ms even on slow networks
+      setTimeout(function() {
+        clearInterval(timer);
+        if (ov && ov.parentNode) {
+          ov.style.opacity = '0';
+          ov.style.pointerEvents = 'none';
+          setTimeout(function() {
+            if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+          }, 250);
+        }
+      }, 600);
+    })();
+  </script>
 
   <!-- Announcement Bar (Top) -->
   ${site.announcementEnabled !== false && (site.announcementText || '').trim() ? `
