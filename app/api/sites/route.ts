@@ -4,6 +4,8 @@ import { SiteData, SiteType } from '@/types/site';
 import { provisionSubdomainSSL } from '@/lib/deployment/domainProvisioner';
 import { supabaseAdmin } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 function generateSlug(name: string): string {
   return name
     .toLowerCase()

@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { SiteData } from '@/types/site';
 import { supabaseAdmin } from '@/lib/supabase';
+import { submitUrlToGoogleIndexing } from '@/lib/seo/googleIndexer';
 
 const INITIAL_SITES: SiteData[] = [];
 
@@ -97,7 +98,9 @@ export async function getAllSites(): Promise<SiteData[]> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (data && data.length > 0) {
+    if (error) {
+      console.warn('[Storage] Supabase getAllSites error:', error.message);
+    } else if (data && data.length > 0) {
       const dbSites: SiteData[] = data.map((row: any) => {
         if (row.site_data && typeof row.site_data === 'object' && row.site_data.id) {
           return {
@@ -152,7 +155,46 @@ export async function getSiteById(id: string): Promise<SiteData | null> {
 }
 
 export async function getSiteBySlug(slug: string): Promise<SiteData | null> {
-  const cleanSlug = slug.toLowerCase().trim();
+  const cleanSlug = (slug || '').toLowerCase().trim();
+  if (!cleanSlug) return null;
+
+  // 1. Direct query to Supabase (primary source of truth, instantaneous, bypasses stale memory)
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('stores')
+      .select('*')
+      .eq('slug', cleanSlug)
+      .maybeSingle();
+
+    if (error) {
+      console.warn(`[Storage] Supabase direct lookup for '${cleanSlug}' error:`, error.message);
+    } else if (data) {
+      if (data.site_data && typeof data.site_data === 'object' && data.site_data.id) {
+        return {
+          ...data.site_data,
+          visitsCount: data.visits_count || data.site_data.visitsCount || 0,
+          clicksCount: data.clicks_count || data.site_data.clicksCount || 0,
+        };
+      }
+      return {
+        id: data.id,
+        name: data.business_name || data.slug,
+        slug: data.slug,
+        type: data.category === 'portfolio' ? 'portfolio' : data.category === 'single_product' ? 'single_product' : 'ecommerce',
+        whatsappNumber: data.whatsapp_number,
+        userEmail: data.contact_email,
+        status: data.is_active ? 'live' : 'draft',
+        visitsCount: data.visits_count || 0,
+        clicksCount: data.clicks_count || 0,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      } as SiteData;
+    }
+  } catch (err) {
+    console.warn(`[Storage] Supabase direct query exception for '${cleanSlug}':`, err);
+  }
+
+  // 2. Memory / disk fallback
   if (inMemorySites && inMemorySites.length > 0) {
     const match = inMemorySites.find(s => s.slug.toLowerCase().trim() === cleanSlug);
     if (match) return match;
@@ -213,6 +255,12 @@ export async function saveSite(site: SiteData): Promise<SiteData> {
       console.warn('[Storage] Supabase upsert error:', sbError.message);
     } else {
       console.log(`[Storage] Saved ${site.slug} directly to Supabase (Zero-Deploy)`);
+      if (site.status === 'live') {
+        try {
+          const siteUrl = site.liveUrl || `https://${site.slug}.linkal.in`;
+          Promise.resolve(submitUrlToGoogleIndexing(siteUrl)).catch(() => {});
+        } catch {}
+      }
     }
   } catch (err) {
     console.warn('[Storage] Supabase stores upsert exception:', err);

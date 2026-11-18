@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSiteById, saveSite } from '@/lib/storage';
 import { executeDeploymentPipeline } from '@/lib/deployment/pipeline';
 import { supabaseAdmin } from '@/lib/supabase';
+import { submitUrlToGoogleIndexing } from '@/lib/seo/googleIndexer';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -86,6 +87,12 @@ export async function POST(request: Request, context: RouteContext) {
         }),
       });
     } catch (e) {}
+
+    // 3. Automated Google Search Console Indexing trigger
+    try {
+      const siteLiveUrl = site.liveUrl || `https://${site.slug}.linkal.in`;
+      Promise.resolve(submitUrlToGoogleIndexing(siteLiveUrl)).catch(() => {});
+    } catch {}
 
     return NextResponse.json(result);
   } catch (error: any) {

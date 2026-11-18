@@ -1,89 +1,18 @@
 [
   {
-    "id": "site-1794565467534",
-    "name": "Royal Hotel",
-    "slug": "royalhotel",
-    "type": "restaurant",
+    "id": "site-test-continental",
+    "name": "Continental Softwares",
+    "slug": "continentalsoftwares",
+    "type": "ecommerce",
     "status": "live",
-    "userEmail": "mdyahyamundewadi@gmail.com",
+    "liveUrl": "https://continentalsoftwares.linkal.in",
+    "products": [],
     "userName": "Yahya Mundewadi",
-    "whatsappNumber": "919307426215",
-    "defaultWhatsappMessage": "Hello Royal Hotel, I would like to place an order from your digital menu!",
-    "themeColor": "#059669",
+    "userEmail": "mdyahyamundewadi@gmail.com",
     "fontFamily": "Inter",
-    "bannerSlider": [
-      {
-        "id": "slide-1",
-        "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80",
-        "title": "Welcome to Royal Hotel",
-        "subtitle": "Explore our exclusive offerings and order directly on WhatsApp with instant support.",
-        "ctaText": "Chat on WhatsApp"
-      }
-    ],
-    "sliderAutoRotateSeconds": 4,
-    "restaurantLoadingAnimation": true,
-    "restaurantMenu": [
-      {
-        "id": "dish-1",
-        "name": "Special Chicken Dum Biryani",
-        "category": "Biryani & Rice",
-        "price": "280",
-        "description": "Slow-cooked aromatic basmati rice layered with tender spiced chicken and saffron.",
-        "imageUrl": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80",
-        "isVeg": false,
-        "badge": "Signature Dish"
-      },
-      {
-        "id": "dish-2",
-        "name": "Paneer Butter Masala",
-        "category": "Gravy & Curries",
-        "price": "240",
-        "description": "Fresh cottage cheese simmered in rich buttery tomato and cashew gravy.",
-        "imageUrl": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fit=crop&q=80",
-        "isVeg": true,
-        "badge": "Chef Special"
-      },
-      {
-        "id": "dish-3",
-        "name": "Garlic Butter Naan",
-        "category": "Tandoor Breads",
-        "price": "60",
-        "description": "Traditional clay oven baked flatbread infused with roasted garlic and melted butter.",
-        "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&auto=format&fit=crop&q=80",
-        "isVeg": true
-      }
-    ],
-    "cvTitle": "Royal Hotel",
-    "cvHeadline": "Professional Title",
-    "cvLocation": "City, Country",
-    "cvEmail": "mdyahyamundewadi@gmail.com",
-    "cvPhone": "919999999999",
-    "cvLinkedin": "",
-    "cvLinkedinClickable": true,
-    "cvGithub": "",
-    "cvGithubClickable": true,
-    "cvWebsite": "https://royalhotel.linkal.in",
-    "cvWebsiteClickable": true,
-    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
-    "cvShowSummary": true,
-    "cvShowExperience": true,
-    "cvShowEducation": true,
-    "cvShowSkills": true,
-    "cvShowProjects": true,
-    "cvShowCertifications": true,
-    "cvFormat": "classic",
-    "createdAt": "2026-11-13T10:24:27.534Z",
-    "updatedAt": "2026-11-16T16:36:24.235Z",
-    "visitsCount": 11,
-    "clicksCount": 0,
-    "planStatus": "active",
-    "planType": "monthly_99",
-    "isPaid": true,
-    "liveUrl": "https://royalhotel.linkal.in",
-    "planExpiresAt": "2026-12-15T23:59:59.000Z",
-    "subscriptionEndsAt": "2026-12-15T23:59:59.000Z",
-    "lastPaymentAmount": 99,
-    "lastPaymentDate": "2026-11-14T10:24:27.534Z"
+    "themeColor": "#00F0FF",
+    "bannerSlider": [],
+    "whatsappNumber": "919307426215"
   },
   {
     "id": "site-1794147198230",
@@ -91,47 +20,12 @@
     "slug": "tester",
     "type": "cv",
     "status": "live",
-    "userEmail": "heymrbrave@gmail.com",
-    "userName": "Alex Foster",
-    "whatsappNumber": "919307426215",
-    "defaultWhatsappMessage": "Hello tester, I reviewed your CV/portfolio on Linkal and would like to connect!",
-    "themeColor": "#0f172a",
-    "fontFamily": "Inter",
-    "bannerSlider": [],
-    "sliderAutoRotateSeconds": 4,
-    "cvTitle": "tester",
-    "cvHeadline": "Professional Title",
-    "cvLocation": "City, Country",
     "cvEmail": "heymrbrave@gmail.com",
     "cvPhone": "919999999999",
-    "cvLinkedin": "",
-    "cvLinkedinClickable": true,
+    "cvTitle": "tester",
+    "liveUrl": "https://tester.linkal.in",
+    "cvFormat": "classic",
     "cvGithub": "",
-    "cvGithubClickable": true,
-    "cvWebsite": "https://tester.linkal.in",
-    "cvWebsiteClickable": true,
-    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
-    "cvExperiences": [
-      {
-        "id": "exp-1",
-        "company": "Company ABC",
-        "role": "Role / Position",
-        "period": "2022 — Present",
-        "location": "City, Country",
-        "description": "Key responsibilities, accomplishments, and quantifiable impact.",
-        "companyUrl": "",
-        "isCompanyUrlClickable": true
-      }
-    ],
-    "cvEducations": [
-      {
-        "id": "edu-1",
-        "institution": "University / Institute Name",
-        "degree": "Degree / Course Name",
-        "year": "2018 — 2022",
-        "honors": ""
-      }
-    ],
     "cvSkills": [
       "Skill 1",
       "Skill 2",
@@ -139,56 +33,54 @@
       "Project Planning",
       "Communication"
     ],
+    "userName": "Alex Foster",
+    "createdAt": "2026-11-08T14:13:18.231Z",
+    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
+    "cvWebsite": "https://tester.linkal.in",
+    "updatedAt": "2026-11-15T11:53:01.060Z",
+    "userEmail": "heymrbrave@gmail.com",
+    "cvHeadline": "Professional Title",
+    "cvLinkedin": "",
+    "cvLocation": "City, Country",
     "cvProjects": [
       {
         "id": "proj-1",
-        "title": "Project Title Alpha",
-        "description": "Designed and implemented end-to-end functionality to meet client objectives.",
         "link": "https://tester.linkal.in",
-        "isLinkClickable": true,
-        "techStack": "Tools & Technologies"
+        "title": "Project Title Alpha",
+        "techStack": "Tools & Technologies",
+        "description": "Designed and implemented end-to-end functionality to meet client objectives.",
+        "isLinkClickable": true
       }
     ],
-    "cvCertifications": [
+    "fontFamily": "Inter",
+    "themeColor": "#0f172a",
+    "clicksCount": 0,
+    "visitsCount": 29,
+    "bannerSlider": [],
+    "cvEducations": [
       {
-        "id": "cert-1",
-        "name": "Certification Title",
-        "issuer": "Issuing Organization",
-        "year": "2024",
-        "url": "",
-        "isUrlClickable": true
+        "id": "edu-1",
+        "year": "2018 — 2022",
+        "degree": "Degree / Course Name",
+        "honors": "",
+        "institution": "University / Institute Name"
       }
     ],
-    "cvCustomCategories": [
+    "cvShowSkills": true,
+    "cvExperiences": [
       {
-        "id": "cat-languages",
-        "name": "Languages",
-        "visible": true,
-        "items": [
-          {
-            "id": "lang-1",
-            "title": "English",
-            "subtitle": "Professional Working Proficiency"
-          },
-          {
-            "id": "lang-2",
-            "title": "Hindi",
-            "subtitle": "Native / Bilingual Proficiency"
-          }
-        ]
+        "id": "exp-1",
+        "role": "Role / Position",
+        "period": "2022 — Present",
+        "company": "Company ABC",
+        "location": "City, Country",
+        "companyUrl": "",
+        "description": "Key responsibilities, accomplishments, and quantifiable impact.",
+        "isCompanyUrlClickable": true
       }
     ],
     "cvShowSummary": true,
-    "cvShowExperience": true,
-    "cvShowEducation": true,
-    "cvShowSkills": true,
     "cvShowProjects": true,
-    "cvShowCertifications": true,
-    "cvFormat": "classic",
-    "createdAt": "2026-11-08T14:13:18.231Z",
-    "updatedAt": "2026-11-15T11:53:01.060Z",
-    "visitsCount": 29,
-    "clicksCount": 0,
     "deploymentLogs": [
       {
         "step": "general",
@@ -263,7 +155,185 @@
         "timestamp": "2026-11-08T14:13:35.522Z"
       }
     ],
-    "liveUrl": "https://tester.linkal.in",
-    "lastDeployedAt": "2026-11-08T14:13:34.635Z"
+    "lastDeployedAt": "2026-11-08T14:13:34.635Z",
+    "whatsappNumber": "919307426215",
+    "cvShowEducation": true,
+    "cvCertifications": [
+      {
+        "id": "cert-1",
+        "url": "",
+        "name": "Certification Title",
+        "year": "2024",
+        "issuer": "Issuing Organization",
+        "isUrlClickable": true
+      }
+    ],
+    "cvShowExperience": true,
+    "cvGithubClickable": true,
+    "cvCustomCategories": [
+      {
+        "id": "cat-languages",
+        "name": "Languages",
+        "items": [
+          {
+            "id": "lang-1",
+            "title": "English",
+            "subtitle": "Professional Working Proficiency"
+          },
+          {
+            "id": "lang-2",
+            "title": "Hindi",
+            "subtitle": "Native / Bilingual Proficiency"
+          }
+        ],
+        "visible": true
+      }
+    ],
+    "cvWebsiteClickable": true,
+    "cvLinkedinClickable": true,
+    "cvShowCertifications": true,
+    "defaultWhatsappMessage": "Hello tester, I reviewed your CV/portfolio on Linkal and would like to connect!",
+    "sliderAutoRotateSeconds": 4
+  },
+  {
+    "id": "site-1794565467534",
+    "name": "Royal Hotel",
+    "slug": "royalhotel",
+    "type": "restaurant",
+    "isPaid": true,
+    "status": "live",
+    "cvEmail": "mdyahyamundewadi@gmail.com",
+    "cvPhone": "919999999999",
+    "cvTitle": "Royal Hotel",
+    "liveUrl": "https://royalhotel.linkal.in",
+    "cvFormat": "classic",
+    "cvGithub": "",
+    "planType": "monthly_99",
+    "userName": "Yahya Mundewadi",
+    "createdAt": "2026-11-13T10:24:27.534Z",
+    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
+    "cvWebsite": "https://royalhotel.linkal.in",
+    "updatedAt": "2026-11-16T16:36:24.235Z",
+    "userEmail": "mdyahyamundewadi@gmail.com",
+    "cvHeadline": "Professional Title",
+    "cvLinkedin": "",
+    "cvLocation": "City, Country",
+    "fontFamily": "Inter",
+    "planStatus": "active",
+    "themeColor": "#059669",
+    "clicksCount": 0,
+    "visitsCount": 11,
+    "bannerSlider": [
+      {
+        "id": "slide-1",
+        "title": "Welcome to Royal Hotel",
+        "ctaText": "Chat on WhatsApp",
+        "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80",
+        "subtitle": "Explore our exclusive offerings and order directly on WhatsApp with instant support."
+      }
+    ],
+    "cvShowSkills": true,
+    "cvShowSummary": true,
+    "planExpiresAt": "2026-12-15T23:59:59.000Z",
+    "cvShowProjects": true,
+    "restaurantMenu": [
+      {
+        "id": "dish-1",
+        "name": "Special Chicken Dum Biryani",
+        "badge": "Signature Dish",
+        "isVeg": false,
+        "price": "280",
+        "category": "Biryani & Rice",
+        "imageUrl": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80",
+        "description": "Slow-cooked aromatic basmati rice layered with tender spiced chicken and saffron."
+      },
+      {
+        "id": "dish-2",
+        "name": "Paneer Butter Masala",
+        "badge": "Chef Special",
+        "isVeg": true,
+        "price": "240",
+        "category": "Gravy & Curries",
+        "imageUrl": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fit=crop&q=80",
+        "description": "Fresh cottage cheese simmered in rich buttery tomato and cashew gravy."
+      },
+      {
+        "id": "dish-3",
+        "name": "Garlic Butter Naan",
+        "isVeg": true,
+        "price": "60",
+        "category": "Tandoor Breads",
+        "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&auto=format&fit=crop&q=80",
+        "description": "Traditional clay oven baked flatbread infused with roasted garlic and melted butter."
+      }
+    ],
+    "whatsappNumber": "919307426215",
+    "cvShowEducation": true,
+    "lastPaymentDate": "2026-11-14T10:24:27.534Z",
+    "cvShowExperience": true,
+    "cvGithubClickable": true,
+    "lastPaymentAmount": 99,
+    "cvWebsiteClickable": true,
+    "subscriptionEndsAt": "2026-12-15T23:59:59.000Z",
+    "cvLinkedinClickable": true,
+    "cvShowCertifications": true,
+    "defaultWhatsappMessage": "Hello Royal Hotel, I would like to place an order from your digital menu!",
+    "sliderAutoRotateSeconds": 4,
+    "restaurantLoadingAnimation": true
+  },
+  {
+    "id": "site-1794126630400",
+    "name": "testing",
+    "slug": "testing",
+    "type": "ecommerce",
+    "status": "draft",
+    "cvEmail": "heymrbrave@gmail.com",
+    "cvPhone": "919999999999",
+    "cvTitle": "testing",
+    "cvFormat": "classic",
+    "cvGithub": "",
+    "products": [
+      {
+        "id": "prod-1",
+        "name": "Signature Collection Item",
+        "badge": "Featured",
+        "price": "1,499",
+        "inStock": true,
+        "currency": "₹",
+        "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+        "description": "Premium quality handcrafted product with instant doorstep delivery."
+      }
+    ],
+    "userName": "Alex Foster",
+    "createdAt": "2026-11-08T08:30:30.400Z",
+    "cvSummary": "A brief professional summary highlighting key strengths, background, and career accomplishments.",
+    "cvWebsite": "https://testing.linkal.in",
+    "updatedAt": "2026-11-08T08:30:30.437Z",
+    "userEmail": "heymrbrave@gmail.com",
+    "cvHeadline": "Professional Title",
+    "cvLinkedin": "",
+    "cvLocation": "City, Country",
+    "fontFamily": "Inter",
+    "themeColor": "#059669",
+    "clicksCount": 0,
+    "visitsCount": 0,
+    "bannerSlider": [
+      {
+        "id": "slide-1",
+        "title": "Welcome to testing",
+        "ctaText": "Chat on WhatsApp",
+        "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1600&auto=format&fit=crop&q=80",
+        "subtitle": "Explore our exclusive offerings and order directly on WhatsApp with instant support."
+      }
+    ],
+    "cvShowSkills": true,
+    "cvShowSummary": true,
+    "cvShowProjects": true,
+    "whatsappNumber": "919999999999",
+    "cvShowEducation": true,
+    "cvShowExperience": true,
+    "cvShowCertifications": true,
+    "defaultWhatsappMessage": "Hi testing, I saw your website and would like to place an order!",
+    "sliderAutoRotateSeconds": 4
   }
 ]
