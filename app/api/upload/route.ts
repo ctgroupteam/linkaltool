@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -15,48 +16,42 @@ export async function POST(request: Request) {
     // Clean base64 data
     const cleanBase64 = base64.includes(',') ? base64.split(',')[1] : base64;
     const cleanFilename = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const mimeMatch = base64.match(/^data:([^;]+);base64,/);
+    const contentType = mimeMatch ? mimeMatch[1] : 'image/webp';
 
-    const githubToken = process.env.GITHUB_TOKEN;
-    const githubOwner = process.env.GITHUB_OWNER || 'ctgroupteam';
-
-    // If GitHub credentials available, save image asset to linkaltool repository
-    if (githubToken && githubOwner) {
-      const repo = 'linkaltool';
-      const path = `public/uploads/${cleanFilename}`;
-
-      try {
-        const res = await fetch(`https://api.github.com/repos/${githubOwner}/${repo}/contents/${path}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${githubToken}`,
-            Accept: 'application/vnd.github+json',
-            'Content-Type': 'application/json',
-            'User-Agent': 'Linkal-Website-Builder',
-          },
-          body: JSON.stringify({
-            message: `Upload compressed WebP image asset: ${cleanFilename}`,
-            content: cleanBase64,
-          }),
+    // 1. Primary: Save to Supabase Storage "uploads" bucket (Zero GitHub calls, Instant CDN URL)
+    try {
+      const buffer = Buffer.from(cleanBase64, 'base64');
+      const { data, error } = await supabaseAdmin.storage
+        .from('uploads')
+        .upload(cleanFilename, buffer, {
+          contentType,
+          upsert: true,
         });
 
-        if (res.ok) {
-          const rawUrl = `https://raw.githubusercontent.com/${githubOwner}/${repo}/main/${path}`;
-          const cdnUrl = `https://cdn.jsdelivr.net/gh/${githubOwner}/${repo}@main/${path}`;
-          console.log(`[Upload] Image saved to GitHub repo ${repo}/${path}`);
+      if (!error && data) {
+        const { data: publicData } = supabaseAdmin.storage
+          .from('uploads')
+          .getPublicUrl(cleanFilename);
+
+        if (publicData?.publicUrl) {
+          console.log(`[Upload] Image saved to Supabase Storage: ${publicData.publicUrl}`);
           return NextResponse.json({
             success: true,
-            url: cdnUrl,
-            rawUrl,
+            url: publicData.publicUrl,
+            rawUrl: publicData.publicUrl,
             dataUrl: base64,
             filename: cleanFilename,
           });
         }
-      } catch (err) {
-        console.warn('[Upload] GitHub image upload fallback to data URL:', err);
+      } else if (error) {
+        console.warn('[Upload] Supabase Storage upload note:', error.message);
       }
+    } catch (err: any) {
+      console.warn('[Upload] Supabase Storage exception fallback:', err.message);
     }
 
-    // Fallback to high-efficiency WebP data URL
+    // 2. Fallback to high-efficiency WebP data URL
     return NextResponse.json({
       success: true,
       url: base64,

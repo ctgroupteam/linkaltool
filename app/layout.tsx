@@ -118,7 +118,7 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'Linkal Studio',
-              alternateName: ['Linkal AI Studio', 'Linkal Studio AI'],
+              alternateName: ['Linkal Studio'],
               url: 'https://studio.linkal.in/',
             }),
           }}

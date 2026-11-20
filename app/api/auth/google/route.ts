@@ -4,72 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-// Helper: Sync users database to GitHub ctgroupteam/linkaltool
-async function saveUsersToGitHub(newUserRecord: any): Promise<boolean> {
-  const token = process.env.GITHUB_TOKEN;
-  const owner = process.env.GITHUB_OWNER || 'ctgroupteam';
-  const repo = process.env.GITHUB_REPO || 'linkaltool';
-  if (!token) return false;
-
-  try {
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/data/users.json`;
-    let existingSha: string | undefined;
-    let usersList: any[] = [];
-
-    const checkRes = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'Linkal-Website-Builder',
-      },
-      cache: 'no-store',
-    });
-
-    if (checkRes.ok) {
-      const data = await checkRes.json();
-      existingSha = data.sha;
-      if (data.content) {
-        try {
-          const raw = Buffer.from(data.content, 'base64').toString('utf-8');
-          usersList = JSON.parse(raw);
-        } catch {}
-      }
-    }
-
-    if (!Array.isArray(usersList)) {
-      usersList = [];
-    }
-
-    const cleanEmail = (newUserRecord.email || '').toLowerCase().trim();
-    const idx = usersList.findIndex((u: any) => (u.email || '').toLowerCase().trim() === cleanEmail);
-    if (idx !== -1) {
-      usersList[idx] = { ...usersList[idx], ...newUserRecord };
-    } else {
-      usersList.unshift(newUserRecord);
-    }
-
-    const content = Buffer.from(JSON.stringify(usersList, null, 2), 'utf-8').toString('base64');
-    const putRes = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'Linkal-Website-Builder',
-      },
-      body: JSON.stringify({
-        message: `Sync registered users database [${usersList.length} users]`,
-        content,
-        sha: existingSha,
-      }),
-    });
-
-    return putRes.ok;
-  } catch (err) {
-    console.warn('[Users] Remote GitHub sync note:', err);
-    return false;
-  }
-}
+// All registered users are persisted directly in Supabase (Zero GitHub API calls, Zero suspension risk)
 
 export async function POST(req: NextRequest) {
   try {
@@ -220,11 +155,6 @@ export async function POST(req: NextRequest) {
         currentUsers.unshift(userRecord);
       }
       fs.writeFileSync(userFile, JSON.stringify(currentUsers, null, 2), 'utf8');
-
-      // Only sync to GitHub for new users to prevent triggering redundant Vercel rebuilds on logins
-      if (isNewUser) {
-        saveUsersToGitHub(userRecord).catch(() => {});
-      }
     } catch {}
 
     // 3. Dispatch Instant Notification to Founder Admin (Dual-Write: Supabase DB + Web Push)
